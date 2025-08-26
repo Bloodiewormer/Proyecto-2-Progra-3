@@ -1,4 +1,4 @@
-package org.example.entities;
+package org.example.domain_layer;
 
 public class Medico extends Usuario {
     private String especialidad;

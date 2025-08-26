@@ -1,0 +1,4 @@
+package org.example.data_access_layer;
+
+public interface IFileStore {
+}

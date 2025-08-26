@@ -1,4 +1,4 @@
-package org.example.entities;
+package org.example.domain_layer;
 
 import java.util.Date;
 
