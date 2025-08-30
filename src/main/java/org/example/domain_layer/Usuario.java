@@ -1,26 +1,16 @@
 package org.example.domain_layer;
 
-public class Usuario {
-    protected int id;
+public class Usuario extends  Persona {
     protected String password;
-    protected String nombre;
 
     public Usuario(int id, String password, String nombre) {
-        this.id = id;
+        super(id, nombre);
         this.password = password;
-        this.nombre = nombre;
-    }
 
-    public int getId() {
-        return id;
     }
 
     public String getPassword() {
         return password;
-    }
-
-    public String getNombre() {
-        return nombre;
     }
 
     public void changePassword(String newPassword) {
