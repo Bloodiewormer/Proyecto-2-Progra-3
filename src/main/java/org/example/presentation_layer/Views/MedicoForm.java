@@ -1,4 +1,14 @@
 package org.example.presentation_layer.Views;
 
-public class MedicoForm {
+import javax.swing.*;
+import java.awt.*;
+
+public class MedicoForm extends JFrame {
+
+    private JPanel MainPanel;
+
+
+    public JPanel getMainPanel() {
+        return MainPanel;
+    }
 }

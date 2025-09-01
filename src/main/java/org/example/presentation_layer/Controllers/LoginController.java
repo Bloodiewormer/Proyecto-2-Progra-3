@@ -6,9 +6,12 @@ import org.example.domain_layer.Farmaceuta;
 import org.example.domain_layer.Medico;
 import org.example.domain_layer.Usuario;
 import org.example.presentation_layer.Models.UserType;
+import org.example.presentation_layer.Views.LoginView;
+import org.example.presentation_layer.Views.MenuPrincipalView;
 import org.example.service_layer.UsuarioService;
 
 public class LoginController {
+
     private final UsuarioService usuarioService;
 
     public LoginController(UsuarioService usuarioService) {
@@ -37,15 +40,21 @@ public class LoginController {
     public UserType getUserType(int id) {
         Usuario usuario = usuarioService.leerPorId(id);
         if (usuario == null) return UserType.NULL;
-        else if (usuario.getClass() == Administrador.class) {
+        else if (usuario instanceof Administrador) {
             return UserType.ADMINISTRADOR;
-        } else if (usuario.getClass() == Farmaceuta.class) {
+        } else if (usuario instanceof Farmaceuta) {
             return UserType.FARMACEUTA;
-        }
-        else if (usuario.getClass() == Medico.class) {
+        } else if (usuario instanceof Medico) {
             return UserType.MEDICO;
-        };
+        }
         return UserType.NULL;
+    }
 
+    public void onLoginSuccess(UserType userType, LoginView loginView) {
+        // Hide login view
+        loginView.setVisible(false);
+        // Show menu principal view
+        MenuPrincipalView menuPrincipalView = new MenuPrincipalView(userType, this);
+        menuPrincipalView.setVisible(true);
     }
 }

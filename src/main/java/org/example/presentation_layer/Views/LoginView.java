@@ -1,6 +1,6 @@
 package org.example.presentation_layer.Views;
 
-import org.example.presentation_layer.Components.CustomButton;
+import org.example.presentation_layer.Components.BlueRoundedButton;
 import org.example.presentation_layer.Components.CustomPaswordField;
 import org.example.presentation_layer.Components.CustomTextField;
 import org.example.presentation_layer.Controllers.LoginController;
@@ -79,9 +79,9 @@ public class LoginView  extends  JFrame {
     }
 
     private void createUIComponents() {
-        LoginButton = new CustomButton("LOGIN");
+        LoginButton = new BlueRoundedButton("LOGIN");
         UserIDField = new CustomTextField();
-        RegistraseButton = new CustomButton("REGISTER");
+        RegistraseButton = new BlueRoundedButton("REGISTER");
         passwordField = new CustomPaswordField();
     }
 
@@ -89,6 +89,7 @@ public class LoginView  extends  JFrame {
         String userInput = UserIDField.getText().trim();
         String password = new String(passwordField.getPassword());
         int id;
+
         try {
             id = Integer.parseInt(userInput);
         } catch (NumberFormatException ex) {
@@ -96,18 +97,11 @@ public class LoginView  extends  JFrame {
             return;
         }
         boolean success = controller.login(id, password);
+
         if (success) {
-
             UserType userType = controller.getUserType(id);
-
-
-            SwingUtilities.invokeLater(() -> {
-                MenuPrincipalView menuPrincipalView = new MenuPrincipalView(userType);
-                menuPrincipalView.setVisible(true);
-
-            });
-            this.dispose(); // Cerrar la ventana de login
-
+            // Delegate navigation to controller
+            controller.onLoginSuccess(userType, this);
         } else {
             JOptionPane.showMessageDialog(this, "Invalid credentials.");
         }
@@ -120,6 +114,10 @@ public class LoginView  extends  JFrame {
         //registerWindow.setVisible(true);
         JOptionPane.showMessageDialog(null, "Opcion de registro no implementada.");
 
+    }
+
+    public void showLoginView() {
+        new LoginView(this.controller);
     }
 
 

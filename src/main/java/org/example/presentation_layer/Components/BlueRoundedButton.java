@@ -2,22 +2,19 @@ package org.example.presentation_layer.Components;
 
 import javax.swing.*;
 import java.awt.*;
-
-public class CustomButton extends JButton {
+public class BlueRoundedButton extends  JButton {
     private int radius = 20;
-    public CustomButton(String text, Color color, Color textColor) {
+
+    public BlueRoundedButton(String text) {
         super(text);
         setContentAreaFilled(false);
         setFocusPainted(false);
         setBorderPainted(false);
-        setForeground(textColor);
-        setBackground(color);
     }
-
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setColor(getBackground()); // Button color
+        g2.setColor(new Color(0, 74, 173)); // Button color
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
         super.paintComponent(g);

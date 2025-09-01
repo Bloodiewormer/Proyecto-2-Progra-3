@@ -20,6 +20,12 @@ public class UsuarioService implements IService<Usuario> {
     @Override
     public void agregar(Usuario usuario) {
         List <Usuario> usuarios = fileStore.readAll();
+        //check if id is unique
+        for (Usuario u : usuarios) {
+            if (u.getId() == usuario.getId()) {
+                throw new IllegalArgumentException("ID ya existe");
+            }
+        }
         usuarios.add(usuario);
         fileStore.writeAll(usuarios);
         notifyObservers(ChangeType.CREATED, usuario);

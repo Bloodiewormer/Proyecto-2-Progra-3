@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<usuarios>
+    <administrador>
+        <id>1</id>
+        <nombre>Admin</nombre>
+        <password>123</password>
+    </administrador>
+    <medico>
+        <id>2</id>
+        <nombre>Medico1</nombre>
+        <password>123</password>
+        <especialidad>Cardiologia</especialidad>
+    </medico>
+    <farmaceuta>
+        <id>3</id>
+        <nombre>Farmaceuta1</nombre>
+        <password>123</password>
+    </farmaceuta>
+</usuarios>
