@@ -1,8 +1,16 @@
 package org.example.domain_layer;
+import jakarta.xml.bind.annotation.*;
+
+@XmlAccessorType (XmlAccessType.FIELD)
+@XmlSeeAlso({Usuario.class})
 
 public class Persona {
-    private int id;
-    private String nombre;
+    @XmlElement(name = "id")
+    protected int id;
+    @XmlElement(name = "nombre")
+    protected String nombre;
+
+    protected Persona() {}
 
     public Persona(int id, String nombre) {
     this.id = id;
@@ -14,5 +22,13 @@ public class Persona {
     }
     public String getNombre() {
         return nombre;
+    }
+
+    @Override
+    public String toString() {
+        return "Persona{" +
+                "id=" + id +
+                ", nombre='" + nombre + '\'' +
+                '}';
     }
 }

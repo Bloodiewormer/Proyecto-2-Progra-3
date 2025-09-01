@@ -2,16 +2,16 @@
 package org.example.presentation_layer.Components;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 public class CustomTextField extends JTextField {
-    private int radius = 5;
-    private Image icon; // Declare the icon field
+    private final Image icon; // Declare the icon field
 
     public CustomTextField() {
         setBorder(BorderFactory.createEmptyBorder(5, 32, 5, 5)); // Padding for icon
         setOpaque(false);
         // Load the icon from resources
-        icon = new ImageIcon(getClass().getResource("/id.png")).getImage();
+        icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/id.png"))).getImage();
 
         setForeground(Color.BLACK);
     }
@@ -21,6 +21,7 @@ public class CustomTextField extends JTextField {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setColor(Color.WHITE); // White background
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        int radius = 5;
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
 
         // Draw the icon on the left inside the field
