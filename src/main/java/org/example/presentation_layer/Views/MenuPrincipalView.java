@@ -39,7 +39,7 @@ public class MenuPrincipalView extends JFrame {
         this.controller = controller;
         setContentPane(MainPanel);
         setTitle("Login");
-        setSize(500, 300);
+        setSize(680, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setUndecorated(true);
         setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 30, 30));
@@ -85,7 +85,7 @@ public class MenuPrincipalView extends JFrame {
         acercadeButton.addActionListener(e -> showAcercaDeView() );
         prescribirButton.addActionListener(e -> showPrescribirView() );
 
-
+        init(userType);
 
 
 
@@ -236,7 +236,16 @@ public class MenuPrincipalView extends JFrame {
         ContentPanel.repaint();
     }
 
-
+    public void init ( UserType userType) {
+        toggleMenu();
+        toggleMenu();
+        switch (userType){
+            case ADMINISTRADOR -> showMedicosView();
+            case FARMACEUTA -> showMedicamentosView();
+            case MEDICO -> showPacientesView();
+            default -> throw new IllegalArgumentException("Tipo de usuario no soportado: " + userType);
+        }
+    }
 
 
 
