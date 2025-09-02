@@ -1,8 +1,8 @@
-package org.example.entities;
+package org.example.domain_layer;
 
-public class Receta {
+public class DetalleReceta {
     private int cantidad;
-    private String instrucciones;
+    private String indicaciones;
     private int duracionDias;
     private Medicamento medicamento;
 }
