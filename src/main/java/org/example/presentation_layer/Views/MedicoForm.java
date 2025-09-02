@@ -1,8 +1,10 @@
 package org.example.presentation_layer.Views;
 
+import org.example.presentation_layer.Components.BlueRoundedButton;
+
 import javax.swing.*;
 
-public class MedicoForm extends JFrame {
+public class MedicoForm extends JPanel {
 
     private JPanel MainPanel;
     private JPanel BanerPanel;
@@ -22,7 +24,18 @@ public class MedicoForm extends JFrame {
     private JButton borrarButton;
 
 
+
     public JPanel getMainPanel() {
         return MainPanel;
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        buscarButton = new BlueRoundedButton( "Buscar");
+        reporteButton = new BlueRoundedButton( "Reporte");
+        guardarButton = new BlueRoundedButton( "Guardar");
+        limpiarButton = new BlueRoundedButton( "Limpiar");
+        borrarButton = new BlueRoundedButton( "Borrar");
+
     }
 }
