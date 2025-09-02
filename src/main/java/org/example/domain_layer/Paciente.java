@@ -2,15 +2,16 @@ package org.example.domain_layer;
 
 import java.util.Date;
 
-public class Paciente {
-    private int id;
-    private String nombre;
+import jakarta.xml.bind.annotation.*;
+
+@XmlAccessorType (XmlAccessType.FIELD)
+@XmlSeeAlso({Usuario.class})
+public class Paciente extends Persona {
     private String telefono;
     private Date fechanacimiento;
 
     public Paciente(int id, String nombre, String telefono, Date fechanacimiento) {
-        this.id = id;
-        this.nombre = nombre;
+        super(id, nombre);
         this.telefono = telefono;
         this.fechanacimiento = fechanacimiento;
     }

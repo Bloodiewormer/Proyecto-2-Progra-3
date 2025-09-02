@@ -1,29 +1,36 @@
 package org.example.domain_layer;
 
-public class Usuario {
-    protected int id;
+import jakarta.xml.bind.annotation.*;
+
+@XmlRootElement(name = "usuario")
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlSeeAlso({Administrador.class, Medico.class, Farmaceuta.class})
+public class Usuario extends  Persona {
+    @XmlElement(name = "password")
     protected String password;
-    protected String nombre;
+
+    protected Usuario() {}
 
     public Usuario(int id, String password, String nombre) {
-        this.id = id;
+        super(id, nombre);
         this.password = password;
-        this.nombre = nombre;
-    }
 
-    public int getId() {
-        return id;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public String getNombre() {
-        return nombre;
-    }
-
     public void changePassword(String newPassword) {
         this.password = newPassword;
+    }
+
+    @Override
+    public String toString() {
+        return "Usuario{" +
+                "id=" + id +
+                ", nombre='" + nombre + '\'' +
+                ", password='" + password + '\'' +
+                '}';
     }
 }
