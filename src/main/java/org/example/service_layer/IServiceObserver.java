@@ -1,4 +1,7 @@
 package org.example.service_layer;
 
-public interface IServiceObserver {
+import org.example.utilities.ChangeType;
+
+public interface IServiceObserver<T> {
+    void onDataChanged(ChangeType type, T entity);
 }
