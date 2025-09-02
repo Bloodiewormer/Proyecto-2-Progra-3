@@ -67,8 +67,8 @@ public class LoginView  extends  JFrame {
                 JOptionPane.showMessageDialog(null,
                         "Group Members:\n" +
                                 "- David Gonzalez Cordoba\n" +
-                                "- Member 2\n" +
-                                "- Member 3", "Integrantes del grupo", JOptionPane.INFORMATION_MESSAGE);
+                                "- Dany Montero Romero\n" +
+                                "- Emmanuel Nunez Jimenez", "Integrantes del grupo", JOptionPane.INFORMATION_MESSAGE);
 
             }
         });
