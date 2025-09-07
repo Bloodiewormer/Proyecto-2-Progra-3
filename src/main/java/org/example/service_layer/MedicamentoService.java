@@ -1,39 +1,70 @@
 package org.example.service_layer;
 
+import org.example.data_access_layer.IFileStore;
 import org.example.domain_layer.Medicamento;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MedicamentoService implements IService<Medicamento> {
+
+    private final IFileStore<Medicamento> fileStore;
+    private final List<IServiceObserver<Medicamento>> observers = new ArrayList<>();
+
+    public MedicamentoService(IFileStore<Medicamento> fileStore) {
+        this.fileStore = fileStore;
+    }
+
     @Override
     public void agregar(Medicamento entity) {
-       // List <Medicamento> listaMedicamentos
-
+        List<Medicamento> medicamentos = fileStore.readAll();
+        medicamentos.add(entity);
+        fileStore.writeAll(medicamentos);
+        notifyObservers(entity);
     }
 
     @Override
     public void borrar(int id) {
-
+        List<Medicamento> medicamentos = fileStore.readAll();
+        medicamentos.removeIf(m -> m.getCodigo() == id);
+        fileStore.writeAll(medicamentos);
     }
 
     @Override
     public void actualizar(Medicamento entity) {
-
+        List<Medicamento> medicamentos = fileStore.readAll();
+        for (int i = 0; i < medicamentos.size(); i++) {
+            if (medicamentos.get(i).getCodigo() == entity.getCodigo()) {
+                medicamentos.set(i, entity);
+                break;
+            }
+        }
+        fileStore.writeAll(medicamentos);
+        notifyObservers(entity);
     }
 
     @Override
     public List<Medicamento> leerTodos() {
-        return List.of();
+        return fileStore.readAll();
     }
 
     @Override
     public Medicamento leerPorId(int id) {
-        return null;
+        return fileStore.readAll()
+                .stream()
+                .filter(m -> m.getCodigo() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
     public void addObserver(IServiceObserver<Medicamento> listener) {
+        observers.add(listener);
+    }
 
+    private void notifyObservers(Medicamento entity) {
+        for (IServiceObserver<Medicamento> obs : observers) {
+            obs.onChanged(entity);
+        }
     }
 }
