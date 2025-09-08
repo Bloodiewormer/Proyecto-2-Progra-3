@@ -30,10 +30,11 @@ public class RecetaTableModel extends AbstractTableModel {
         Receta r = recetas.get(rowIndex);
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         return switch (columnIndex) {
-            case 0 -> r.getID();
+            case 0 -> r.getId();
             case 1 -> sdf.format(r.getFechaConfeccion());
             case 2 -> sdf.format(r.getFechaRetiro());
-            case 3 -> r.getEstado().name();
+            //lo reviso en un momento
+           // case 3 -> r.getEstado().name();
             default -> null;
         };
     }

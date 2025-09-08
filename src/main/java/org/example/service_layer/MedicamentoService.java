@@ -2,6 +2,7 @@ package org.example.service_layer;
 
 import org.example.data_access_layer.IFileStore;
 import org.example.domain_layer.Medicamento;
+import org.example.utilities.ChangeType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public class MedicamentoService implements IService<Medicamento> {
         List<Medicamento> medicamentos = fileStore.readAll();
         medicamentos.add(entity);
         fileStore.writeAll(medicamentos);
-        notifyObservers(entity);
+        notifyObservers(ChangeType.CREATED ,entity);
     }
 
     @Override
@@ -28,6 +29,7 @@ public class MedicamentoService implements IService<Medicamento> {
         List<Medicamento> medicamentos = fileStore.readAll();
         medicamentos.removeIf(m -> m.getCodigo() == id);
         fileStore.writeAll(medicamentos);
+        notifyObservers(ChangeType.DELETED ,null);
     }
 
     @Override
@@ -40,7 +42,7 @@ public class MedicamentoService implements IService<Medicamento> {
             }
         }
         fileStore.writeAll(medicamentos);
-        notifyObservers(entity);
+        notifyObservers(ChangeType.UPDATED ,entity);
     }
 
     @Override
@@ -62,9 +64,9 @@ public class MedicamentoService implements IService<Medicamento> {
         observers.add(listener);
     }
 
-    private void notifyObservers(Medicamento entity) {
+    private void notifyObservers(ChangeType c, Medicamento entity) {
         for (IServiceObserver<Medicamento> obs : observers) {
-            obs.onChanged(entity);
+            obs.onDataChanged(c, entity);
         }
     }
 }

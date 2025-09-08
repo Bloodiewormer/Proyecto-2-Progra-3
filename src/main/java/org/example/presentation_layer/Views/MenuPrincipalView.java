@@ -4,6 +4,8 @@ import jdk.jfr.ContentType;
 import org.example.presentation_layer.Components.CustomButton;
 import org.example.presentation_layer.Controllers.LoginController;
 import org.example.presentation_layer.Models.UserType;
+import org.example.service_layer.UsuarioService;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -11,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.util.Objects;
 
 public class MenuPrincipalView extends JFrame {
     private JPanel mainPanel;
@@ -34,9 +37,11 @@ public class MenuPrincipalView extends JFrame {
     private final int ACTUAL_WIDTH = MENU_WIDTH;
 
     private final LoginController controller;
+    private final UsuarioService usuarioService;
 
-    public MenuPrincipalView(UserType userType, LoginController controller)  {
+    public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService)  {
         this.controller = controller;
+        this.usuarioService = usuarioService;
         setContentPane(MainPanel);
         setTitle("Login");
         setSize(680, 400);
@@ -97,14 +102,26 @@ public class MenuPrincipalView extends JFrame {
     }
 
     private void createUIComponents() {
-        salirButton = new CustomButton("Salir", new Color(244, 243, 248), Color.BLACK);
-        medicosButton = new CustomButton("Medicos", new Color(244, 243, 248), Color.BLACK);
-        farmaceutasButton = new CustomButton("Farmaceutas", new Color(244, 243, 248), Color.BLACK);
-        pacientesButton = new CustomButton("Pacientes", new Color(244, 243, 248), Color.BLACK);
-        medicamentosButton = new CustomButton("Medicamentos", new Color(244, 243, 248), Color.BLACK);
-        dashboardButton = new CustomButton("Dashboard", new Color(244, 243, 248), Color.BLACK);
-        acercadeButton = new CustomButton("Acerca de", new Color(244, 243, 248), Color.BLACK);
-        prescribirButton = new CustomButton("Prescribir", new Color(244, 243, 248), Color.BLACK);
+        //icons
+        Image DoctorIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Doctor.png"))).getImage();
+        Image FarmaceuticoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Farmaceuta.png"))).getImage();
+        Image PacienteIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Paciente.png"))).getImage();
+        Image MedicamentoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Medicamento.png"))).getImage();
+        Image DashboardIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/DashBoard.png"))).getImage();
+        Image LogoutIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Logout.png"))).getImage();
+        Image AdminIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Admin.png"))).getImage();
+        Image PrescribirIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Prescripcion.png"))).getImage();
+        Image InfoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Info.png"))).getImage();
+
+
+        salirButton = new CustomButton("Salir", new Color(244, 243, 248), Color.BLACK, LogoutIcon);
+        medicosButton = new CustomButton("Medicos", new Color(244, 243, 248), Color.BLACK, DoctorIcon);
+        farmaceutasButton = new CustomButton("Farmaceutas", new Color(244, 243, 248), Color.BLACK, FarmaceuticoIcon);
+        pacientesButton = new CustomButton("Pacientes", new Color(244, 243, 248), Color.BLACK, PacienteIcon);
+        medicamentosButton = new CustomButton("Medicamentos", new Color(244, 243, 248), Color.BLACK, MedicamentoIcon);
+        dashboardButton = new CustomButton("Dashboard", new Color(244, 243, 248), Color.BLACK, DashboardIcon);
+        acercadeButton = new CustomButton("Acerca de", new Color(244, 243, 248), Color.BLACK,InfoIcon);
+        prescribirButton = new CustomButton("Prescribir", new Color(244, 243, 248), Color.BLACK, PrescribirIcon);
 
     }
 
@@ -181,7 +198,7 @@ public class MenuPrincipalView extends JFrame {
     }
 
     public void showMedicosView() {
-        MedicoForm medicoForm = new MedicoForm();
+        MedicoForm medicoForm = new MedicoForm(usuarioService);
         ContentPanel.removeAll();
         ContentPanel.add(medicoForm.getMainPanel());
         ContentPanel.revalidate();

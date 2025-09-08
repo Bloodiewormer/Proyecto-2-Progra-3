@@ -2,9 +2,10 @@ package org.example.service_layer;
 
 import org.example.utilities.ChangeType;
 
-public class DashboardService implements IServiceObserver<String> {
+public class DashboardService /*implements IServiceObserver<String> */{
 
-    @Override
+
+    //@Override
     public void onDataChanged(ChangeType type, String entity) {
 
     }
