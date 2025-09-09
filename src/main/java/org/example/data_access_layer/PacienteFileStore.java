@@ -2,7 +2,6 @@ package org.example.data_access_layer;
 import org.example.domain_layer.Paciente;
 import java.util.List;
 
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.*;

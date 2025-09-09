@@ -16,6 +16,4 @@ public class Paciente extends Persona {
         this.fechanacimiento = fechanacimiento;
     }
 
-
-
 }

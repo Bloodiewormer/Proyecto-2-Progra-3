@@ -6,16 +6,16 @@ import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
 public class PacienteTableModel extends AbstractTableModel {
-    private final String[] columnNames = {"ID", "Nombre",};
-    private List<Paciente> medicos;
+    private final String[] columnNames = {"ID", "Nombre","Fecha de nacimiento", "Teléfono"};
+    private List<Paciente> pacientes;
 
-    public PacienteTableModel(List<Paciente> medicos) {
-        this.medicos = medicos;
+    public PacienteTableModel(List<Paciente> pacientes) {
+        this.pacientes = pacientes;
     }
 
     @Override
     public int getRowCount() {
-        return medicos.size();
+        return pacientes.size();
     }
 
     @Override
@@ -25,11 +25,12 @@ public class PacienteTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        Medico m = medicos.get(rowIndex);
+        Paciente p = pacientes.get(rowIndex);
         switch (columnIndex) {
-            case 0: return m.getId();
-            case 1: return m.getNombre();
-            case 2: return m.getEspecialidad();
+            case 0: return p.getId();
+            case 1: return p.getNombre();
+//            case 2: return p.();
+//            case 3: return p. ();
             default: return null;
         }
     }
@@ -39,13 +40,13 @@ public class PacienteTableModel extends AbstractTableModel {
         return columnNames[column];
     }
 
-    public void setMedicos(List<Medico> medicos) {
-        this.medicos = medicos;
+    public void setMedicos(List<Paciente> medicos) {
+        this.pacientes = medicos;
         fireTableDataChanged();
         // Notify the table that the data has changed
     }
 
-    public Medico getMedicoAt(int row) {
-        return medicos.get(row);
+    public Paciente getPacienteAt(int row) {
+        return pacientes.get(row);
     }
 }

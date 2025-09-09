@@ -38,7 +38,4 @@ public class CambioClaveController {
             return loginController.changePassword(id, newPassword);
     }
 
-
-
-
 }
