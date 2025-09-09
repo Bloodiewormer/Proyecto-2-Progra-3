@@ -14,6 +14,11 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Receta {
 
+
+
+
+
+
     @XmlElement
     private int id;
     @XmlElement
@@ -40,6 +45,7 @@ public class Receta {
         this.fechaConfeccion = fechaConfeccion;
         this.fechaRetiro = fechaRetiro;
         this.estado = estado;
+
     }
 
     public int getId() { return id; }

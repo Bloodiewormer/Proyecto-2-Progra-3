@@ -1,6 +1,8 @@
 package org.example.presentation_layer.Controllers;
 
 import com.sun.istack.localization.NullLocalizable;
+import org.example.data_access_layer.IFileStore;
+import org.example.data_access_layer.UsuarioFileStore;
 import org.example.domain_layer.Administrador;
 import org.example.domain_layer.Farmaceuta;
 import org.example.domain_layer.Medico;
@@ -9,6 +11,8 @@ import org.example.presentation_layer.Models.UserType;
 import org.example.presentation_layer.Views.LoginView;
 import org.example.presentation_layer.Views.MenuPrincipalView;
 import org.example.service_layer.UsuarioService;
+
+import java.io.File;
 
 public class LoginController {
 
@@ -51,10 +55,11 @@ public class LoginController {
     }
 
     public void onLoginSuccess(UserType userType, LoginView loginView) {
-        // Hide login view
         loginView.setVisible(false);
-        // Show menu principal view
-        MenuPrincipalView menuPrincipalView = new MenuPrincipalView(userType, this);
-        menuPrincipalView.setVisible(true);
+        File usuariosFile = new File("usuarios.xml"); // O el nombre de archivo que uses
+        IFileStore<Usuario> fileStore = new UsuarioFileStore(usuariosFile);
+        UsuarioService usuarioService = new UsuarioService(fileStore);
+        MenuPrincipalView menu = new MenuPrincipalView(userType, this, usuarioService);
+        menu.setVisible(true);
     }
 }

@@ -2,6 +2,7 @@ package org.example.service_layer;
 
 import org.example.data_access_layer.IFileStore;
 import org.example.domain_layer.Receta;
+import org.example.utilities.ChangeType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public class RecetaService implements IService<Receta> {
         List<Receta> recetas = fileStore.readAll();
         recetas.add(entity);
         fileStore.writeAll(recetas);
-        notifyObservers(entity);
+        notifyObservers(ChangeType.UPDATED,entity);
     }
 
     @Override
@@ -28,6 +29,7 @@ public class RecetaService implements IService<Receta> {
         List<Receta> recetas = fileStore.readAll();
         recetas.removeIf(r -> r.getId() == id);
         fileStore.writeAll(recetas);
+        notifyObservers(ChangeType.DELETED,null);
     }
 
     @Override
@@ -40,7 +42,7 @@ public class RecetaService implements IService<Receta> {
             }
         }
         fileStore.writeAll(recetas);
-        notifyObservers(entity);
+        notifyObservers(ChangeType.UPDATED,entity);
     }
 
     @Override
@@ -62,9 +64,9 @@ public class RecetaService implements IService<Receta> {
         observers.add(listener);
     }
 
-    private void notifyObservers(Receta entity) {
+    private void notifyObservers(ChangeType c, Receta entity) {
         for (IServiceObserver<Receta> obs : observers) {
-            //obs.onDataChanged(entity);
+            obs.onDataChanged(c,entity);
         }
     }
 }
