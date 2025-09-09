@@ -1,4 +1,6 @@
 package org.example.presentation_layer.Models;
 
-public class PacienteTableModel {
+import javax.swing.table.AbstractTableModel;
+
+public class PacienteTableModel extends AbstractTableModel {
 }
