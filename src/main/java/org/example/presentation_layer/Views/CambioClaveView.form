@@ -106,7 +106,7 @@
           <text value="Confirmar Contraseña"/>
         </properties>
       </component>
-      <component id="bae86" class="javax.swing.JPasswordField" binding="ConfirmpasswordField">
+      <component id="bae86" class="javax.swing.JPasswordField" binding="ConfirmpasswordField" custom-create="true">
         <constraints>
           <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>

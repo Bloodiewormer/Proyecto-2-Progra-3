@@ -206,7 +206,7 @@ public class MenuPrincipalView extends JFrame {
     }
 
     public void showFarmaceutasView() {
-        FarmaceutaForm farmaceutaForm = new FarmaceutaForm();
+        FarmaceutaForm farmaceutaForm = new FarmaceutaForm(usuarioService);
         ContentPanel.removeAll();
         ContentPanel.add(farmaceutaForm.getMainPanel());
         ContentPanel.revalidate();
