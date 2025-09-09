@@ -48,7 +48,14 @@ public class LoginView  extends  JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                JOptionPane.showMessageDialog(null, "Password recovery is not implemented yet.");
+                //create change password view and seend the controller to it
+                JFrame changePasswordView = new CambioClaveView( controller);
+
+
+
+
+
+
             }
         });
         CloseProgram.addMouseListener(new MouseAdapter() {

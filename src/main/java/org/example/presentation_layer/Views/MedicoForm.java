@@ -1,8 +1,12 @@
 package org.example.presentation_layer.Views;
 
+import org.example.presentation_layer.Components.BlueRoundedButton;
+import org.example.presentation_layer.Controllers.MedicoController;
+import org.example.service_layer.UsuarioService;
+
 import javax.swing.*;
 
-public class MedicoForm extends JFrame {
+public class MedicoForm extends JPanel {
 
     private JPanel MainPanel;
     private JPanel BanerPanel;
@@ -10,19 +14,45 @@ public class MedicoForm extends JFrame {
     private JPanel ManagerMedicos;
     private JPanel BusquedaMedicos;
     private JPanel TableMedicos;
-    private JTable table1;
-    private JTextField textField1;
+    private JTable Medicostable;
+    private JTextField BuscartextField;
     private JButton buscarButton;
     private JButton reporteButton;
-    private JTextField textField2;
-    private JTextField textField3;
-    private JTextField textField4;
+    private JTextField IDtextFiel;
+    private JTextField EspecialidadtextField;
+    private JTextField NametextField;
     private JButton guardarButton;
     private JButton limpiarButton;
     private JButton borrarButton;
 
+    private MedicoController medicoController;
 
-    public JPanel getMainPanel() {
-        return MainPanel;
+    public MedicoForm(UsuarioService usuarioService) {
+        medicoController = new MedicoController(this, usuarioService);
+
+        buscarButton.addActionListener(e -> medicoController.buscarMedico());
+        guardarButton.addActionListener(e -> medicoController.guardarMedico());
+        limpiarButton.addActionListener(e -> medicoController.limpiarCampos());
+        borrarButton.addActionListener(e -> medicoController.borrarMedico());
+    }
+
+    public JTable getMedicostable() { return Medicostable; }
+    public JTextField getBuscartextField() { return BuscartextField; }
+    public JTextField getIDtextFiel() { return IDtextFiel; }
+    public JTextField getEspecialidadtextField() { return EspecialidadtextField; }
+    public JTextField getNametextField() { return NametextField; }
+    public JButton getBuscarButton() { return buscarButton; }
+    public JButton getReporteButton() { return reporteButton; }
+    public JButton getGuardarButton() { return guardarButton; }
+    public JButton getLimpiarButton() { return limpiarButton; }
+    public JButton getBorrarButton() { return borrarButton; }
+    public JPanel getMainPanel() { return MainPanel; }
+
+    private void createUIComponents() {
+        buscarButton = new BlueRoundedButton("Buscar");
+        reporteButton = new BlueRoundedButton("Reporte");
+        guardarButton = new BlueRoundedButton("Guardar");
+        limpiarButton = new BlueRoundedButton("Limpiar");
+        borrarButton = new BlueRoundedButton("Borrar");
     }
 }

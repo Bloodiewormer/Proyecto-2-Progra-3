@@ -5,6 +5,20 @@ import java.awt.*;
 
 public class CustomButton extends JButton {
     private int radius = 20;
+
+    public CustomButton(String text, Color color, Color textColor, Image icon) {
+        super(text);
+
+        if (icon != null) {
+            setIcon(new ImageIcon(icon));
+        }
+        setContentAreaFilled(false);
+        setFocusPainted(false);
+        setBorderPainted(false);
+        setForeground(textColor);
+        setBackground(color);
+    }
+
     public CustomButton(String text, Color color, Color textColor) {
         super(text);
         setContentAreaFilled(false);
