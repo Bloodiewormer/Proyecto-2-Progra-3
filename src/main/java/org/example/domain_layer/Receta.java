@@ -15,10 +15,6 @@ import java.util.List;
 public class Receta {
 
 
-
-
-
-
     @XmlElement
     private int id;
     @XmlElement
