@@ -5,6 +5,7 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import org.example.utilities.EstadoReceta;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -60,7 +61,7 @@ public class Receta {
     public void setFechaRetiro(LocalDate fechaRetiro) { this.fechaRetiro = fechaRetiro; }
 
     public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public void setEstado(EstadoReceta estado) {  this.estado = estado.toString(); }
 
     public List<DetalleReceta> getDetalles() { return detalles; }
     public void setDetalles(List<DetalleReceta> detalles) { this.detalles = detalles; }

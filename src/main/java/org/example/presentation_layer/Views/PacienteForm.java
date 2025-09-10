@@ -1,17 +1,19 @@
 package org.example.presentation_layer.Views;
 
 import org.example.presentation_layer.Components.BlueRoundedButton;
+import org.example.presentation_layer.Controllers.PacienteController;
+import org.example.service_layer.PacienteService;
 
 import javax.swing.*;
 
-public class PacienteForm {
+public class PacienteForm extends JPanel {
     private JPanel MainPanel;
     private JPanel BanerPanel;
-    private JPanel MedicoPanel;
-    private JPanel TableMedicos;
-    private JTable table1;
+    private JPanel PacientePanel;
+    private JPanel TablePacientes;
+    private JTable Pacientestable;
     private JPanel BusquedaPaciente;
-    private JTextField textField1;
+    private JTextField BuscartextField;
     private JButton buscarButton;
     private JButton reporteButton;
     private JPanel ManagerPaciente;
@@ -23,9 +25,32 @@ public class PacienteForm {
     private JButton borrarButton;
     private JTextField PhoneField;
 
-    public JPanel getMainPanel() {
-        return MainPanel;
+    private final PacienteController pacienteController;
+
+    public PacienteForm(PacienteService pacienteService) {
+        pacienteController = new PacienteController(this, pacienteService);
+
+        buscarButton.addActionListener(e -> pacienteController.buscarPaciente());
+        guardarButton.addActionListener(e -> pacienteController.guardarPaciente());
+        limpiarButton.addActionListener(e -> pacienteController.limpiarCampos());
+        borrarButton.addActionListener(e -> pacienteController.borrarPaciente());
     }
+
+
+    public JTable getPacientestable() { return Pacientestable; }
+    public JTextField getBuscartextField() { return BuscartextField; }
+    public JTextField getIDtextFiel() { return IDTextField; }
+    public JTextField getNametextField() { return NameTextField; }
+    public JTextField getTelefonotextField() { return PhoneField; }
+
+    public JButton getBuscarButton() { return buscarButton; }
+    public JButton getReporteButton() { return reporteButton; }
+    public JButton getGuardarButton() { return guardarButton; }
+    public JButton getLimpiarButton() { return limpiarButton; }
+    public JButton getBorrarButton() { return borrarButton; }
+    public JPanel getMainPanel() { return MainPanel; }
+
+
 
     private void createUIComponents() {
         buscarButton = new BlueRoundedButton( "Buscar");
@@ -35,4 +60,7 @@ public class PacienteForm {
         borrarButton = new BlueRoundedButton( "Borrar");
 
     }
+
+
+
 }

@@ -2,14 +2,13 @@ package org.example.presentation_layer.Controllers;
 
 import com.sun.istack.localization.NullLocalizable;
 import org.example.data_access_layer.IFileStore;
+import org.example.data_access_layer.PacienteFileStore;
 import org.example.data_access_layer.UsuarioFileStore;
-import org.example.domain_layer.Administrador;
-import org.example.domain_layer.Farmaceuta;
-import org.example.domain_layer.Medico;
-import org.example.domain_layer.Usuario;
+import org.example.domain_layer.*;
 import org.example.presentation_layer.Models.UserType;
 import org.example.presentation_layer.Views.LoginView;
 import org.example.presentation_layer.Views.MenuPrincipalView;
+import org.example.service_layer.PacienteService;
 import org.example.service_layer.UsuarioService;
 
 import java.io.File;
@@ -56,10 +55,16 @@ public class LoginController {
 
     public void onLoginSuccess(UserType userType, LoginView loginView) {
         loginView.setVisible(false);
-        File usuariosFile = new File("usuarios.xml"); // O el nombre de archivo que uses
+        File usuariosFile = new File("usuarios.xml");
+        File PacientesFile = new File("pacientes.xml");
+
         IFileStore<Usuario> fileStore = new UsuarioFileStore(usuariosFile);
+
+        IFileStore<Paciente> fileStorePacientes = new PacienteFileStore(PacientesFile);
         UsuarioService usuarioService = new UsuarioService(fileStore);
-        MenuPrincipalView menu = new MenuPrincipalView(userType, this, usuarioService);
+        PacienteService pacienteService = new PacienteService(fileStorePacientes);
+
+        MenuPrincipalView menu = new MenuPrincipalView(userType, this, usuarioService, pacienteService);
         menu.setVisible(true);
     }
 }

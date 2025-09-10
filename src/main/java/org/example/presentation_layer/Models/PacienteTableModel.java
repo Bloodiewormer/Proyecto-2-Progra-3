@@ -3,11 +3,13 @@ package org.example.presentation_layer.Models;
 import org.example.domain_layer.Paciente;
 
 import javax.swing.table.AbstractTableModel;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class PacienteTableModel extends AbstractTableModel {
     private final String[] columnNames = {"ID", "Nombre","Fecha de nacimiento", "Teléfono"};
     private List<Paciente> pacientes;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
     public PacienteTableModel(List<Paciente> pacientes) {
         this.pacientes = pacientes;
@@ -29,8 +31,8 @@ public class PacienteTableModel extends AbstractTableModel {
         switch (columnIndex) {
             case 0: return p.getId();
             case 1: return p.getNombre();
-//            case 2: return p.();
-//            case 3: return p. ();
+            case 2: return p.getFechanacimiento() != null ? dateFormat.format(p.getFechanacimiento()) : "";
+            case 3: return p.getTelefono();
             default: return null;
         }
     }
@@ -40,10 +42,9 @@ public class PacienteTableModel extends AbstractTableModel {
         return columnNames[column];
     }
 
-    public void setMedicos(List<Paciente> medicos) {
-        this.pacientes = medicos;
+    public void setPacientes(List<Paciente> pacientes) {
+        this.pacientes = pacientes;
         fireTableDataChanged();
-        // Notify the table that the data has changed
     }
 
     public Paciente getPacienteAt(int row) {

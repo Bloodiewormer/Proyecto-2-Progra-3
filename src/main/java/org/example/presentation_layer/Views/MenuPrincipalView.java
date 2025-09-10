@@ -4,6 +4,7 @@ import jdk.jfr.ContentType;
 import org.example.presentation_layer.Components.CustomButton;
 import org.example.presentation_layer.Controllers.LoginController;
 import org.example.presentation_layer.Models.UserType;
+import org.example.service_layer.PacienteService;
 import org.example.service_layer.UsuarioService;
 
 import javax.swing.*;
@@ -38,10 +39,12 @@ public class MenuPrincipalView extends JFrame {
 
     private final LoginController controller;
     private final UsuarioService usuarioService;
+    private final PacienteService pacienteService;
 
-    public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService)  {
+    public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService, PacienteService pacienteService)  {
         this.controller = controller;
         this.usuarioService = usuarioService;
+        this.pacienteService = pacienteService;
         setContentPane(MainPanel);
         setTitle("Login");
         setSize(680, 400);
@@ -214,7 +217,7 @@ public class MenuPrincipalView extends JFrame {
     }
 
     public void showPacientesView() {
-        PacienteForm pacienteForm = new PacienteForm();
+        PacienteForm pacienteForm = new PacienteForm(pacienteService);
         ContentPanel.removeAll();
         ContentPanel.add(pacienteForm.getMainPanel());
         ContentPanel.revalidate();
@@ -230,9 +233,9 @@ public class MenuPrincipalView extends JFrame {
     }
 
     public void showDashboardView() {
-        DashboardView dashboardView = new DashboardView();
+        //DashboardView dashboardView = new DashboardView();
         ContentPanel.removeAll();
-        ContentPanel.add(dashboardView.getMainPanel());
+        //ContentPanel.add(dashboardView.getMainPanel());
         ContentPanel.revalidate();
         ContentPanel.repaint();
     }

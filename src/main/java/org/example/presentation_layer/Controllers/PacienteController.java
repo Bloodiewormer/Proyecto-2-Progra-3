@@ -1,53 +1,118 @@
 package org.example.presentation_layer.Controllers;
 
+import org.example.domain_layer.Medico;
 import org.example.domain_layer.Paciente;
+import org.example.presentation_layer.Models.MedicosTableModel;
 import org.example.presentation_layer.Models.PacienteTableModel;
+import org.example.presentation_layer.Views.PacienteForm;
 import org.example.service_layer.IService;
+import org.example.service_layer.PacienteService;
 
+import javax.swing.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class PacienteController {
-
-    private final IService<Paciente> pacienteService;
+    private final PacienteForm view;
+    private final PacienteService pacienteService;
     private final PacienteTableModel tableModel;
 
-    public PacienteController(IService<Paciente> pacienteService) {
+    public PacienteController(PacienteForm view, PacienteService pacienteService) {
+        this.view = view;
         this.pacienteService = pacienteService;
-        this.tableModel = new PacienteTableModel(pacienteService.leerTodos());
+        this.tableModel = new PacienteTableModel(new ArrayList<>());
+        this.view.getPacientestable().setModel(tableModel);
+        cargarPacientes();
     }
 
-    public PacienteTableModel getTableModel() {
-        return tableModel;
+
+    public void guardarPaciente() {
+        try {
+            int id = Integer.parseInt(view.getIDtextFiel().getText().trim());
+            String nombre = view.getNametextField().getText().trim();
+            String telefono = view.getTelefonotextField().getText().trim();
+            //Date fechaNacimiento = view.getFechaNacimientodateChooser().getDate();
+
+            Paciente p = new Paciente(id, nombre, telefono, new Date() /*fechaNacimiento*/);
+
+           pacienteService.agregar(p);
+
+           cargarPacientes();
+           limpiarCampos();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(view, "ID inválido", "Error", JOptionPane.ERROR_MESSAGE);
+
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(view, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    public void guardarPaciente(int id, String nombre, String telefono, Date fechaNacimiento) {
-        Paciente nuevo = new Paciente(id, nombre, telefono, fechaNacimiento);
-        pacienteService.agregar(nuevo);
-        refrescarTabla();
+    public void actualizarPaciente() {
+   // Implementar la lógica para actualizar un paciente ya existente
+        try {
+            int id = Integer.parseInt(view.getIDtextFiel().getText().trim());
+            String nombre = view.getNametextField().getText().trim();
+            String telefono = view.getTelefonotextField().getText().trim();
+            //Date fechaNacimiento = view.getFechaNacimientodateChooser().getDate();
+
+            Paciente p = new Paciente(id, nombre, telefono, new Date() /*fechaNacimiento*/);
+
+            pacienteService.actualizar(p);
+
+            cargarPacientes();
+            limpiarCampos();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(view, "ID inválido", "Error", JOptionPane.ERROR_MESSAGE);
+
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(view, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+
     }
 
-    public void actualizarPaciente(Paciente paciente) {
-        pacienteService.actualizar(paciente);
-        refrescarTabla();
+    public void borrarPaciente() {
+        int row = view.getPacientestable().getSelectedRow();
+        if (row >= 0) {
+            int id = (int) tableModel.getValueAt(row, 0);
+            pacienteService.borrar(id);
+            cargarPacientes();
+        }
+
     }
 
-    public void borrarPaciente(int id) {
-        pacienteService.borrar(id);
-        refrescarTabla();
+    public  void buscarPaciente() {
+        String filtro = view.getBuscartextField().getText().toLowerCase().trim();
+        if (filtro.isEmpty()) {
+            cargarPacientes();
+            return;
+        }
+
+        List<Paciente> filtrados = new ArrayList<>();
+        for (Paciente p : pacienteService.leerTodos()) {
+            if (p.getNombre() != null && p.getNombre().toLowerCase().contains(filtro)) {
+                filtrados.add(p);
+            }
+        }
+        tableModel.setPacientes(filtrados);
     }
 
-    public Paciente obtenerPacientePorId(int id) {
-        return pacienteService.leerPorId(id);
+    public void limpiarCampos() {
+        view.getIDtextFiel().setText("");
+        view.getNametextField().setText("");
+        view.getTelefonotextField().setText("");
+        //view.getFechaNacimientodateChooser().setDate(null);
     }
 
-    public List<Paciente> obtenerTodos() {
-        return pacienteService.leerTodos();
+
+    private void cargarPacientes() {
+        List<Paciente> pacientes = new ArrayList<>();
+        for (Paciente p : pacienteService.leerTodos()) {
+            pacientes.add(p);
+        }
+        tableModel.setPacientes(pacientes);
     }
 
-    private void refrescarTabla() {
-        List<Paciente> pacientes = pacienteService.leerTodos();
-        tableModel.setMedicos(pacientes); // ver si hay que corregir algo xd
-    }
 }
 
