@@ -19,6 +19,12 @@ public class MedicamentoFileStore implements IFileStore<Medicamento> {
         ensureFile();
     }
 
+
+    public MedicamentoFileStore(File file) {
+        this.file = file;
+        ensureFile();
+    }
+
     @Override
     public List<Medicamento> readAll() {
         try {

@@ -41,11 +41,6 @@ public class MedicoForm extends JPanel {
     public JTextField getIDtextFiel() { return IDtextFiel; }
     public JTextField getEspecialidadtextField() { return EspecialidadtextField; }
     public JTextField getNametextField() { return NametextField; }
-    public JButton getBuscarButton() { return buscarButton; }
-    public JButton getReporteButton() { return reporteButton; }
-    public JButton getGuardarButton() { return guardarButton; }
-    public JButton getLimpiarButton() { return limpiarButton; }
-    public JButton getBorrarButton() { return borrarButton; }
     public JPanel getMainPanel() { return MainPanel; }
 
     private void createUIComponents() {

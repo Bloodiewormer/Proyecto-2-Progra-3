@@ -2,12 +2,14 @@ package org.example.presentation_layer.Controllers;
 
 import com.sun.istack.localization.NullLocalizable;
 import org.example.data_access_layer.IFileStore;
+import org.example.data_access_layer.MedicamentoFileStore;
 import org.example.data_access_layer.PacienteFileStore;
 import org.example.data_access_layer.UsuarioFileStore;
 import org.example.domain_layer.*;
 import org.example.presentation_layer.Models.UserType;
 import org.example.presentation_layer.Views.LoginView;
 import org.example.presentation_layer.Views.MenuPrincipalView;
+import org.example.service_layer.MedicamentoService;
 import org.example.service_layer.PacienteService;
 import org.example.service_layer.UsuarioService;
 
@@ -57,14 +59,17 @@ public class LoginController {
         loginView.setVisible(false);
         File usuariosFile = new File("usuarios.xml");
         File PacientesFile = new File("pacientes.xml");
+        File MedicamentosFile = new File("medicamentos.xml");
 
         IFileStore<Usuario> fileStore = new UsuarioFileStore(usuariosFile);
-
         IFileStore<Paciente> fileStorePacientes = new PacienteFileStore(PacientesFile);
+        IFileStore<Medicamento> fileStoreMedicamentos = new MedicamentoFileStore( MedicamentosFile);
+
         UsuarioService usuarioService = new UsuarioService(fileStore);
         PacienteService pacienteService = new PacienteService(fileStorePacientes);
+        MedicamentoService medicamentoService = new MedicamentoService(fileStoreMedicamentos);
 
-        MenuPrincipalView menu = new MenuPrincipalView(userType, this, usuarioService, pacienteService);
+        MenuPrincipalView menu = new MenuPrincipalView(userType, this, usuarioService, pacienteService, medicamentoService);
         menu.setVisible(true);
     }
 }

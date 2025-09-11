@@ -4,6 +4,7 @@ import jdk.jfr.ContentType;
 import org.example.presentation_layer.Components.CustomButton;
 import org.example.presentation_layer.Controllers.LoginController;
 import org.example.presentation_layer.Models.UserType;
+import org.example.service_layer.MedicamentoService;
 import org.example.service_layer.PacienteService;
 import org.example.service_layer.UsuarioService;
 
@@ -40,11 +41,13 @@ public class MenuPrincipalView extends JFrame {
     private final LoginController controller;
     private final UsuarioService usuarioService;
     private final PacienteService pacienteService;
+    private final MedicamentoService medicamentoService;
 
-    public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService, PacienteService pacienteService)  {
+    public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService, PacienteService pacienteService, MedicamentoService medicamentoService)  {
         this.controller = controller;
         this.usuarioService = usuarioService;
         this.pacienteService = pacienteService;
+        this.medicamentoService = medicamentoService;
         setContentPane(MainPanel);
         setTitle("Login");
         setSize(680, 400);
@@ -225,7 +228,7 @@ public class MenuPrincipalView extends JFrame {
     }
 
     public void showMedicamentosView() {
-        MedicamentoForm medicamentoForm = new MedicamentoForm();
+        MedicamentoForm medicamentoForm = new MedicamentoForm(medicamentoService);
         ContentPanel.removeAll();
         ContentPanel.add(medicamentoForm.getMainPanel());
         ContentPanel.revalidate();

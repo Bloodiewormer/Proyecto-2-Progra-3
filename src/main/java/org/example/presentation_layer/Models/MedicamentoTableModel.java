@@ -40,6 +40,12 @@ public class MedicamentoTableModel extends AbstractTableModel {
         return columnas[column];
     }
 
+    public void setMedicamentos(List<Medicamento> medicamentos) {
+        this.medicamentos.clear();
+        this.medicamentos.addAll(medicamentos);
+        fireTableDataChanged();
+    }
+
     public Medicamento getMedicamentoAt(int row) {
         return medicamentos.get(row);
     }
