@@ -15,13 +15,10 @@ public class PacienteTableModel extends AbstractTableModel {
         this.pacientes = pacientes;
     }
 
-    @Override
-    public int getRowCount() {
+    @Override public int getRowCount() {
         return pacientes.size();
     }
-
-    @Override
-    public int getColumnCount() {
+    @Override public int getColumnCount() {
         return columnNames.length;
     }
 
@@ -47,7 +44,26 @@ public class PacienteTableModel extends AbstractTableModel {
         fireTableDataChanged();
     }
 
+
+
     public Paciente getPacienteAt(int row) {
         return pacientes.get(row);
     }
+
+    public void setRows(List<Paciente> data) {
+        pacientes.clear();
+        if (data != null) pacientes.addAll(data);
+        fireTableDataChanged();
+    }
+
+    private int indexOf(Paciente p) {
+        for (int i = 0; i < pacientes.size(); i++) {
+            if (pacientes.get(i).getId() == p.getId()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+
 }

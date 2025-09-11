@@ -6,6 +6,7 @@ import org.example.presentation_layer.Components.CustomTextField;
 import org.example.presentation_layer.Controllers.LoginController;
 import org.example.presentation_layer.Models.UserType;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 
@@ -43,7 +44,12 @@ public class LoginView  extends  JFrame {
         setVisible(true);
         setLocationRelativeTo(null);
 
+
         LoginButton.addActionListener(e -> onLoginClicked());
+
+
+
+
         ForgotLable.addComponentListener(new ComponentAdapter() {});
         ForgotLable.addMouseListener(new MouseAdapter() {
             @Override
@@ -71,6 +77,26 @@ public class LoginView  extends  JFrame {
                         JOptionPane.INFORMATION_MESSAGE);
             }
         });
+        UserIDField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    onLoginClicked();
+                }
+            }
+        });
+
+        passwordField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    onLoginClicked();
+                }
+            }
+        });
+        getRootPane().setDefaultButton(LoginButton);
+
+
     }
 
     private void createUIComponents() {
@@ -100,6 +126,8 @@ public class LoginView  extends  JFrame {
         }
 
     }
+
+
 
     public JPanel getMainPanel() {
         return MainPanel;

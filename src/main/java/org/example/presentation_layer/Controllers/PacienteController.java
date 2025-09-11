@@ -1,11 +1,8 @@
 package org.example.presentation_layer.Controllers;
 
-import org.example.domain_layer.Medico;
 import org.example.domain_layer.Paciente;
-import org.example.presentation_layer.Models.MedicosTableModel;
 import org.example.presentation_layer.Models.PacienteTableModel;
 import org.example.presentation_layer.Views.PacienteForm;
-import org.example.service_layer.IService;
 import org.example.service_layer.PacienteService;
 
 import javax.swing.*;
@@ -18,11 +15,10 @@ public class PacienteController {
     private final PacienteService pacienteService;
     private final PacienteTableModel tableModel;
 
-    public PacienteController(PacienteForm view, PacienteService pacienteService) {
+    public PacienteController(PacienteForm view, PacienteService pacienteService, PacienteTableModel tableModel) {
         this.view = view;
         this.pacienteService = pacienteService;
-        this.tableModel = new PacienteTableModel(new ArrayList<>());
-        this.view.getPacientestable().setModel(tableModel);
+        this.tableModel  = tableModel;
         cargarPacientes();
     }
 
@@ -32,9 +28,9 @@ public class PacienteController {
             int id = Integer.parseInt(view.getIDtextFiel().getText().trim());
             String nombre = view.getNametextField().getText().trim();
             String telefono = view.getTelefonotextField().getText().trim();
-            //Date fechaNacimiento = view.getFechaNacimientodateChooser().getDate();
+            Date fechaNacimiento = view.getDatePicker().getDate();
 
-            Paciente p = new Paciente(id, nombre, telefono, new Date() /*fechaNacimiento*/);
+            Paciente p = new Paciente(id, nombre, telefono, fechaNacimiento);
 
            pacienteService.agregar(p);
 
@@ -54,9 +50,9 @@ public class PacienteController {
             int id = Integer.parseInt(view.getIDtextFiel().getText().trim());
             String nombre = view.getNametextField().getText().trim();
             String telefono = view.getTelefonotextField().getText().trim();
-            //Date fechaNacimiento = view.getFechaNacimientodateChooser().getDate();
+            Date fechaNacimiento = view.getDatePicker().getDate();
 
-            Paciente p = new Paciente(id, nombre, telefono, new Date() /*fechaNacimiento*/);
+            Paciente p = new Paciente(id, nombre, telefono, fechaNacimiento);
 
             pacienteService.actualizar(p);
 
@@ -102,7 +98,7 @@ public class PacienteController {
         view.getIDtextFiel().setText("");
         view.getNametextField().setText("");
         view.getTelefonotextField().setText("");
-        //view.getFechaNacimientodateChooser().setDate(null);
+        view.getDatePicker().setDate(new Date());
     }
 
 
@@ -114,5 +110,55 @@ public class PacienteController {
         tableModel.setPacientes(pacientes);
     }
 
+
+    public Paciente getPacienteById(int id) {
+        validarId(id);
+        return pacienteService.leerPorId( id);
+    }
+
+
+
+
+    private void validarId(int id) {
+        for (Paciente p : pacienteService.leerTodos()) {
+            if (id <= 0) {
+                throw new IllegalArgumentException("ID debe ser positivo");
+            }
+            if (p.getId() == id) {
+                throw new IllegalArgumentException("ID ya existe");
+            }
+        }
+    }
+
+    private void validarNombre(String nombre) {
+        if (nombre == null || nombre.trim().isEmpty())
+            throw new IllegalArgumentException("El nombre es obligatorio.");
+    }
+
+    public void generarReportePacienteSeleccionado() {
+        int row = view.getPacientestable().getSelectedRow();
+        if (row >= 0) {
+            int id = (int) tableModel.getValueAt(row, 0);
+            Paciente u = pacienteService.leerPorId(id);
+            if (u != null) {
+                String reporte = "Reporte de Usuario\n\n" +
+                        "ID: " + u.getId() + "\n" +
+                        "Nombre: " + u.getNombre() + "\n" +
+                        "Tipo: " + u.getClass().getSimpleName() + "\n";
+                //Proximamente agregar mas detalles sobre medicamentos
+
+                JOptionPane.showMessageDialog(view, reporte, "Reporte de Paciente", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(view, "No se encontró el Paciente seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(view, "Por favor, seleccione un Paciente de la tabla.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+
 }
+
+
+
 

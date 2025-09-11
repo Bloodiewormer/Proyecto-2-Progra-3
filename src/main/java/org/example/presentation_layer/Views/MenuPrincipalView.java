@@ -38,13 +38,11 @@ public class MenuPrincipalView extends JFrame {
     private final int MENU_WIDTH = 150;
     private final int ACTUAL_WIDTH = MENU_WIDTH;
 
-    private final LoginController controller;
     private final UsuarioService usuarioService;
     private final PacienteService pacienteService;
     private final MedicamentoService medicamentoService;
 
     public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService, PacienteService pacienteService, MedicamentoService medicamentoService)  {
-        this.controller = controller;
         this.usuarioService = usuarioService;
         this.pacienteService = pacienteService;
         this.medicamentoService = medicamentoService;
@@ -138,16 +136,16 @@ public class MenuPrincipalView extends JFrame {
                 medicosButton.setEnabled(enable);
                 farmaceutasButton.setEnabled(enable);
                 pacientesButton.setEnabled(enable);
-                medicamentosButton.setEnabled(false);
+                medicamentosButton.setEnabled(enable);
                 dashboardButton.setEnabled(enable);
                 acercadeButton.setEnabled(enable);
-                prescribirButton.setEnabled(enable);
+                prescribirButton.setEnabled(false);
                 break;
             case FARMACEUTA:
                 medicosButton.setEnabled(false);
                 farmaceutasButton.setEnabled(false);
                 pacientesButton.setEnabled(false);
-                medicamentosButton.setEnabled(enable);
+                medicamentosButton.setEnabled(false);
                 dashboardButton.setEnabled(enable);
                 acercadeButton.setEnabled(enable);
                 prescribirButton.setEnabled(false);
@@ -155,11 +153,12 @@ public class MenuPrincipalView extends JFrame {
             case MEDICO:
                 medicosButton.setEnabled(false);
                 farmaceutasButton.setEnabled(false);
-                pacientesButton.setEnabled(enable);
-                medicamentosButton.setEnabled(enable);
+                pacientesButton.setEnabled(false);
+                medicamentosButton.setEnabled(false);
+                prescribirButton.setEnabled(enable);
                 dashboardButton.setEnabled(enable);
                 acercadeButton.setEnabled(enable);
-                prescribirButton.setEnabled(enable);
+
                 break;
             default:
                 throw new IllegalArgumentException("Tipo de usuario no soportado: " + userType);
@@ -265,7 +264,7 @@ public class MenuPrincipalView extends JFrame {
         switch (userType){
             case ADMINISTRADOR -> showMedicosView();
             case FARMACEUTA -> showMedicamentosView();
-            case MEDICO -> showPacientesView();
+            case MEDICO -> showPrescribirView();
             default -> throw new IllegalArgumentException("Tipo de usuario no soportado: " + userType);
         }
     }

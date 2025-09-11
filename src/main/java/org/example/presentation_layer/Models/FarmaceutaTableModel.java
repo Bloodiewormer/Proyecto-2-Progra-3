@@ -7,15 +7,16 @@ import java.util.List;
 
 public class FarmaceutaTableModel extends AbstractTableModel {
     private final String[] columnNames = {"ID", "Nombre"};
-    private List<Farmaceuta> farmaceuta;
+    private List<Farmaceuta> farmaceutas;
 
-    public FarmaceutaTableModel(List<Farmaceuta> farmaceuta) {
-        this.farmaceuta = farmaceuta;
+    public FarmaceutaTableModel(List<Farmaceuta> farmaceutas) {
+        this.farmaceutas = farmaceutas;
     }
+
 
     @Override
     public int getRowCount() {
-        return farmaceuta.size();
+        return farmaceutas.size();
     }
 
     @Override
@@ -25,7 +26,7 @@ public class FarmaceutaTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        Farmaceuta m = farmaceuta.get(rowIndex);
+        Farmaceuta m = farmaceutas.get(rowIndex);
         switch (columnIndex) {
             case 0: return m.getId();
             case 1: return m.getNombre();
@@ -39,12 +40,29 @@ public class FarmaceutaTableModel extends AbstractTableModel {
     }
 
     public void setFarmaceuta(List<Farmaceuta> farmaceutas) {
-        this.farmaceuta = farmaceutas;
+        this.farmaceutas = farmaceutas;
         fireTableDataChanged();
         // Notify the table that the data has changed
     }
 
     public Farmaceuta getFarmaceutaAt(int row) {
-        return farmaceuta.get(row);
+        return farmaceutas.get(row);
+    }
+
+
+
+    public void setRows(List<Farmaceuta> data) {
+        farmaceutas.clear();
+        if (data != null) farmaceutas.addAll(data);
+        fireTableDataChanged();
+    }
+
+    private int indexOf(Farmaceuta m) {
+        for (int i = 0; i < farmaceutas.size(); i++) {
+            if (farmaceutas.get(i).getId() == m.getId()) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

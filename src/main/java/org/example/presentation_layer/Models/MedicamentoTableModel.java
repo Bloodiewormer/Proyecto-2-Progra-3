@@ -7,8 +7,8 @@ import java.util.List;
 
 public class MedicamentoTableModel extends AbstractTableModel {
 
-    private final List<Medicamento> medicamentos;
     private final String[] columnas = {"Código", "Nombre", "Presentación"};
+    private List<Medicamento> medicamentos;
 
     public MedicamentoTableModel(List<Medicamento> medicamentos) {
         this.medicamentos = medicamentos;
@@ -35,6 +35,14 @@ public class MedicamentoTableModel extends AbstractTableModel {
         };
     }
 
+
+
+    public void setRows(List<Medicamento> data) {
+        medicamentos.clear();
+        if (data != null) medicamentos.addAll(data);
+        fireTableDataChanged();
+    }
+
     @Override
     public String getColumnName(int column) {
         return columnas[column];
@@ -48,5 +56,14 @@ public class MedicamentoTableModel extends AbstractTableModel {
 
     public Medicamento getMedicamentoAt(int row) {
         return medicamentos.get(row);
+    }
+
+    private int indexOf(Medicamento m) {
+        for (int i = 0; i < medicamentos.size(); i++) {
+            if (medicamentos.get(i).getCodigo() == m.getCodigo()) {
+                return i;
+            }
+        }
+        return -1;
     }
 }
