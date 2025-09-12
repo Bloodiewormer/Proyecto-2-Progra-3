@@ -4,15 +4,18 @@ import org.example.domain_layer.Receta;
 
 import javax.swing.table.AbstractTableModel;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecetaTableModel extends AbstractTableModel {
 
-    private final List<Receta> recetas;
+    private final List<Receta> recetas = new ArrayList<>();
     private final String[] columnas = {"ID", "Fecha Confección", "Fecha Retiro", "Estado"};
 
     public RecetaTableModel(List<Receta> recetas) {
-        this.recetas = recetas;
+        if (recetas != null) {
+            this.recetas.addAll(recetas);
+        }
     }
 
     @Override
@@ -33,8 +36,8 @@ public class RecetaTableModel extends AbstractTableModel {
             case 0 -> r.getId();
             case 1 -> sdf.format(r.getFechaConfeccion());
             case 2 -> sdf.format(r.getFechaRetiro());
-            //lo reviso en un momento
-           // case 3 -> r.getEstado().name();
+            case 3 -> r.getEstado().toString();
+
             default -> null;
         };
     }
@@ -47,4 +50,12 @@ public class RecetaTableModel extends AbstractTableModel {
     public Receta getRecetaAt(int row) {
         return recetas.get(row);
     }
+
+    public void setRecetas(List<Receta> recetas) {
+        this.recetas.clear();
+        this.recetas.addAll(recetas);
+        fireTableDataChanged();
+    }
+
+
 }

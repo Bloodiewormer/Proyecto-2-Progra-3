@@ -80,6 +80,17 @@ public class RecetaService implements IService<Receta> {
         return maxId + 1;
     }
 
+    public List<Receta> buscarPorPacienteId(int pacienteId) {
+        List<Receta> resultado = new ArrayList<>();
+        for (Receta r : leerTodos()) {
+            if (r.getIdPaciente() == pacienteId) { // Corregido
+                resultado.add(r);
+            }
+        }
+        return resultado;
+    }
+
+
 
 
 

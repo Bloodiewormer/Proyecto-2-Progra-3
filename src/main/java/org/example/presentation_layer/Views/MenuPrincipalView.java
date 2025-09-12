@@ -1,6 +1,5 @@
 package org.example.presentation_layer.Views;
 
-import jdk.jfr.ContentType;
 import org.example.presentation_layer.Components.CustomButton;
 import org.example.presentation_layer.Controllers.LoginController;
 import org.example.presentation_layer.Models.UserType;
@@ -8,6 +7,7 @@ import org.example.service_layer.MedicamentoService;
 import org.example.service_layer.PacienteService;
 import org.example.service_layer.RecetaService;
 import org.example.service_layer.UsuarioService;
+import org.example.presentation_layer.Controllers.PrescribirController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,6 +34,7 @@ public class MenuPrincipalView extends JFrame {
     private JButton prescribirButton;
     private JLabel ToggleButton;
     private JLabel MenuLable;
+    private JButton despachoButton;
 
     private boolean menuVisible = false;
     private final int MENU_WIDTH = 150;
@@ -45,7 +46,12 @@ public class MenuPrincipalView extends JFrame {
     private final RecetaService resetaService;
     private int userid;
 
-    public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService, PacienteService pacienteService, MedicamentoService medicamentoService, RecetaService recetaService, int userId)  {
+    public MenuPrincipalView(UserType userType,
+                             LoginController controller,
+                             UsuarioService usuarioService,
+                             PacienteService pacienteService,
+                             MedicamentoService medicamentoService,
+                             RecetaService recetaService, int userId)  {
         this.usuarioService = usuarioService;
         this.pacienteService = pacienteService;
         this.medicamentoService = medicamentoService;
@@ -98,6 +104,7 @@ public class MenuPrincipalView extends JFrame {
         dashboardButton.addActionListener(e -> showDashboardView() );
         acercadeButton.addActionListener(e -> showAcercaDeView() );
         prescribirButton.addActionListener(e -> showPrescribirView() );
+        despachoButton.addActionListener(e -> showDespachoview() );
 
         init(userType);
 
@@ -131,11 +138,12 @@ public class MenuPrincipalView extends JFrame {
         dashboardButton = new CustomButton("Dashboard", new Color(244, 243, 248), Color.BLACK, DashboardIcon);
         acercadeButton = new CustomButton("Acerca de", new Color(244, 243, 248), Color.BLACK,InfoIcon);
         prescribirButton = new CustomButton("Prescribir", new Color(244, 243, 248), Color.BLACK, PrescribirIcon);
+        despachoButton = new CustomButton("Despacho", new Color(244, 243, 248), Color.BLACK, MedicamentoIcon);
 
     }
 
     public void ButtonEnable(UserType userType, boolean enable) {
-        JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton, medicamentosButton, dashboardButton, acercadeButton, prescribirButton, salirButton};
+        JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton, medicamentosButton, dashboardButton, acercadeButton, prescribirButton, salirButton, despachoButton};
         switch (userType) {
             case ADMINISTRADOR:
                 medicosButton.setEnabled(enable);
@@ -145,6 +153,7 @@ public class MenuPrincipalView extends JFrame {
                 dashboardButton.setEnabled(enable);
                 acercadeButton.setEnabled(enable);
                 prescribirButton.setEnabled(false);
+                despachoButton.setEnabled(false);
                 break;
             case FARMACEUTA:
                 medicosButton.setEnabled(false);
@@ -153,6 +162,7 @@ public class MenuPrincipalView extends JFrame {
                 medicamentosButton.setEnabled(false);
                 dashboardButton.setEnabled(enable);
                 acercadeButton.setEnabled(enable);
+                despachoButton.setEnabled(enable);
                 prescribirButton.setEnabled(false);
                 break;
             case MEDICO:
@@ -163,6 +173,7 @@ public class MenuPrincipalView extends JFrame {
                 prescribirButton.setEnabled(enable);
                 dashboardButton.setEnabled(enable);
                 acercadeButton.setEnabled(enable);
+                despachoButton.setEnabled(false);
 
                 break;
             default:
@@ -193,7 +204,7 @@ public class MenuPrincipalView extends JFrame {
             EncogiblePanel.repaint();
 
 
-            JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton, medicamentosButton, dashboardButton, acercadeButton, prescribirButton, salirButton};
+            JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton, medicamentosButton, dashboardButton, despachoButton  ,acercadeButton, prescribirButton, salirButton};
             for (JButton btn : buttons) {
                 if (btn.isEnabled()) {
                     btn.setVisible(menuVisible || currentWidth > 25);
@@ -255,21 +266,37 @@ public class MenuPrincipalView extends JFrame {
         ContentPanel.repaint();
     }
 
-    public void showPrescribirView() {
-
-        PrescribirForm PrescribirForm = new PrescribirForm(usuarioService, pacienteService, medicamentoService,resetaService ,userid);
+    public void showDespachoview() {
+        DespachoForm despachoForm = new DespachoForm(pacienteService ,resetaService, medicamentoService);
         ContentPanel.removeAll();
-        ContentPanel.add( PrescribirForm.getMainPanel());
+        ContentPanel.add(despachoForm.getMainPanel());
         ContentPanel.revalidate();
         ContentPanel.repaint();
     }
+
+    private PrescribirForm PrescribirForm;
+    private PrescribirController PrescribirController;
+
+    public void showPrescribirView() {
+        if (PrescribirForm == null) {
+            PrescribirForm = new PrescribirForm(usuarioService, pacienteService, medicamentoService, resetaService, userid);
+            PrescribirController = new PrescribirController(
+                    PrescribirForm, usuarioService, pacienteService, medicamentoService, resetaService, userid
+            );
+        }
+        ContentPanel.removeAll();
+        ContentPanel.add(PrescribirForm.getMainPanel());
+        ContentPanel.revalidate();
+        ContentPanel.repaint();
+    }
+
 
     public void init ( UserType userType) {
         toggleMenu();
         toggleMenu();
         switch (userType){
             case ADMINISTRADOR -> showMedicosView();
-            case FARMACEUTA -> showMedicamentosView();
+            case FARMACEUTA -> showDespachoview();
             case MEDICO -> showPrescribirView();
             default -> throw new IllegalArgumentException("Tipo de usuario no soportado: " + userType);
         }
