@@ -1,29 +1,72 @@
 package org.example.presentation_layer.Views;
 
-import org.example.domain_layer.Medicamento;
-import org.example.domain_layer.Receta;
-import org.example.service_layer.DashboardService;
-import org.example.service_layer.IServiceObserver;
-import org.example.utilities.ChangeType;
-import org.example.utilities.EstadoReceta;
-
 import javax.swing.*;
-import java.awt.*;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
-// Librerías para los gráficos
+
+// Librerías para los gráficos JFreeChart
+import java.awt.*;
+import java.util.Date;
+
+import com.toedter.calendar.JDateChooser;
+import com.toedter.calendar.JMonthChooser;
+import com.toedter.calendar.JYearChooser;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.general.DefaultPieDataset;
 
-public class DashboardView extends JFrame/* implements IServiceObserver<Object>*/ {
+
+
+
+public class DashboardView extends JPanel/* implements IServiceObserver<Object>*/ {
     private JPanel MainPanel;
+    private JPanel DatosPanel;
+    private JPanel MedicamentosGrapPanel;
+    private JComboBox comboBox1;
+    private JButton agregarButton;
+    private JTable DashBoardTable;
+    private JPanel DesdeYearPicker;
+    private JPanel HastaYearPicker;
+    private JPanel DesdeMesPicker;
+    private JPanel HastaMesPicker;
+    private JComboBox comboBox2;
+    private JButton eliminarSelecionadoButton;
+
+    public DashboardView() {
+        initDatePickers();
+    }
+
+
+    private void initDatePickers() {
+        DesdeYearPicker.setLayout(new BorderLayout());
+        DesdeMesPicker.setLayout(new BorderLayout());
+        HastaYearPicker.setLayout(new BorderLayout());
+        HastaMesPicker.setLayout(new BorderLayout());
+
+        JMonthChooser desdeMes = new JMonthChooser();
+        JYearChooser desdeYear = new JYearChooser();
+        JMonthChooser hastaMes = new JMonthChooser();
+        JYearChooser hastaYear = new JYearChooser();
+
+        DesdeMesPicker.add(desdeMes, BorderLayout.CENTER);
+        DesdeYearPicker.add(desdeYear, BorderLayout.CENTER);
+        HastaMesPicker.add(hastaMes, BorderLayout.CENTER);
+        HastaYearPicker.add(hastaYear, BorderLayout.CENTER);
+
+        DesdeMesPicker.revalidate();
+        DesdeMesPicker.repaint();
+        DesdeYearPicker.revalidate();
+        DesdeYearPicker.repaint();
+        HastaMesPicker.revalidate();
+        HastaMesPicker.repaint();
+        HastaYearPicker.revalidate();
+        HastaYearPicker.repaint();
+    }
+
+
+
+
+
+
 //    private final DashboardService dashboardService;
 //    private JPanel chartPanelContainer;
 //    private JComboBox<String> monthRangeSelector;
@@ -133,4 +176,10 @@ public class DashboardView extends JFrame/* implements IServiceObserver<Object>*
 //    public void onDataChanged(List<Object> entities) {
 //        updateCharts(Collections.emptyList(), Collections.emptyList());
 //    }
+
+    public JPanel  getMainPanel() {return MainPanel;}
+
+
+
+
 }

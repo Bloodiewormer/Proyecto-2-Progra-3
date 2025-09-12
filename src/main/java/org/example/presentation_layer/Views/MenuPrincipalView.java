@@ -39,7 +39,7 @@ public class MenuPrincipalView extends JFrame {
     private JButton historicoRecetasButton;
 
     private boolean menuVisible = false;
-    private final int MENU_WIDTH = 150;
+    private final int MENU_WIDTH = 170;
     private final int ACTUAL_WIDTH = MENU_WIDTH;
 
     private final UsuarioService usuarioService;
@@ -108,6 +108,7 @@ public class MenuPrincipalView extends JFrame {
         prescribirButton.addActionListener(e -> showPrescribirView() );
         despachoButton.addActionListener(e -> showDespachoview() );
         historicoRecetasButton.addActionListener(e ->showHistoricoRecetasView() );
+
 
         init(userType);
     }
@@ -201,7 +202,7 @@ public class MenuPrincipalView extends JFrame {
 
     void toggleMenu() {
         menuVisible = !menuVisible;
-        int targetWidth = menuVisible ? MENU_WIDTH : 25;
+        int targetWidth = menuVisible ? MENU_WIDTH : 30;
         Timer timer = new Timer(10, null);
         timer.addActionListener(e -> {
             int currentWidth = EncogiblePanel.getWidth();
@@ -222,7 +223,7 @@ public class MenuPrincipalView extends JFrame {
             JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton,historicoRecetasButton ,medicamentosButton, dashboardButton, despachoButton  ,acercadeButton, prescribirButton, salirButton};
             for (JButton btn : buttons) {
                 if (btn.isEnabled()) {
-                    btn.setVisible(menuVisible || currentWidth > 25);
+                    btn.setVisible(menuVisible || currentWidth > 30);
                 }
             }
 
@@ -266,9 +267,9 @@ public class MenuPrincipalView extends JFrame {
     }
 
     public void showDashboardView() {
-        //DashboardView dashboardView = new DashboardView();
+        DashboardView dashboardView = new DashboardView();// add service if needed
         ContentPanel.removeAll();
-        //ContentPanel.add(dashboardView.getMainPanel());
+        ContentPanel.add(dashboardView.getMainPanel());
         ContentPanel.revalidate();
         ContentPanel.repaint();
     }
