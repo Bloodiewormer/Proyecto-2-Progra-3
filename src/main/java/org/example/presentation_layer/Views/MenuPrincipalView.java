@@ -1,6 +1,7 @@
 package org.example.presentation_layer.Views;
 
 import org.example.presentation_layer.Components.CustomButton;
+import org.example.presentation_layer.Controllers.HistoricoRecetasController;
 import org.example.presentation_layer.Controllers.LoginController;
 import org.example.presentation_layer.Models.UserType;
 import org.example.service_layer.MedicamentoService;
@@ -35,6 +36,7 @@ public class MenuPrincipalView extends JFrame {
     private JLabel ToggleButton;
     private JLabel MenuLable;
     private JButton despachoButton;
+    private JButton historicoRecetasButton;
 
     private boolean menuVisible = false;
     private final int MENU_WIDTH = 150;
@@ -105,11 +107,19 @@ public class MenuPrincipalView extends JFrame {
         acercadeButton.addActionListener(e -> showAcercaDeView() );
         prescribirButton.addActionListener(e -> showPrescribirView() );
         despachoButton.addActionListener(e -> showDespachoview() );
+        historicoRecetasButton.addActionListener(e ->showHistoricoRecetasView() );
 
         init(userType);
+    }
 
+    private void showHistoricoRecetasView() {
 
-
+        HistoricoRecetasController historicoRecetasController = new HistoricoRecetasController(pacienteService, resetaService);
+        HistoricoRecetasView historicoRecetasView = new HistoricoRecetasView(historicoRecetasController, pacienteService, resetaService, medicamentoService, usuarioService);
+        ContentPanel.removeAll();
+        ContentPanel.add(historicoRecetasView.getMainPanel());
+        ContentPanel.revalidate();
+        ContentPanel.repaint();
     }
 
 
@@ -130,6 +140,7 @@ public class MenuPrincipalView extends JFrame {
         Image InfoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Info.png"))).getImage();
 
 
+
         salirButton = new CustomButton("Salir", new Color(244, 243, 248), Color.BLACK, LogoutIcon);
         medicosButton = new CustomButton("Medicos", new Color(244, 243, 248), Color.BLACK, DoctorIcon);
         farmaceutasButton = new CustomButton("Farmaceutas", new Color(244, 243, 248), Color.BLACK, FarmaceuticoIcon);
@@ -139,11 +150,12 @@ public class MenuPrincipalView extends JFrame {
         acercadeButton = new CustomButton("Acerca de", new Color(244, 243, 248), Color.BLACK,InfoIcon);
         prescribirButton = new CustomButton("Prescribir", new Color(244, 243, 248), Color.BLACK, PrescribirIcon);
         despachoButton = new CustomButton("Despacho", new Color(244, 243, 248), Color.BLACK, MedicamentoIcon);
+        historicoRecetasButton = new CustomButton("Histórico Recetas", new Color(244, 243, 248), Color.BLACK, InfoIcon);
 
     }
 
     public void ButtonEnable(UserType userType, boolean enable) {
-        JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton, medicamentosButton, dashboardButton, acercadeButton, prescribirButton, salirButton, despachoButton};
+        JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton,historicoRecetasButton ,medicamentosButton, dashboardButton, acercadeButton, prescribirButton, salirButton, despachoButton};
         switch (userType) {
             case ADMINISTRADOR:
                 medicosButton.setEnabled(enable);
@@ -154,6 +166,7 @@ public class MenuPrincipalView extends JFrame {
                 acercadeButton.setEnabled(enable);
                 prescribirButton.setEnabled(false);
                 despachoButton.setEnabled(false);
+                historicoRecetasButton.setEnabled(false);
                 break;
             case FARMACEUTA:
                 medicosButton.setEnabled(false);
@@ -163,6 +176,7 @@ public class MenuPrincipalView extends JFrame {
                 dashboardButton.setEnabled(enable);
                 acercadeButton.setEnabled(enable);
                 despachoButton.setEnabled(enable);
+                historicoRecetasButton.setEnabled(enable);
                 prescribirButton.setEnabled(false);
                 break;
             case MEDICO:
@@ -171,6 +185,7 @@ public class MenuPrincipalView extends JFrame {
                 pacientesButton.setEnabled(false);
                 medicamentosButton.setEnabled(false);
                 prescribirButton.setEnabled(enable);
+                historicoRecetasButton.setEnabled(enable);
                 dashboardButton.setEnabled(enable);
                 acercadeButton.setEnabled(enable);
                 despachoButton.setEnabled(false);
@@ -204,7 +219,7 @@ public class MenuPrincipalView extends JFrame {
             EncogiblePanel.repaint();
 
 
-            JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton, medicamentosButton, dashboardButton, despachoButton  ,acercadeButton, prescribirButton, salirButton};
+            JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton,historicoRecetasButton ,medicamentosButton, dashboardButton, despachoButton  ,acercadeButton, prescribirButton, salirButton};
             for (JButton btn : buttons) {
                 if (btn.isEnabled()) {
                     btn.setVisible(menuVisible || currentWidth > 25);

@@ -35,6 +35,7 @@ public class LoginView  extends  JFrame {
             System.err.println("No se pudo cargar el icono: " + e.getMessage());
         }
 
+
         setContentPane(MainPanel);
         setTitle("Login");
         setSize(500, 300);

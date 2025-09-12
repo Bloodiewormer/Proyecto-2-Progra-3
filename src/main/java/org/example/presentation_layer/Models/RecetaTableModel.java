@@ -58,4 +58,7 @@ public class RecetaTableModel extends AbstractTableModel {
     }
 
 
+    public Receta getRecetaById(Integer recetaSeleccionadaId) {
+        return recetas.stream().filter(r -> r.getId() == recetaSeleccionadaId).findFirst().orElse(null);
+    }
 }

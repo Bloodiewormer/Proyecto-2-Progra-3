@@ -8,12 +8,12 @@ import org.example.service_layer.RecetaService;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class HistorialRecetaController {
+public class HistoricoRecetasController {
 
     private final PacienteService pacienteService;
     private final RecetaService recetaService;
 
-    public HistorialRecetaController(PacienteService pacienteService, RecetaService recetaService) {
+    public HistoricoRecetasController(PacienteService pacienteService, RecetaService recetaService) {
         this.pacienteService = pacienteService;
         this.recetaService = recetaService;
     }
@@ -32,7 +32,15 @@ public class HistorialRecetaController {
     public List<Receta> obtenerHistorialRecetas(Paciente paciente) {
         return recetaService.leerTodos()
                 .stream()
-                .filter(r -> r.getPaciente().getId() == paciente.getId())
+                .filter(r -> r.getIdPaciente() == paciente.getId())
                 .collect(Collectors.toList());
+    }
+
+    public List<Receta> obtenerRecetasPorPaciente(Integer pacienteSeleccionadoId) {
+        return recetaService.buscarPorPacienteId(pacienteSeleccionadoId);
+    }
+
+    public List<Receta> obtenerRecetas() {
+        return recetaService.leerTodos();
     }
 }
