@@ -81,4 +81,15 @@ public class PacienteService implements IService<Paciente> {
             obs.onDataChanged(type, entity);
         }
     }
+
+    public List<Paciente> buscarPorNombre(String nombre) {
+        List<Paciente> result = new ArrayList<>();
+        for (Paciente p : leerTodos()) {
+            if (p.getNombre().toLowerCase().contains(nombre.toLowerCase())) {
+                result.add(p);
+            }
+        }
+        return result;
+    }
+
 }

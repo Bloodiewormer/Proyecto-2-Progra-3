@@ -6,6 +6,7 @@ import org.example.presentation_layer.Controllers.LoginController;
 import org.example.presentation_layer.Models.UserType;
 import org.example.service_layer.MedicamentoService;
 import org.example.service_layer.PacienteService;
+import org.example.service_layer.RecetaService;
 import org.example.service_layer.UsuarioService;
 
 import javax.swing.*;
@@ -41,12 +42,14 @@ public class MenuPrincipalView extends JFrame {
     private final UsuarioService usuarioService;
     private final PacienteService pacienteService;
     private final MedicamentoService medicamentoService;
+    private final RecetaService resetaService;
     private int userid;
 
-    public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService, PacienteService pacienteService, MedicamentoService medicamentoService, int userId)  {
+    public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService, PacienteService pacienteService, MedicamentoService medicamentoService, RecetaService recetaService, int userId)  {
         this.usuarioService = usuarioService;
         this.pacienteService = pacienteService;
         this.medicamentoService = medicamentoService;
+        this.resetaService = recetaService;
         this.userid = userId;
         setContentPane(MainPanel);
         setTitle("Login");
@@ -254,7 +257,7 @@ public class MenuPrincipalView extends JFrame {
 
     public void showPrescribirView() {
 
-        PrescribirForm PrescribirForm = new PrescribirForm(usuarioService, pacienteService, medicamentoService, userid);
+        PrescribirForm PrescribirForm = new PrescribirForm(usuarioService, pacienteService, medicamentoService,resetaService ,userid);
         ContentPanel.removeAll();
         ContentPanel.add( PrescribirForm.getMainPanel());
         ContentPanel.revalidate();

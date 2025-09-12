@@ -1,16 +1,14 @@
 package org.example.presentation_layer.Controllers;
 
 import com.sun.istack.localization.NullLocalizable;
-import org.example.data_access_layer.IFileStore;
-import org.example.data_access_layer.MedicamentoFileStore;
-import org.example.data_access_layer.PacienteFileStore;
-import org.example.data_access_layer.UsuarioFileStore;
+import org.example.data_access_layer.*;
 import org.example.domain_layer.*;
 import org.example.presentation_layer.Models.UserType;
 import org.example.presentation_layer.Views.LoginView;
 import org.example.presentation_layer.Views.MenuPrincipalView;
 import org.example.service_layer.MedicamentoService;
 import org.example.service_layer.PacienteService;
+import org.example.service_layer.RecetaService;
 import org.example.service_layer.UsuarioService;
 
 import java.io.File;
@@ -60,16 +58,19 @@ public class LoginController {
         File usuariosFile = new File("usuarios.xml");
         File PacientesFile = new File("pacientes.xml");
         File MedicamentosFile = new File("medicamentos.xml");
+        File RecetasFile = new File("recetas.xml");
 
         IFileStore<Usuario> fileStore = new UsuarioFileStore(usuariosFile);
         IFileStore<Paciente> fileStorePacientes = new PacienteFileStore(PacientesFile);
         IFileStore<Medicamento> fileStoreMedicamentos = new MedicamentoFileStore( MedicamentosFile);
+        IFileStore <Receta> fileStoreRecetas = new RecetaFileStore(RecetasFile);
 
         UsuarioService usuarioService = new UsuarioService(fileStore);
         PacienteService pacienteService = new PacienteService(fileStorePacientes);
         MedicamentoService medicamentoService = new MedicamentoService(fileStoreMedicamentos);
+        RecetaService recetaService = new RecetaService(fileStoreRecetas);
 
-        MenuPrincipalView menu = new MenuPrincipalView(userType, this, usuarioService, pacienteService, medicamentoService, userId);
+        MenuPrincipalView menu = new MenuPrincipalView(userType, this, usuarioService, pacienteService, medicamentoService,recetaService ,userId);
         menu.setVisible(true);
     }
 }

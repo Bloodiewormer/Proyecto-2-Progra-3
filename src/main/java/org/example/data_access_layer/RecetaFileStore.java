@@ -26,6 +26,11 @@ public class RecetaFileStore implements IFileStore<Receta> {
         ensureFile();
     }
 
+    public RecetaFileStore(File file) {
+        this.xmlFile = file;
+        ensureFile();
+    }
+
     @Override
     public List<Receta> readAll() {
         List<Receta> out = new ArrayList<>();

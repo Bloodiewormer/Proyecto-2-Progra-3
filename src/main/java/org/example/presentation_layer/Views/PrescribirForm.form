@@ -3,12 +3,12 @@
   <grid id="27dc6" binding="window" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="1480" height="400"/>
+      <xy x="20" y="20" width="1842" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
     <children>
-      <grid id="18ee9" binding="BuscarPacienteLable" layout-manager="GridLayoutManager" row-count="3" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="18ee9" binding="BuscarPacienteLable" layout-manager="GridLayoutManager" row-count="3" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -40,7 +40,7 @@
           </component>
           <scrollpane id="f6f88">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="4" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -51,30 +51,40 @@
               </component>
             </children>
           </scrollpane>
-          <component id="3b351" class="javax.swing.JButton" binding="cancelButton" custom-create="true" default-binding="true">
+          <component id="e4ae8" class="javax.swing.JButton" binding="buscarPacientMenuButton">
             <constraints>
-              <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Cancel"/>
+              <text value="Buscar"/>
             </properties>
           </component>
-          <component id="e33cb" class="javax.swing.JButton" binding="guardarPacienteButton" custom-create="true">
+          <hspacer id="e80b0">
+            <constraints>
+              <grid row="2" column="2" row-span="1" col-span="2" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </hspacer>
+          <component id="e33cb" class="javax.swing.JButton" binding="guardarPacienteMenuButton" custom-create="true">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <foreground color="-723976"/>
+              <text value="Guardar"/>
+            </properties>
+          </component>
+          <component id="3b351" class="javax.swing.JButton" binding="cancePacienteMenulButton" custom-create="true">
             <constraints>
               <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Guardar"/>
+              <foreground color="-723976"/>
+              <text value="Cancel"/>
             </properties>
           </component>
-          <hspacer id="cbe22">
-            <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-          </hspacer>
         </children>
       </grid>
-      <grid id="b0365" binding="AgregarMedicamento" layout-manager="GridLayoutManager" row-count="3" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="b0365" binding="AgregarMedicamento" layout-manager="GridLayoutManager" row-count="3" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -106,7 +116,7 @@
           </component>
           <scrollpane id="17ef4">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="4" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -117,25 +127,35 @@
               </component>
             </children>
           </scrollpane>
-          <component id="4d7d6" class="javax.swing.JButton" binding="cancelMedicamentoButton" custom-create="true">
+          <component id="8941e" class="javax.swing.JButton" binding="buscarMedicamentoMenuButton">
             <constraints>
-              <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="cancel"/>
+              <text value="Buscar"/>
             </properties>
           </component>
-          <component id="e1531" class="javax.swing.JButton" binding="guardarMedicamentoButton" custom-create="true">
+          <component id="e1531" class="javax.swing.JButton" binding="guardarMedicamentoMenuButton" custom-create="true">
             <constraints>
               <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <foreground color="-723976"/>
               <text value="Guardar"/>
             </properties>
           </component>
-          <hspacer id="8ff59">
+          <component id="4d7d6" class="javax.swing.JButton" binding="cancelMedicamentoMenuButton" custom-create="true">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <foreground color="-723976"/>
+              <text value="cancel"/>
+            </properties>
+          </component>
+          <hspacer id="ed765">
+            <constraints>
+              <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
           </hspacer>
         </children>
@@ -200,20 +220,22 @@
                 </constraints>
                 <properties/>
               </component>
-              <component id="b3078" class="javax.swing.JButton" binding="guardarButton1" custom-create="true" default-binding="true">
+              <component id="b3078" class="javax.swing.JButton" binding="guardarDetallesMenuButton" custom-create="true">
                 <constraints>
                   <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <foreground color="-723976"/>
                   <text value="Guardar"/>
                 </properties>
               </component>
-              <component id="49644" class="javax.swing.JButton" binding="cancerlarButton" custom-create="true" default-binding="true">
+              <component id="49644" class="javax.swing.JButton" binding="detallesButton" custom-create="true">
                 <constraints>
                   <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text value="Cancerlar"/>
+                  <foreground color="-723976"/>
+                  <text value="Cancelar"/>
                 </properties>
               </component>
             </children>
@@ -236,19 +258,21 @@
             <properties/>
             <border type="none" title="Control"/>
             <children>
-              <component id="7cdbe" class="javax.swing.JButton" binding="buscarPacienteButton" custom-create="true" default-binding="true">
+              <component id="7cdbe" class="javax.swing.JButton" binding="buscarMainMenuPacienteButton" custom-create="true">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <foreground color="-394241"/>
                   <text value="Buscar Paciente"/>
                 </properties>
               </component>
-              <component id="3e17a" class="javax.swing.JButton" binding="agregarMedicamentoButton" custom-create="true" default-binding="true">
+              <component id="3e17a" class="javax.swing.JButton" binding="agregarMedicamentoMainMenuButton" custom-create="true">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <foreground color="-394241"/>
                   <text value="Agregar Medicamento"/>
                 </properties>
               </component>
@@ -262,12 +286,12 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="3323b" class="javax.swing.JLabel">
+              <component id="3323b" class="javax.swing.JLabel" binding="PacientePromtPlace">
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="5" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text value=" P"/>
+                  <text value=" Paciente"/>
                 </properties>
               </component>
               <scrollpane id="689a7">
@@ -303,9 +327,9 @@
               <hspacer id="91046">
                 <constraints>
                   <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="1" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false">
-                    <minimum-size width="420" height="-1"/>
-                    <preferred-size width="420" height="-1"/>
-                    <maximum-size width="420" height="-1"/>
+                    <minimum-size width="400" height="-1"/>
+                    <preferred-size width="400" height="-1"/>
+                    <maximum-size width="400" height="-1"/>
                   </grid>
                 </constraints>
               </hspacer>
@@ -316,7 +340,7 @@
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
           </hspacer>
-          <grid id="cf296" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="cf296" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
               <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -324,31 +348,25 @@
             <properties/>
             <border type="none" title="Ajustar Prescripcion"/>
             <children>
-              <component id="b6b6c" class="javax.swing.JButton" binding="guardarButton" custom-create="true" default-binding="true">
+              <component id="b6b6c" class="javax.swing.JButton" binding="guardarMainMenuButton" custom-create="true">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <foreground color="-394241"/>
                   <text value="Guardar"/>
                 </properties>
               </component>
-              <component id="148fc" class="javax.swing.JButton" binding="detallesButton" custom-create="true" default-binding="true">
-                <constraints>
-                  <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <text value="Detalles"/>
-                </properties>
-              </component>
-              <component id="88b85" class="javax.swing.JButton" binding="limpiarButton" custom-create="true" default-binding="true">
+              <component id="88b85" class="javax.swing.JButton" binding="limpiarMainMenuButton" custom-create="true">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <foreground color="-394241"/>
                   <text value="Limpiar"/>
                 </properties>
               </component>
-              <component id="5731e" class="javax.swing.JButton" binding="descartarButton" custom-create="true" default-binding="true">
+              <component id="5731e" class="javax.swing.JButton" binding="descartarMainMenuButton" custom-create="true">
                 <constraints>
                   <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
