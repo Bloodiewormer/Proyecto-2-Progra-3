@@ -69,4 +69,18 @@ public class RecetaService implements IService<Receta> {
             obs.onDataChanged(c,entity);
         }
     }
+
+    public int getNextId() {
+        int maxId = 0;
+        for (Receta r : leerTodos()) {
+            if (r.getId() > maxId) {
+                maxId = r.getId();
+            }
+        }
+        return maxId + 1;
+    }
+
+
+
+
 }

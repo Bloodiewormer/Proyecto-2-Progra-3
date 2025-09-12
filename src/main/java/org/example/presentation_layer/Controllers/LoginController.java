@@ -1,15 +1,14 @@
 package org.example.presentation_layer.Controllers;
 
 import com.sun.istack.localization.NullLocalizable;
-import org.example.data_access_layer.IFileStore;
-import org.example.data_access_layer.UsuarioFileStore;
-import org.example.domain_layer.Administrador;
-import org.example.domain_layer.Farmaceuta;
-import org.example.domain_layer.Medico;
-import org.example.domain_layer.Usuario;
+import org.example.data_access_layer.*;
+import org.example.domain_layer.*;
 import org.example.presentation_layer.Models.UserType;
 import org.example.presentation_layer.Views.LoginView;
 import org.example.presentation_layer.Views.MenuPrincipalView;
+import org.example.service_layer.MedicamentoService;
+import org.example.service_layer.PacienteService;
+import org.example.service_layer.RecetaService;
 import org.example.service_layer.UsuarioService;
 
 import java.io.File;
@@ -54,12 +53,24 @@ public class LoginController {
         return UserType.NULL;
     }
 
-    public void onLoginSuccess(UserType userType, LoginView loginView) {
+    public void onLoginSuccess(UserType userType, LoginView loginView, int userId) {
         loginView.setVisible(false);
-        File usuariosFile = new File("usuarios.xml"); // O el nombre de archivo que uses
+        File usuariosFile = new File("usuarios.xml");
+        File PacientesFile = new File("pacientes.xml");
+        File MedicamentosFile = new File("medicamentos.xml");
+        File RecetasFile = new File("recetas.xml");
+
         IFileStore<Usuario> fileStore = new UsuarioFileStore(usuariosFile);
+        IFileStore<Paciente> fileStorePacientes = new PacienteFileStore(PacientesFile);
+        IFileStore<Medicamento> fileStoreMedicamentos = new MedicamentoFileStore( MedicamentosFile);
+        IFileStore <Receta> fileStoreRecetas = new RecetaFileStore(RecetasFile);
+
         UsuarioService usuarioService = new UsuarioService(fileStore);
-        MenuPrincipalView menu = new MenuPrincipalView(userType, this, usuarioService);
+        PacienteService pacienteService = new PacienteService(fileStorePacientes);
+        MedicamentoService medicamentoService = new MedicamentoService(fileStoreMedicamentos);
+        RecetaService recetaService = new RecetaService(fileStoreRecetas);
+
+        MenuPrincipalView menu = new MenuPrincipalView(userType, this, usuarioService, pacienteService, medicamentoService,recetaService ,userId);
         menu.setVisible(true);
     }
 }

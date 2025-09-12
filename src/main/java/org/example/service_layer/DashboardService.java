@@ -13,8 +13,8 @@ public class DashboardService implements IServiceObserver<Object> {
 
     public DashboardService(RecetaService recetaService, MedicamentoService medicamentoService) {
         // Se suscribe a cambios en recetas y medicamentos
-        recetaService.addObserver(this);
-        medicamentoService.addObserver(this);
+       // recetaService.addObserver(this);
+       // medicamentoService.addObserver(this);
     }
 
     @Override

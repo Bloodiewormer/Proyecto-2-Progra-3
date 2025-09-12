@@ -1,12 +1,154 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.example.presentation_layer.Views.DespachoForm">
-  <grid id="27dc6" binding="MainPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-    <margin top="0" left="0" bottom="0" right="0"/>
+  <grid id="27dc6" binding="MainPanel" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="10" left="10" bottom="10" right="10"/>
     <constraints>
-      <xy x="20" y="20" width="500" height="400"/>
+      <xy x="20" y="20" width="800" height="600"/>
     </constraints>
     <properties/>
     <border type="none"/>
-    <children/>
+    <children>
+      <grid id="searchPanel" binding="searchPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="etched" title="Búsqueda de Paciente"/>
+        <children>
+          <component id="idLabel" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="ID Paciente:"/>
+            </properties>
+          </component>
+          <component id="idField" class="javax.swing.JTextField" binding="idPacienteField">
+            <constraints/>
+            <properties>
+              <columns value="10"/>
+            </properties>
+          </component>
+          <component id="buscarIdBtn" class="javax.swing.JButton" binding="buscarPorIdButton">
+            <constraints/>
+            <properties>
+              <text value="Buscar por ID"/>
+            </properties>
+          </component>
+          <component id="nombreLabel" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="Nombre:"/>
+            </properties>
+          </component>
+          <component id="nombreField" class="javax.swing.JTextField" binding="nombrePacienteField">
+            <constraints/>
+            <properties>
+              <columns value="15"/>
+            </properties>
+          </component>
+          <component id="buscarNombreBtn" class="javax.swing.JButton" binding="buscarPorNombreButton">
+            <constraints/>
+            <properties>
+              <text value="Buscar por Nombre"/>
+            </properties>
+          </component>
+          <component id="limpiarBtn" class="javax.swing.JButton" binding="limpiarButton">
+            <constraints/>
+            <properties>
+              <text value="Limpiar"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="infoPanel" binding="infoPanel" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="5" left="5" bottom="5" right="5"/>
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="etched" title="Información del Paciente"/>
+        <children>
+          <component id="pacienteInfo" class="javax.swing.JLabel" binding="pacienteInfoLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Seleccione un paciente"/>
+            </properties>
+          </component>
+          <component id="telefono" class="javax.swing.JLabel" binding="telefonoLabel">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value=""/>
+            </properties>
+          </component>
+          <component id="fechaNac" class="javax.swing.JLabel" binding="fechaNacimientoLabel">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value=""/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <grid id="tablePanel" binding="tablePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="etched" title="Recetas del Paciente"/>
+        <children>
+          <scrollpane id="tableScroll" binding="scrollPane">
+            <constraints border-constraint="Center"/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="recetasTabla" class="javax.swing.JTable" binding="recetasTable">
+                <constraints/>
+                <properties/>
+              </component>
+            </children>
+          </scrollpane>
+        </children>
+      </grid>
+      <grid id="estadoPanel" binding="estadoPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="etched" title="Cambiar Estado de Receta"/>
+        <children>
+          <component id="estadoLabel" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="Nuevo Estado:"/>
+            </properties>
+          </component>
+          <component id="estadoCombo" class="javax.swing.JComboBox" binding="estadoComboBox">
+            <constraints/>
+            <properties/>
+          </component>
+          <component id="cambiarBtn" class="javax.swing.JButton" binding="cambiarEstadoButton">
+            <constraints/>
+            <properties>
+              <text value="Cambiar Estado"/>
+            </properties>
+          </component>
+          <component id="ayudaLabel" class="javax.swing.JLabel">
+            <constraints/>
+            <properties>
+              <text value="(Seleccione una receta de la tabla)"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <vspacer id="spacer">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+    </children>
   </grid>
 </form>

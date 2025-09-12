@@ -4,11 +4,11 @@ import org.example.domain_layer.Medico;
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
-public class MedicosTableModel extends AbstractTableModel {
+public class MedicoTableModel extends AbstractTableModel {
     private final String[] columnNames = {"ID", "Nombre", "Especialidad"};
     private List<Medico> medicos;
 
-    public MedicosTableModel(List<Medico> medicos) {
+    public MedicoTableModel(List<Medico> medicos) {
         this.medicos = medicos;
     }
 
@@ -41,10 +41,24 @@ public class MedicosTableModel extends AbstractTableModel {
     public void setMedicos(List<Medico> medicos) {
         this.medicos = medicos;
         fireTableDataChanged();
-        // Notify the table that the data has changed
     }
 
     public Medico getMedicoAt(int row) {
         return medicos.get(row);
+    }
+
+    public void setRows(List<Medico> data) {
+        medicos.clear();
+        if (data != null) medicos.addAll(data);
+        fireTableDataChanged();
+    }
+
+    private int indexOf(Medico m) {
+        for (int i = 0; i < medicos.size(); i++) {
+            if (medicos.get(i).getId() == m.getId()) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

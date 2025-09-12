@@ -4,6 +4,9 @@ import jdk.jfr.ContentType;
 import org.example.presentation_layer.Components.CustomButton;
 import org.example.presentation_layer.Controllers.LoginController;
 import org.example.presentation_layer.Models.UserType;
+import org.example.service_layer.MedicamentoService;
+import org.example.service_layer.PacienteService;
+import org.example.service_layer.RecetaService;
 import org.example.service_layer.UsuarioService;
 
 import javax.swing.*;
@@ -36,12 +39,18 @@ public class MenuPrincipalView extends JFrame {
     private final int MENU_WIDTH = 150;
     private final int ACTUAL_WIDTH = MENU_WIDTH;
 
-    private final LoginController controller;
     private final UsuarioService usuarioService;
+    private final PacienteService pacienteService;
+    private final MedicamentoService medicamentoService;
+    private final RecetaService resetaService;
+    private int userid;
 
-    public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService)  {
-        this.controller = controller;
+    public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService, PacienteService pacienteService, MedicamentoService medicamentoService, RecetaService recetaService, int userId)  {
         this.usuarioService = usuarioService;
+        this.pacienteService = pacienteService;
+        this.medicamentoService = medicamentoService;
+        this.resetaService = recetaService;
+        this.userid = userId;
         setContentPane(MainPanel);
         setTitle("Login");
         setSize(680, 400);
@@ -132,16 +141,16 @@ public class MenuPrincipalView extends JFrame {
                 medicosButton.setEnabled(enable);
                 farmaceutasButton.setEnabled(enable);
                 pacientesButton.setEnabled(enable);
-                medicamentosButton.setEnabled(false);
+                medicamentosButton.setEnabled(enable);
                 dashboardButton.setEnabled(enable);
                 acercadeButton.setEnabled(enable);
-                prescribirButton.setEnabled(enable);
+                prescribirButton.setEnabled(false);
                 break;
             case FARMACEUTA:
                 medicosButton.setEnabled(false);
                 farmaceutasButton.setEnabled(false);
                 pacientesButton.setEnabled(false);
-                medicamentosButton.setEnabled(enable);
+                medicamentosButton.setEnabled(false);
                 dashboardButton.setEnabled(enable);
                 acercadeButton.setEnabled(enable);
                 prescribirButton.setEnabled(false);
@@ -149,11 +158,12 @@ public class MenuPrincipalView extends JFrame {
             case MEDICO:
                 medicosButton.setEnabled(false);
                 farmaceutasButton.setEnabled(false);
-                pacientesButton.setEnabled(enable);
-                medicamentosButton.setEnabled(enable);
+                pacientesButton.setEnabled(false);
+                medicamentosButton.setEnabled(false);
+                prescribirButton.setEnabled(enable);
                 dashboardButton.setEnabled(enable);
                 acercadeButton.setEnabled(enable);
-                prescribirButton.setEnabled(enable);
+
                 break;
             default:
                 throw new IllegalArgumentException("Tipo de usuario no soportado: " + userType);
@@ -214,7 +224,7 @@ public class MenuPrincipalView extends JFrame {
     }
 
     public void showPacientesView() {
-        PacienteForm pacienteForm = new PacienteForm();
+        PacienteForm pacienteForm = new PacienteForm(pacienteService);
         ContentPanel.removeAll();
         ContentPanel.add(pacienteForm.getMainPanel());
         ContentPanel.revalidate();
@@ -222,7 +232,7 @@ public class MenuPrincipalView extends JFrame {
     }
 
     public void showMedicamentosView() {
-        MedicamentoForm medicamentoForm = new MedicamentoForm();
+        MedicamentoForm medicamentoForm = new MedicamentoForm(medicamentoService);
         ContentPanel.removeAll();
         ContentPanel.add(medicamentoForm.getMainPanel());
         ContentPanel.revalidate();
@@ -230,9 +240,9 @@ public class MenuPrincipalView extends JFrame {
     }
 
     public void showDashboardView() {
-        DashboardView dashboardView = new DashboardView();
+        //DashboardView dashboardView = new DashboardView();
         ContentPanel.removeAll();
-        ContentPanel.add(dashboardView.getMainPanel());
+        //ContentPanel.add(dashboardView.getMainPanel());
         ContentPanel.revalidate();
         ContentPanel.repaint();
     }
@@ -246,9 +256,10 @@ public class MenuPrincipalView extends JFrame {
     }
 
     public void showPrescribirView() {
-        DespachoForm despachoForm = new DespachoForm();
+
+        PrescribirForm PrescribirForm = new PrescribirForm(usuarioService, pacienteService, medicamentoService,resetaService ,userid);
         ContentPanel.removeAll();
-        ContentPanel.add(despachoForm.getMainPanel());
+        ContentPanel.add( PrescribirForm.getMainPanel());
         ContentPanel.revalidate();
         ContentPanel.repaint();
     }
@@ -259,7 +270,7 @@ public class MenuPrincipalView extends JFrame {
         switch (userType){
             case ADMINISTRADOR -> showMedicosView();
             case FARMACEUTA -> showMedicamentosView();
-            case MEDICO -> showPacientesView();
+            case MEDICO -> showPrescribirView();
             default -> throw new IllegalArgumentException("Tipo de usuario no soportado: " + userType);
         }
     }

@@ -79,4 +79,16 @@ public class UsuarioService implements IService<Usuario> {
             observer.onDataChanged(type, entity);
         }
     }
+
+    public List<Usuario> leerPorTipo(Class<?> tipo) {
+        List<Usuario> resultado = new ArrayList<>();
+        for (Usuario u : fileStore.readAll()) {
+            if (tipo.isInstance(u)) {
+                resultado.add(u);
+            }
+        }
+        return resultado;
+    }
+
+
 }

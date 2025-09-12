@@ -5,8 +5,11 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import org.example.utilities.EstadoReceta;
 
 import java.time.LocalDate;
+import java.util.Date;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,9 +25,9 @@ public class Receta {
     @XmlElement
     private int idMedico;
     @XmlElement
-    private LocalDate fechaConfeccion;
+    private Date fechaConfeccion;
     @XmlElement
-    private LocalDate fechaRetiro;
+    private Date fechaRetiro;
     @XmlElement
     private String estado;
 
@@ -34,7 +37,7 @@ public class Receta {
 
     public Receta() {}
 
-    public Receta(int id, int idPaciente, int idMedico, LocalDate fechaConfeccion, LocalDate fechaRetiro, String estado) {
+    public Receta(int id, int idPaciente, int idMedico, Date fechaConfeccion, Date fechaRetiro, String estado) {
         this.id = id;
         this.idPaciente = idPaciente;
         this.idMedico = idMedico;
@@ -53,14 +56,14 @@ public class Receta {
     public int getIdMedico() { return idMedico; }
     public void setIdMedico(int idMedico) { this.idMedico = idMedico; }
 
-    public LocalDate getFechaConfeccion() { return fechaConfeccion; }
-    public void setFechaConfeccion(LocalDate fechaConfeccion) { this.fechaConfeccion = fechaConfeccion; }
+    public Date getFechaConfeccion() { return fechaConfeccion; }
+    public void setFechaConfeccion(Date fechaConfeccion) { this.fechaConfeccion = fechaConfeccion; }
 
-    public LocalDate getFechaRetiro() { return fechaRetiro; }
-    public void setFechaRetiro(LocalDate fechaRetiro) { this.fechaRetiro = fechaRetiro; }
+    public Date getFechaRetiro() { return fechaRetiro; }
+    public void setFechaRetiro(Date fechaRetiro) { this.fechaRetiro = fechaRetiro; }
 
     public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public void setEstado(EstadoReceta estado) {  this.estado = estado.toString(); }
 
     public List<DetalleReceta> getDetalles() { return detalles; }
     public void setDetalles(List<DetalleReceta> detalles) { this.detalles = detalles; }

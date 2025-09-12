@@ -5,8 +5,8 @@ import org.example.presentation_layer.Components.CustomPaswordField;
 import org.example.presentation_layer.Components.CustomTextField;
 import org.example.presentation_layer.Controllers.LoginController;
 import org.example.presentation_layer.Models.UserType;
-
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 
@@ -15,7 +15,6 @@ public class LoginView  extends  JFrame {
     private JTextField UserIDField;
     private JPasswordField passwordField;
     private JButton LoginButton;
-    private JButton RegistraseButton;
     private JLabel ForgotLable;
     private JLabel CloseProgram;
     private JPanel LoginPanel;
@@ -26,9 +25,16 @@ public class LoginView  extends  JFrame {
 
     private final LoginController controller;
 
-
     public LoginView(LoginController controller) {
         this.controller = controller;
+
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource("/LogoAPP.png"));
+            setIconImage(icon.getImage());
+        } catch (Exception e) {
+            System.err.println("No se pudo cargar el icono: " + e.getMessage());
+        }
+
         setContentPane(MainPanel);
         setTitle("Login");
         setSize(500, 300);
@@ -39,23 +45,17 @@ public class LoginView  extends  JFrame {
         setLocationRelativeTo(null);
 
 
-        RegistraseButton.addActionListener( e -> onRegisterClicked());
         LoginButton.addActionListener(e -> onLoginClicked());
 
-        ForgotLable.addComponentListener(new ComponentAdapter() {
-        });
+
+
+
+        ForgotLable.addComponentListener(new ComponentAdapter() {});
         ForgotLable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                //create change password view and seend the controller to it
                 JFrame changePasswordView = new CambioClaveView( controller);
-
-
-
-
-
-
             }
         });
         CloseProgram.addMouseListener(new MouseAdapter() {
@@ -69,26 +69,39 @@ public class LoginView  extends  JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                //menu con los nombres de los integrantes del grupo
-
                 JOptionPane.showMessageDialog(null,
                         "Group Members:\n" +
                                 "- David Gonzalez Cordoba\n" +
                                 "- Dany Montero Romero\n" +
-                                "- Emmanuel Nunez Jimenez", "Integrantes del grupo", JOptionPane.INFORMATION_MESSAGE);
-
+                                "- Emmanuel Nunez Jimenez", "Integrantes del grupo",
+                        JOptionPane.INFORMATION_MESSAGE);
             }
         });
-    }
+        UserIDField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    onLoginClicked();
+                }
+            }
+        });
 
-    public JPanel getMainPanel() {
-        return MainPanel;
+        passwordField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    onLoginClicked();
+                }
+            }
+        });
+        getRootPane().setDefaultButton(LoginButton);
+
+
     }
 
     private void createUIComponents() {
         LoginButton = new BlueRoundedButton("LOGIN");
         UserIDField = new CustomTextField();
-        RegistraseButton = new BlueRoundedButton("REGISTER");
         passwordField = new CustomPaswordField();
     }
 
@@ -96,7 +109,6 @@ public class LoginView  extends  JFrame {
         String userInput = UserIDField.getText().trim();
         String password = new String(passwordField.getPassword());
         int id;
-
         try {
             id = Integer.parseInt(userInput);
         } catch (NumberFormatException ex) {
@@ -108,35 +120,19 @@ public class LoginView  extends  JFrame {
         if (success) {
             UserType userType = controller.getUserType(id);
             // Delegate navigation to controller
-            controller.onLoginSuccess(userType, this);
+            controller.onLoginSuccess(userType, this, id);
         } else {
             JOptionPane.showMessageDialog(this, "Invalid credentials.");
         }
 
     }
 
-    private void onRegisterClicked() {
-        // Crear y mostrar la nueva ventana
-        //JFrame registerWindow = new RegisterView();
-        //registerWindow.setVisible(true);
-        JOptionPane.showMessageDialog(null, "Opcion de registro no implementada.");
 
+
+    public JPanel getMainPanel() {
+        return MainPanel;
     }
-
     public void showLoginView() {
         new LoginView(this.controller);
     }
-
-
-
-
-
-
-
-
 }
-
-
-// src/main/java/org/example/presentation_layer/Views/LoginView.java
-
-
