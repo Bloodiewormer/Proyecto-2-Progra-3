@@ -3,6 +3,47 @@
     <medicamentos>
         <codigo>1</codigo>
         <nombre>Paracetamol</nombre>
-        <presentacion>Tableta</presentacion>
+        <presentacion>100 mg</presentacion>
+    </medicamentos>
+
+    <medicamentos>
+        <codigo>2</codigo>
+        <nombre>Ibuprofeno</nombre>
+        <presentacion>200 mg</presentacion>
+    </medicamentos>
+    <medicamentos>
+        <codigo>3</codigo>
+        <nombre>Amoxicilina</nombre>
+        <presentacion>500 mg</presentacion>
+    </medicamentos>
+    <medicamentos>
+        <codigo>4</codigo>
+        <nombre>Loratadina</nombre>
+        <presentacion>10 mg</presentacion>
+    </medicamentos>
+    <medicamentos>
+        <codigo>5</codigo>
+        <nombre>Omeprazol</nombre>
+        <presentacion>20 mg</presentacion>
+    </medicamentos>
+    <medicamentos>
+        <codigo>6</codigo>
+        <nombre>Metformina</nombre>
+        <presentacion>500 mg</presentacion>
+    </medicamentos>
+    <medicamentos>
+        <codigo>7</codigo>
+        <nombre>Aspirina</nombre>
+        <presentacion>81 mg</presentacion>
+    </medicamentos>
+    <medicamentos>
+        <codigo>8</codigo>
+        <nombre>Claritromicina</nombre>
+        <presentacion>250 mg</presentacion>
+    </medicamentos>
+    <medicamentos>
+        <codigo>9</codigo>
+        <nombre>Loratadina</nombre>
+        <presentacion>25 mg</presentacion>
     </medicamentos>
 </medicamentos>

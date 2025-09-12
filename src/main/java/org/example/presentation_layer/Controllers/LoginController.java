@@ -55,7 +55,7 @@ public class LoginController {
         return UserType.NULL;
     }
 
-    public void onLoginSuccess(UserType userType, LoginView loginView) {
+    public void onLoginSuccess(UserType userType, LoginView loginView, int userId) {
         loginView.setVisible(false);
         File usuariosFile = new File("usuarios.xml");
         File PacientesFile = new File("pacientes.xml");
@@ -69,7 +69,7 @@ public class LoginController {
         PacienteService pacienteService = new PacienteService(fileStorePacientes);
         MedicamentoService medicamentoService = new MedicamentoService(fileStoreMedicamentos);
 
-        MenuPrincipalView menu = new MenuPrincipalView(userType, this, usuarioService, pacienteService, medicamentoService);
+        MenuPrincipalView menu = new MenuPrincipalView(userType, this, usuarioService, pacienteService, medicamentoService, userId);
         menu.setVisible(true);
     }
 }

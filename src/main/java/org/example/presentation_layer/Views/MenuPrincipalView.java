@@ -41,11 +41,13 @@ public class MenuPrincipalView extends JFrame {
     private final UsuarioService usuarioService;
     private final PacienteService pacienteService;
     private final MedicamentoService medicamentoService;
+    private int userid;
 
-    public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService, PacienteService pacienteService, MedicamentoService medicamentoService)  {
+    public MenuPrincipalView(UserType userType, LoginController controller, UsuarioService usuarioService, PacienteService pacienteService, MedicamentoService medicamentoService, int userId)  {
         this.usuarioService = usuarioService;
         this.pacienteService = pacienteService;
         this.medicamentoService = medicamentoService;
+        this.userid = userId;
         setContentPane(MainPanel);
         setTitle("Login");
         setSize(680, 400);
@@ -251,9 +253,10 @@ public class MenuPrincipalView extends JFrame {
     }
 
     public void showPrescribirView() {
-        DespachoForm despachoForm = new DespachoForm();
+
+        PrescribirForm PrescribirForm = new PrescribirForm(usuarioService, pacienteService, medicamentoService, userid);
         ContentPanel.removeAll();
-        ContentPanel.add(despachoForm.getMainPanel());
+        ContentPanel.add( PrescribirForm.getMainPanel());
         ContentPanel.revalidate();
         ContentPanel.repaint();
     }

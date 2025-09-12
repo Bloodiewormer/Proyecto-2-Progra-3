@@ -120,7 +120,7 @@ public class LoginView  extends  JFrame {
         if (success) {
             UserType userType = controller.getUserType(id);
             // Delegate navigation to controller
-            controller.onLoginSuccess(userType, this);
+            controller.onLoginSuccess(userType, this, id);
         } else {
             JOptionPane.showMessageDialog(this, "Invalid credentials.");
         }
