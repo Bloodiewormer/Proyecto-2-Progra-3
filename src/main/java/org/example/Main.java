@@ -12,7 +12,7 @@ import org.example.service_layer.UsuarioService;
 import javax.swing.*;
 import java.io.File;
 
-//azul usado para botones #004aad
+//Azul usado para botones #004aad
 //Gris claro para fondos #F4F3F8
 
 public class Main {

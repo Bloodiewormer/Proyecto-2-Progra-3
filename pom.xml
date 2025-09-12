@@ -25,6 +25,16 @@
             <artifactId>jaxb-runtime</artifactId>
             <version>4.0.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.jfree</groupId>
+                <artifactId>jfreechart</artifactId>
+            <version>1.5.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.toedter</groupId>
+            <artifactId>jcalendar</artifactId>
+            <version>1.4</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

@@ -2,7 +2,6 @@ package org.example.data_access_layer;
 import org.example.domain_layer.Paciente;
 import java.util.List;
 
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.*;
@@ -22,26 +21,29 @@ public class PacienteFileStore implements IFileStore<Paciente> {
 
     private final File xmlFile;
 
-    public PacienteFileStore(String filePath) {
-        this.xmlFile = new File(filePath);
+    public PacienteFileStore(File xmlFile) {
+        this.xmlFile = xmlFile;
         ensureFile();
     }
 
+    public PacienteFileStore(String fileName) {
+        this(new File(fileName));
+    }
 
 
     @Override
     public List readAll() {
         List<Paciente> out = new ArrayList<>();
         if (xmlFile.length() == 0) return out;
-    try {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(xmlFile);
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(xmlFile);
 
-        JAXBContext ctx = JAXBContext.newInstance(Paciente.class);
-        Unmarshaller u = ctx.createUnmarshaller();
+            JAXBContext ctx = JAXBContext.newInstance(Paciente.class);
+            Unmarshaller u = ctx.createUnmarshaller();
 
-        NodeList pacienteNodes = doc.getElementsByTagName("paciente");
+            NodeList pacienteNodes = doc.getElementsByTagName("paciente");
 
         for (int i = 0; i < pacienteNodes.getLength(); i++) {
             Node pacienteNode = pacienteNodes.item(i);
@@ -55,8 +57,7 @@ public class PacienteFileStore implements IFileStore<Paciente> {
         System.err.println("[WARN] Error leyendo " + xmlFile + ": " + ex.getMessage());
         ex.printStackTrace();
     }
-        return out;
-
+    return out;
     }
 
     @Override
@@ -71,7 +72,7 @@ public class PacienteFileStore implements IFileStore<Paciente> {
             XMLStreamWriter xw = xof.createXMLStreamWriter(out, "UTF-8");
 
             xw.writeStartDocument("UTF-8", "1.0");
-            xw.writeStartElement("paciente");
+            xw.writeStartElement("pacientes");
 
             if (data != null) {
                 for (Paciente p : data) {

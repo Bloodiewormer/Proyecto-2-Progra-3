@@ -2,7 +2,7 @@ package org.example.presentation_layer.Controllers;
 
 import org.example.domain_layer.Medico;
 import org.example.domain_layer.Usuario;
-import org.example.presentation_layer.Models.MedicosTableModel;
+import org.example.presentation_layer.Models.MedicoTableModel;
 import org.example.presentation_layer.Views.MedicoForm;
 import org.example.service_layer.UsuarioService;
 
@@ -12,39 +12,53 @@ import java.util.List;
 
 public class MedicoController {
     private final MedicoForm view;
-    private final MedicosTableModel tableModel;
+    private final MedicoTableModel tableModel;
     private final UsuarioService usuarioService;
 
-    public MedicoController(MedicoForm view, UsuarioService usuarioService) {
+    public MedicoController(MedicoForm view, UsuarioService usuarioService, MedicoTableModel tableModel) {
         this.view = view;
         this.usuarioService = usuarioService;
-        this.tableModel = new MedicosTableModel(new ArrayList<>());
-        this.view.getMedicostable().setModel(tableModel);
+        this.tableModel = tableModel;
         cargarMedicos();
     }
 
     public void guardarMedico() {
         try {
-            int id = Integer.parseInt(view.getIDtextFiel().getText().trim());
+            int id = Integer.parseInt(view.getIDtextField().getText().trim());
+            validarId(id); // Validate before adding
             String nombre = view.getNametextField().getText().trim();
             String especialidad = view.getEspecialidadtextField().getText().trim();
-
             Medico m = new Medico(id, "", nombre, especialidad);
             usuarioService.agregar(m);
-
             cargarMedicos();
             limpiarCampos();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(view, "ID inválido");
+            JOptionPane.showMessageDialog(view, "ID inválido", "Error", JOptionPane.ERROR_MESSAGE);
         } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(view, ex.getMessage());
+            JOptionPane.showMessageDialog(view, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public void limpiarCampos() {
-        view.getIDtextFiel().setText("");
+        view.getIDtextField().setText("");
         view.getEspecialidadtextField().setText("");
         view.getNametextField().setText("");
+    }
+
+    public void actualizarMedico() {
+        try {
+            int id = Integer.parseInt(view.getIDtextField().getText().trim());
+            String nombre = view.getNametextField().getText().trim();
+            String especialidad = view.getEspecialidadtextField().getText().trim();
+            Medico m = new Medico(id, "", nombre, especialidad);
+            usuarioService.actualizar(m);
+            cargarMedicos();
+            limpiarCampos();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(view, "ID inválido", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(view, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void borrarMedico() {
@@ -79,4 +93,34 @@ public class MedicoController {
         }
         tableModel.setMedicos(medicos);
     }
+
+    private void validarId(int id) {
+        for (Usuario u : usuarioService.leerTodos()) {
+            if (u.getId() == id) {
+                throw new IllegalArgumentException("ID ya existe. Por favor, ingrese un ID único.");
+            }
+        }
+    }
+
+    public void generarReporteMedicoSeleccionado() {
+        int row = view.getMedicostable().getSelectedRow();
+        if (row >= 0) {
+            int id = (int) tableModel.getValueAt(row, 0);
+            Usuario u = usuarioService.leerPorId(id);
+            if (u != null) {
+                String reporte = "Reporte de Usuario\n\n" +
+                        "ID: " + u.getId() + "\n" +
+                        "Nombre: " + u.getNombre() + "\n" +
+                        "Tipo: " + u.getClass().getSimpleName() + "\n";
+
+                JOptionPane.showMessageDialog(view, reporte, "Reporte de Usuario", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(view, "No se encontró el usuario seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(view, "Por favor, seleccione un usuario de la tabla.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+
 }

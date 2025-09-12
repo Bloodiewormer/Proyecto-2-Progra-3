@@ -1,4 +1,3 @@
-
 package org.example.presentation_layer.Components;
 import javax.swing.*;
 import java.awt.*;
