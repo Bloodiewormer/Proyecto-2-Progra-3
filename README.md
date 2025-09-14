@@ -2,7 +2,7 @@
 
 ## Library Management System (Java + Interfaz gráfica)
 
-Este proyecto es una evolución del sistema de gestión de bibliotecas realizado para el curso "Programación 3, EIF304, II ciclo 2025" en la Universidad Nacional de Costa Rica. Está implementado en Java e integra una interfaz gráfica que facilita la administración de recursos como libros, revistas, artículos, videos, usuarios y préstamos.
+Este proyecto es una evolución del sistema de gestión de bibliotecas realizado para el curso "Programación 3, EIF206, I ciclo 2025" en la Universidad Nacional de Costa Rica. Está implementado en Java e integra una interfaz gráfica que facilita la administración de recursos como libros, revistas, artículos, videos, usuarios y préstamos.
 
 <!--
 CAPTURAS DE PANTALLA DE LA INTERFAZ
