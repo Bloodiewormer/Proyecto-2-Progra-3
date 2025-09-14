@@ -7,32 +7,45 @@ import org.example.utilities.ChangeType;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DashboardService implements IServiceObserver<Object> {
+public class DashboardService {
 
     private final List<IServiceObserver<Object>> observers = new ArrayList<>();
 
     public DashboardService(RecetaService recetaService, MedicamentoService medicamentoService) {
-        // Se suscribe a cambios en recetas y medicamentos
-       // recetaService.addObserver(this);
-       // medicamentoService.addObserver(this);
+        recetaService.addObserver(new RecetaObserver());
+        medicamentoService.addObserver(new MedicamentoObserver());
     }
 
-    @Override
-    public void onDataChanged(ChangeType type, Object entity) {
-        // Cuando cambia algo, notificamos a los listeners (ej: DashboardView)
-        notifyObservers(type, entity);
+    // Inner observer for Receta
+    private class RecetaObserver implements IServiceObserver<Receta> {
+        @Override
+        public void onDataChanged(ChangeType type, Receta entity) {
+            notifyObservers(type, entity);
+        }
+        @Override
+        public void onDataChanged(List<Receta> entities) {
+            for (Receta entity : entities) {
+                notifyObservers(ChangeType.UPDATED, entity);
+            }
+        }
     }
 
-    @Override
-    public void onDataChanged(List<Object> entities) {
-        // También soportamos notificación en lote
-        for (Object entity : entities) {
-            notifyObservers(ChangeType.UPDATED, entity);
+    // Inner observer for Medicamento
+    private class MedicamentoObserver implements IServiceObserver<Medicamento> {
+        @Override
+        public void onDataChanged(ChangeType type, Medicamento entity) {
+            notifyObservers(type, entity);
+        }
+        @Override
+        public void onDataChanged(List<Medicamento> entities) {
+            for (Medicamento entity : entities) {
+                notifyObservers(ChangeType.UPDATED, entity);
+            }
         }
     }
 
     public void addObserver(IServiceObserver<Object> observer) {
-        if (observer != null) {
+        if (observer != null && !observers.contains(observer)) {
             observers.add(observer);
         }
     }

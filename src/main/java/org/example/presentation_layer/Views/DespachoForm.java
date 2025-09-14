@@ -33,7 +33,7 @@ public class DespachoForm extends JPanel {
     private JLabel fechaNacimientoLabel;
     private JComboBox<EstadoReceta> estadoComboBox;
     private JButton cambiarEstadoButton;
-    private JComboBox comboBox1;
+    private JComboBox<String> searchBycomboBox;
     private JButton buscarButton;
 
     private final PacienteService pacienteService;
@@ -55,7 +55,7 @@ public class DespachoForm extends JPanel {
         this.medicamentoService = medicamentoService;
         this.controller = new DespachoController(recetaService, medicamentoService);
 
-        comboBox1.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
+        searchBycomboBox.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
 
         setLayout(new BorderLayout());
         add(MainPanel, BorderLayout.CENTER);
@@ -89,7 +89,7 @@ public class DespachoForm extends JPanel {
     }
 
     private void buscarPaciente() {
-        String tipo = (String) comboBox1.getSelectedItem();
+        String tipo = (String) searchBycomboBox.getSelectedItem();
         if ("ID".equals(tipo)) {
             buscarPorId();
         } else if ("Nombre".equals(tipo)) {

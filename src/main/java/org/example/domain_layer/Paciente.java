@@ -8,8 +8,9 @@ import jakarta.xml.bind.annotation.*;
 @XmlRootElement
 @XmlSeeAlso({Usuario.class})
 public class Paciente extends Persona {
-
+    @XmlElement
     private String telefono;
+    @XmlElement
     private Date fechaNacimiento;
 
     public Paciente() {}
@@ -22,6 +23,5 @@ public class Paciente extends Persona {
     public String getTelefono() { return telefono; }
 
     public Date getFechaNacimiento() { return fechaNacimiento; }
-    public void setFechaNacimiento(Date fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
 
 }

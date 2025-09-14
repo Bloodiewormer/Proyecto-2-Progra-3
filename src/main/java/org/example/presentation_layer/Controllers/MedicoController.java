@@ -50,7 +50,12 @@ public class MedicoController {
             int id = Integer.parseInt(view.getIDtextField().getText().trim());
             String nombre = view.getNametextField().getText().trim();
             String especialidad = view.getEspecialidadtextField().getText().trim();
-            Medico m = new Medico(id, "", nombre, especialidad);
+            Usuario existing = usuarioService.leerPorId(id);
+            if (!(existing instanceof Medico)) {
+                throw new IllegalArgumentException("Medico not found.");
+            }
+            String password = existing.getPassword();
+            Medico m = new Medico(id,password, nombre, especialidad);
             usuarioService.actualizar(m);
             cargarMedicos();
             limpiarCampos();

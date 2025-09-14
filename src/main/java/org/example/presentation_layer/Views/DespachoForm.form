@@ -21,7 +21,7 @@
               <text value="Buscar Por:"/>
             </properties>
           </component>
-          <component id="4a51c" class="javax.swing.JComboBox" binding="comboBox1">
+          <component id="4a51c" class="javax.swing.JComboBox" binding="searchBycomboBox">
             <constraints/>
             <properties/>
           </component>

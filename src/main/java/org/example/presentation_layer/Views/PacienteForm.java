@@ -13,89 +13,90 @@ import java.awt.*;
 import java.util.Date;
 
 public class PacienteForm extends JPanel {
-    private JPanel MainPanel;
-    private JPanel BanerPanel;
-    private JPanel PacientePanel;
-    private JPanel TablePacientes;
-    private JTable Pacientestable;
-    private JPanel BusquedaPaciente;
-    private JTextField BuscarTextField;
-    private JButton buscarButton;
-    private JButton reporteButton;
-    private JPanel ManagerPaciente;
-    private JTextField IDTextField;
+    private JPanel mainPanel;
+    @SuppressWarnings( "unused" )
+    private JPanel bannerPanel;
+    @SuppressWarnings( "unused" )
+    private JPanel patientPanel;
+    @SuppressWarnings( "unused" )
+    private JPanel tablePacientesPanel;
+    @SuppressWarnings( "unused" )
+    private JPanel busquedaPacientePanel;
+    @SuppressWarnings( "unused" )
+    private JPanel managerPacientePanel;
+    private JPanel datePickerPanel;
+    private JTextField phoneTextField;
+    private JTextField buscarTextField;
+    private JTextField idTextField;
     private JTextField NameTextField;
     private JButton guardarButton;
     private JButton limpiarButton;
     private JButton borrarButton;
-    private JTextField PhoneField;
-    private JPanel DatePickerPanel;
+    private JButton buscarButton;
+    private JButton reporteButton;
     private JButton actualizarButton;
-    private JDateChooser DatePicker;
+    private JTable patientsTable;
 
-
-    private PacienteTableModel pacienteModel;
+    private JDateChooser datePicker;
+    private final PacienteTableModel pacienteModel;
     private final PacienteController pacienteController;
 
-    public PacienteForm(PacienteService pacienteService) {
-        this.pacienteModel = new PacienteTableModel(pacienteService.leerTodos());
-        this.pacienteController = new PacienteController(this, pacienteService, pacienteModel);
+
+    public PacienteForm(PacienteService patientService) {
         initDatePickers();
+        initListeners();
 
-        Pacientestable.setModel(pacienteModel);
+        this.pacienteModel = new PacienteTableModel(patientService.leerTodos());
+        this.pacienteController = new PacienteController(this, patientService, pacienteModel);
 
-        buscarButton.addActionListener(e -> pacienteController.buscarPaciente());
-        guardarButton.addActionListener(e -> pacienteController.guardarPaciente());
-        limpiarButton.addActionListener(e -> pacienteController.limpiarCampos());
-        borrarButton.addActionListener(e -> pacienteController.borrarPaciente());
-        actualizarButton.addActionListener(e -> pacienteController.actualizarPaciente());
-        reporteButton.addActionListener(e -> pacienteController.generarReportePacienteSeleccionado() );
-        Pacientestable.getSelectionModel().addListSelectionListener(this::onTableSelection);
+        patientsTable.setModel(pacienteModel);
     }
+
+    private void initListeners() {
+        buscarButton.addActionListener(_ -> pacienteController.buscarPaciente());
+        guardarButton.addActionListener(_ -> pacienteController.guardarPaciente());
+        limpiarButton.addActionListener(_ -> pacienteController.limpiarCampos());
+        borrarButton.addActionListener(_ -> pacienteController.borrarPaciente());
+        actualizarButton.addActionListener(_ -> pacienteController.actualizarPaciente());
+        reporteButton.addActionListener(_ -> pacienteController.generarReportePacienteSeleccionado() );
+        patientsTable.getSelectionModel().addListSelectionListener(this::onTableSelection);
+    }
+
+
     //Selectores de fecha
     private void initDatePickers() {
-        DatePickerPanel.setLayout(new BorderLayout());
+        datePickerPanel.setLayout(new BorderLayout());
 
-        DatePicker = new JDateChooser();
-        DatePicker.setDate(new Date());
-        DatePickerPanel.add(DatePicker, BorderLayout.CENTER);
+        datePicker = new JDateChooser();
+        datePicker.setDate(new Date());
+        datePickerPanel.add(datePicker, BorderLayout.CENTER);
 
-        DatePickerPanel.revalidate();
-        DatePickerPanel.repaint();
+        datePickerPanel.revalidate();
+        datePickerPanel.repaint();
     }
 
     private void onTableSelection(ListSelectionEvent e) {
         if (e.getValueIsAdjusting()) return;
         if (pacienteModel == null) return;
-        int row = Pacientestable.getSelectedRow();
+        int row = patientsTable.getSelectedRow();
         if (row < 0) return;
         Paciente p = pacienteModel.getPacienteAt(row);
         if (p == null) return;
 
-        IDTextField.setText(String.valueOf(p.getId()));
+        idTextField.setText(String.valueOf(p.getId()));
         NameTextField.setText(p.getNombre());
-        PhoneField.setText(p.getTelefono());
-        DatePicker.setDate(p.getFechaNacimiento());
+        phoneTextField.setText(p.getTelefono());
+        datePicker.setDate(p.getFechaNacimiento());
     }
 
-
-
-
-
-    public JTable getPacientestable() { return Pacientestable; }
-    public JTextField getBuscartextField() { return BuscarTextField; }
-    public JTextField getIDtextFiel() { return IDTextField; }
-    public JTextField getNametextField() { return NameTextField; }
-    public JTextField getTelefonotextField() { return PhoneField; }
-    public JDateChooser getDatePicker() { return DatePicker; }
+    public JTable getPatientsTable() { return patientsTable; }
+    public JTextField getBuscarTextField() { return buscarTextField; }
+    public JTextField getIdTextField() { return idTextField; }
+    public JTextField getNameTextField() { return NameTextField; }
+    public JTextField getTelefonoTextField() { return phoneTextField; }
+    public JDateChooser getDatePicker() { return datePicker; }
     public JButton getBuscarButton() { return buscarButton; }
-    public JButton getReporteButton() { return reporteButton; }
-    public JButton getGuardarButton() { return guardarButton; }
-    public JButton getLimpiarButton() { return limpiarButton; }
-    public JButton getBorrarButton() { return borrarButton; }
-    public JPanel getMainPanel() { return MainPanel; }
-
-
+    public JPanel getMainPanel() { return mainPanel; }
 
     private void createUIComponents() {
         buscarButton = new BlueRoundedButton( "Buscar");
@@ -106,7 +107,4 @@ public class PacienteForm extends JPanel {
         actualizarButton = new BlueRoundedButton( "Actualizar");
 
     }
-
-
-
 }

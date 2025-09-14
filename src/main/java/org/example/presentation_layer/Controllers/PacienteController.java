@@ -25,9 +25,9 @@ public class PacienteController {
 
     public void guardarPaciente() {
         try {
-            int id = Integer.parseInt(view.getIDtextFiel().getText().trim());
-            String nombre = view.getNametextField().getText().trim();
-            String telefono = view.getTelefonotextField().getText().trim();
+            int id = Integer.parseInt(view.getIdTextField().getText().trim());
+            String nombre = view.getNameTextField().getText().trim();
+            String telefono = view.getTelefonoTextField().getText().trim();
             Date fechaNacimiento = view.getDatePicker().getDate();
 
             Paciente p = new Paciente(id, nombre, telefono, fechaNacimiento);
@@ -47,9 +47,9 @@ public class PacienteController {
     public void actualizarPaciente() {
    // Implementar la lógica para actualizar un paciente ya existente
         try {
-            int id = Integer.parseInt(view.getIDtextFiel().getText().trim());
-            String nombre = view.getNametextField().getText().trim();
-            String telefono = view.getTelefonotextField().getText().trim();
+            int id = Integer.parseInt(view.getIdTextField().getText().trim());
+            String nombre = view.getNameTextField().getText().trim();
+            String telefono = view.getTelefonoTextField().getText().trim();
             Date fechaNacimiento = view.getDatePicker().getDate();
 
             Paciente p = new Paciente(id, nombre, telefono, fechaNacimiento);
@@ -69,7 +69,7 @@ public class PacienteController {
     }
 
     public void borrarPaciente() {
-        int row = view.getPacientestable().getSelectedRow();
+        int row = view.getPatientsTable().getSelectedRow();
         if (row >= 0) {
             int id = (int) tableModel.getValueAt(row, 0);
             pacienteService.borrar(id);
@@ -79,7 +79,7 @@ public class PacienteController {
     }
 
     public  void buscarPaciente() {
-        String filtro = view.getBuscartextField().getText().toLowerCase().trim();
+        String filtro = view.getBuscarTextField().getText().toLowerCase().trim();
         if (filtro.isEmpty()) {
             cargarPacientes();
             return;
@@ -95,18 +95,15 @@ public class PacienteController {
     }
 
     public void limpiarCampos() {
-        view.getIDtextFiel().setText("");
-        view.getNametextField().setText("");
-        view.getTelefonotextField().setText("");
+        view.getIdTextField().setText("");
+        view.getNameTextField().setText("");
+        view.getTelefonoTextField().setText("");
         view.getDatePicker().setDate(new Date());
     }
 
 
     private void cargarPacientes() {
-        List<Paciente> pacientes = new ArrayList<>();
-        for (Paciente p : pacienteService.leerTodos()) {
-            pacientes.add(p);
-        }
+        List<Paciente> pacientes = new ArrayList<>(pacienteService.leerTodos());
         tableModel.setPacientes(pacientes);
     }
 
@@ -136,7 +133,7 @@ public class PacienteController {
     }
 
     public void generarReportePacienteSeleccionado() {
-        int row = view.getPacientestable().getSelectedRow();
+        int row = view.getPatientsTable().getSelectedRow();
         if (row >= 0) {
             int id = (int) tableModel.getValueAt(row, 0);
             Paciente u = pacienteService.leerPorId(id);

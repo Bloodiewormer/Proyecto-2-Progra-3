@@ -6,6 +6,7 @@ import org.example.domain_layer.Medicamento;
 import org.example.domain_layer.Paciente;
 import org.example.presentation_layer.Components.BlueRoundedButton;
 import org.example.presentation_layer.Components.CustomTextField;
+import org.example.presentation_layer.Controllers.PrescribirController;
 import org.example.presentation_layer.Models.DetalleRecetaTableModel;
 import org.example.presentation_layer.Models.MedicamentoTableModel;
 import org.example.presentation_layer.Models.PacienteTableModel;
@@ -26,38 +27,38 @@ public class PrescribirForm extends JPanel {
     private JPanel controlPanel;
     private JButton buscarMainMenuPacienteButton;
     private JButton agregarMedicamentoMainMenuButton;
-    private JPanel RectaPanel;
+    private JPanel rectaPanel;
     private JTable MedicamentoRecetatable;
     private JButton guardarMainMenuButton;
     private JButton detallesButton;
     private JButton limpiarMainMenuButton;
     private JButton descartarMainMenuButton;
 
-    private JPanel BuscarPacienteLable;
+    private JPanel buscarPatientPanel;
     private JComboBox<String> filtrarPacientecomboBox;
     private JTextField busquedaPacientetextField;
     private JTable pacientesTable;
 
-    private JPanel AgregarMedicamento;
+    private JPanel agregarMedicamentoPanel;
     private JComboBox<String> FiltraMedicamentoComboBox;
     private JTextField BusquedaMedicamentoTextField;
     private JTable MedicamentosTable;
 
     private JSpinner catidadSpinner;
-    private JSpinner DuracionSpinner;
+    private JSpinner duracionSpinner;
     private JTextField textField1; // Indicaciones
     private JButton guardarDetallesMenuButton;
     private JButton cancerlarButton;
 
-    private JPanel DetallePanel;
+    private JPanel detallePanel;
     private JButton cancePacienteMenulButton;
     private JButton guardarPacienteMenuButton;
     private JButton cancelMedicamentoMenuButton;
     private JButton guardarMedicamentoMenuButton;
 
-    private JPanel window;
-    private JPanel DatePickerPanel;
-    private JLabel PacientePromtPlace;
+    private JPanel rootPanel;
+    private JPanel datePickerPanel;
+    private JLabel pacientePromtPlace;
     private JButton buscarPacientMenuButton;
     private JButton buscarMedicamentoMenuButton;
 
@@ -71,18 +72,22 @@ public class PrescribirForm extends JPanel {
     private JDialog agregarMedicamentoDialog;
     private JDialog detalleDialog;
 
+    private PrescribirController controller;
+
     public PrescribirForm(UsuarioService usuarioService,
                           PacienteService pacienteService,
                           MedicamentoService medicamentoService,
                           RecetaService recetaService,
                           int idMedico) {
+
+        controller = new PrescribirController(this, usuarioService, pacienteService, medicamentoService, recetaService, idMedico);
         MedicamentoRecetatable.setModel(new DetalleRecetaTableModel(detalleRecetaList));
         initDatePicker();
         MedicamentosTable.setModel(new MedicamentoTableModel(medicamentoService.leerTodos()));
         pacientesTable.setModel(new PacienteTableModel(pacienteService.leerTodos()));
 
         catidadSpinner.setModel(new SpinnerNumberModel(1, 1, 1000, 1));
-        DuracionSpinner.setModel(new SpinnerNumberModel(1, 1, 365, 1));
+        duracionSpinner.setModel(new SpinnerNumberModel(1, 1, 365, 1));
 
         filtrarPacientecomboBox.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
         FiltraMedicamentoComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
@@ -111,9 +116,9 @@ public class PrescribirForm extends JPanel {
     public JComboBox<String> getFiltrarPacientecomboBox() { return filtrarPacientecomboBox; }
     public JComboBox<String> getFiltraMedicamentoComboBox() { return FiltraMedicamentoComboBox; }
     public JSpinner getCatidadSpinner() { return catidadSpinner; }
-    public JSpinner getDuracionSpinner() { return DuracionSpinner; }
+    public JSpinner getDuracionSpinner() { return duracionSpinner; }
     public JTextField getIndicacionesField() { return textField1; }
-    public JLabel getPacientePromtPlace() { return PacientePromtPlace; }
+    public JLabel getPacientePromtPlace() { return pacientePromtPlace; }
     public JDateChooser getDatePicker() { return DatePicker; }
     public List<DetalleReceta> getDetalleRecetaList() { return detalleRecetaList; }
     public Medicamento getCurrentMedicamento() { return currentMedicamento; }
@@ -125,7 +130,7 @@ public class PrescribirForm extends JPanel {
     // --- Dialog Builders (for controller to call) ---
     public void showBuscarPacienteDialog() {
         if (buscarPacienteDialog == null) {
-            buscarPacienteDialog = buildDialog("Buscar Paciente", BuscarPacienteLable);
+            buscarPacienteDialog = buildDialog("Buscar Paciente", buscarPatientPanel);
         }
         if (!buscarPacienteDialog.isVisible()) buscarPacienteDialog.setVisible(true);
         else buscarPacienteDialog.toFront();
@@ -133,7 +138,7 @@ public class PrescribirForm extends JPanel {
 
     public void showAgregarMedicamentoDialog() {
         if (agregarMedicamentoDialog == null) {
-            agregarMedicamentoDialog = buildDialog("Agregar Medicamento", AgregarMedicamento);
+            agregarMedicamentoDialog = buildDialog("Agregar Medicamento", agregarMedicamentoPanel);
         }
         if (!agregarMedicamentoDialog.isVisible()) agregarMedicamentoDialog.setVisible(true);
         else agregarMedicamentoDialog.toFront();
@@ -141,7 +146,7 @@ public class PrescribirForm extends JPanel {
 
     public void showDetalleDialog() {
         if (detalleDialog == null) {
-            detalleDialog = buildDialog("Detalle Medicamento", DetallePanel);
+            detalleDialog = buildDialog("Detalle Medicamento", detallePanel);
         }
         if (!detalleDialog.isVisible()) detalleDialog.setVisible(true);
         else detalleDialog.toFront();
@@ -165,8 +170,8 @@ public class PrescribirForm extends JPanel {
     private void initDatePicker() {
         DatePicker = new JDateChooser();
         DatePicker.setDate(new Date());
-        DatePickerPanel.setLayout(new BorderLayout());
-        DatePickerPanel.add(DatePicker, BorderLayout.CENTER);
+        datePickerPanel.setLayout(new BorderLayout());
+        datePickerPanel.add(DatePicker, BorderLayout.CENTER);
     }
 
     private void createUIComponents() {
@@ -184,5 +189,6 @@ public class PrescribirForm extends JPanel {
         guardarMedicamentoMenuButton = new BlueRoundedButton("Guardar");
         busquedaPacientetextField = new CustomTextField();
         BusquedaMedicamentoTextField = new CustomTextField();
+        buscarMedicamentoMenuButton = new BlueRoundedButton("Buscar Medicamento");
     }
 }

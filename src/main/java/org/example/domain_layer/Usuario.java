@@ -2,6 +2,8 @@ package org.example.domain_layer;
 
 import jakarta.xml.bind.annotation.*;
 
+import java.text.MessageFormat;
+
 @XmlRootElement(name = "usuario")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlSeeAlso({Administrador.class, Medico.class, Farmaceuta.class})
@@ -27,10 +29,6 @@ public class Usuario extends  Persona {
 
     @Override
     public String toString() {
-        return "Usuario{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", password='" + password + '\'' +
-                '}';
+        return MessageFormat.format("Usuario'{'id={0}, nombre=''{1}'', password=''{2}'''}'", id, nombre, password);
     }
 }

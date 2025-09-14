@@ -1,6 +1,8 @@
 package org.example.domain_layer;
 import jakarta.xml.bind.annotation.*;
 
+import java.text.MessageFormat;
+
 @XmlAccessorType (XmlAccessType.FIELD)
 @XmlSeeAlso({Usuario.class})
 
@@ -26,9 +28,6 @@ public class Persona {
 
     @Override
     public String toString() {
-        return "Persona{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                '}';
+        return MessageFormat.format("Persona'{'id={0}, nombre=''{1}'''}'", id, nombre);
     }
 }

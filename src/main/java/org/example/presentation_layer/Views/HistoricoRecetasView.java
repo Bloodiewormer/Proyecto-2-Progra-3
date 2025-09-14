@@ -227,71 +227,10 @@ public class HistoricoRecetasView extends JPanel {
         JOptionPane.showMessageDialog(this, msg);
     }
 
-
     private void createUIComponents() {
         DetallesButton = new BlueRoundedButton("Historico Recetas");
         buscarButton = new BlueRoundedButton("Historico Recetas");
 
 
     }
-
-
-
-
-
-
-
-
-//    private void buscarPaciente() {
-//        String criterio = (String) comboBusqueda.getSelectedItem();
-//        String valor = txtBusqueda.getText().trim();
-//
-//        if (valor.isEmpty()) {
-//            JOptionPane.showMessageDialog(this, "Ingrese un valor de búsqueda", "Error", JOptionPane.ERROR_MESSAGE);
-//            return;
-//        }
-//
-//        Paciente paciente = null;
-//
-//        try {
-//            if ("Buscar por ID".equals(criterio)) {
-//                int id = Integer.parseInt(valor);
-//                paciente = controller.buscarPacientePorId(id);
-//            } else {
-//                List<Paciente> pacientes = controller.buscarPacientePorNombre(valor);
-//                if (pacientes.size() == 1) {
-//                    paciente = pacientes.get(0);
-//                } else if (pacientes.size() > 1) {
-//                    JOptionPane.showMessageDialog(this, "Se encontraron varios pacientes con ese nombre", "Atención", JOptionPane.INFORMATION_MESSAGE);
-//                    return;
-//                }
-//            }
-//        } catch (NumberFormatException ex) {
-//            JOptionPane.showMessageDialog(this, "El ID debe ser un número válido", "Error", JOptionPane.ERROR_MESSAGE);
-//            return;
-//        }
-//
-//        if (paciente == null) {
-//            JOptionPane.showMessageDialog(this, "Paciente no encontrado", "Error", JOptionPane.ERROR_MESSAGE);
-//            return;
-//        }
-//
-//        mostrarHistorial(paciente);
-//    }
-//
-//    private void mostrarHistorial(Paciente paciente) {
-//        modeloTabla.setRowCount(0);
-//        List<Receta> recetas = controller.obtenerHistorialRecetas(paciente);
-//
-//        for (Receta r : recetas) {
-//            modeloTabla.addRow(new Object[]{
-//                    r.getId(),
-//                    r.getFecha(),
-//                    r.getEstado(),
-//                    r.getMedicamentos().toString()
-//            });
-//        }
-//    }
-
-
 }

@@ -1,6 +1,7 @@
 package org.example.presentation_layer.Controllers;
 
 import org.example.domain_layer.Farmaceuta;
+import org.example.domain_layer.Medico;
 import org.example.domain_layer.Usuario;
 import org.example.presentation_layer.Models.FarmaceutaTableModel;
 import org.example.presentation_layer.Views.FarmaceutaForm;
@@ -44,7 +45,12 @@ public class FarmaceutaController {
         try {
             int id = Integer.parseInt(view.getIDtextFiel().getText().trim());
             String nombre = view.getNametextField().getText().trim();
-            Farmaceuta m = new Farmaceuta(id, "", nombre);
+            Usuario existing = usuarioService.leerPorId(id);
+            if (!(existing instanceof Farmaceuta)) {
+                throw new IllegalArgumentException("Farmaceuta not found.");
+            }
+            String password = existing.getPassword();
+            Farmaceuta m = new Farmaceuta(id, password, nombre);
             usuarioService.actualizar(m);
             cargarFarmaceuta();
             limpiarCampos();
