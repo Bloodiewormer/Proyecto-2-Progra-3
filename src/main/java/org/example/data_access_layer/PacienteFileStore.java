@@ -8,17 +8,21 @@ import javax.xml.stream.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.List;
+
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
-import org.example.domain_layer.Usuario;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+@SuppressWarnings("ClassCanBeRecord")
 public class PacienteFileStore implements IFileStore<Paciente> {
 
+    private static final Logger LOGGER = Logger.getLogger(PacienteFileStore.class.getName());
     private final File xmlFile;
 
     public PacienteFileStore(File xmlFile) {
@@ -26,13 +30,8 @@ public class PacienteFileStore implements IFileStore<Paciente> {
         ensureFile();
     }
 
-    public PacienteFileStore(String fileName) {
-        this(new File(fileName));
-    }
-
-
     @Override
-    public List readAll() {
+    public List<Paciente> readAll() {
         List<Paciente> out = new ArrayList<>();
         if (xmlFile.length() == 0) return out;
         try {
@@ -44,7 +43,6 @@ public class PacienteFileStore implements IFileStore<Paciente> {
             Unmarshaller u = ctx.createUnmarshaller();
 
             NodeList pacienteNodes = doc.getElementsByTagName("paciente");
-
         for (int i = 0; i < pacienteNodes.getLength(); i++) {
             Node pacienteNode = pacienteNodes.item(i);
             if (pacienteNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -54,8 +52,7 @@ public class PacienteFileStore implements IFileStore<Paciente> {
         }
 
     } catch (Exception ex) {
-        System.err.println("[WARN] Error leyendo " + xmlFile + ": " + ex.getMessage());
-        ex.printStackTrace();
+            LOGGER.log(Level.WARNING, "Error leyendo " + xmlFile, ex);
     }
     return out;
     }
@@ -79,33 +76,32 @@ public class PacienteFileStore implements IFileStore<Paciente> {
                     m.marshal(p, xw);
                 }
             }
-
             xw.writeEndElement();
             xw.writeEndDocument();
             xw.flush();
             xw.close();
         } catch (Exception ex) {
-            System.err.println("[WARN] Error escribiendo " + xmlFile);
-            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error escribiendo " + xmlFile, ex);
         }
     }
-
-
 
     private void ensureFile() {
         try {
             File parent = xmlFile.getParentFile();
-
-            if (parent != null) {
-                parent.mkdirs();
+            if (parent != null && !parent.exists()) {
+                if (!parent.mkdirs()) {
+                    LOGGER.warning(() -> String.format("Failed to create directories for %s", parent));
+                }
             }
-
             if (!xmlFile.exists()) {
-                xmlFile.createNewFile();
-                writeAll(new ArrayList<>());
+                if (!xmlFile.createNewFile()) {
+                    LOGGER.warning(() -> String.format("Failed to create file %s", xmlFile));
+                } else {
+                    writeAll(new ArrayList<>());
+                }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, String.format("Error ensuring file %s", xmlFile), ex);
+        }
     }
-
-
 }

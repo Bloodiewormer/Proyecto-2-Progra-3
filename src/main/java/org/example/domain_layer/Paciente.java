@@ -10,19 +10,18 @@ import jakarta.xml.bind.annotation.*;
 public class Paciente extends Persona {
 
     private String telefono;
-    private Date fechanacimiento;
+    private Date fechaNacimiento;
 
     public Paciente() {}
 
-    public Paciente(int id, String nombre, String telefono, Date fechanacimiento) {
+    public Paciente(int id, String nombre, String telefono, Date fechaNacimiento) {
         super(id, nombre);
         this.telefono = telefono;
-        this.fechanacimiento = fechanacimiento;
+        this.fechaNacimiento = fechaNacimiento;
     }
     public String getTelefono() { return telefono; }
-    public void setTelefono(String telefono) { this.telefono = telefono; }
 
-    public Date getFechanacimiento() { return fechanacimiento; }
-    public void setFechanacimiento(Date fechanacimiento) { this.fechanacimiento = fechanacimiento; }
+    public Date getFechaNacimiento() { return fechaNacimiento; }
+    public void setFechaNacimiento(Date fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
 
 }

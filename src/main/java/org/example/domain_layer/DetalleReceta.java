@@ -16,8 +16,9 @@ public class DetalleReceta {
     @XmlElement
     private int dias;
 
+    @SuppressWarnings("unused")
     public DetalleReceta() {}
-
+    @SuppressWarnings( "unused")
     public DetalleReceta(Medicamento medicamento, int cantidad, String indicaciones, int dias) {
         this.medicamento = medicamento;
         this.cantidad = cantidad;

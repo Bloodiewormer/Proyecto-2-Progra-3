@@ -113,7 +113,7 @@ public class MedicamentoController {
             int id = (int) tableModel.getValueAt(row, 0);
             Medicamento u = service.leerPorId(id);
             if (u != null) {
-                String reporte = "Reporte de Usuario\n\n" +
+                String reporte = "Reporte de Medicamento\n\n" +
                         "ID: " + u.getCodigo() + "\n" +
                         "Nombre: " + u.getNombre() + "\n" +
                         "Tipo: " + u.getClass().getSimpleName() + "\n";

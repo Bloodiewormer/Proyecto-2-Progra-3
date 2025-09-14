@@ -19,6 +19,7 @@ import com.toedter.calendar.JMonthChooser;
 import com.toedter.calendar.JYearChooser;
 import org.example.domain_layer.Medicamento;
 import org.example.domain_layer.Receta;
+import org.example.presentation_layer.Components.BlueRoundedButton;
 import org.example.service_layer.MedicamentoService;
 import org.example.service_layer.RecetaService;
 import org.example.utilities.EstadoReceta;
@@ -326,6 +327,8 @@ public class DashboardView extends JPanel/* implements IServiceObserver<Object>*
     public JPanel  getMainPanel() {return MainPanel;}
 
 
-
-
+    private void createUIComponents() {
+        agregarButton = new BlueRoundedButton( "Agregar");
+        eliminarSelecionadoButton = new BlueRoundedButton( "Eliminar Seleccionado");
+    }
 }

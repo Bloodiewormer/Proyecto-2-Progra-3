@@ -1,7 +1,7 @@
 package org.example.presentation_layer.Views;
 
 import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Components.CustomPaswordField;
+import org.example.presentation_layer.Components.CustomPasswordField;
 import org.example.presentation_layer.Components.CustomTextField;
 import org.example.presentation_layer.Controllers.CambioClaveController;
 import org.example.presentation_layer.Controllers.LoginController;
@@ -103,7 +103,7 @@ public class CambioClaveView extends JFrame{
         // TODO: place custom component creation code here
         IDtextField = new CustomTextField();
         Aceptbutton = new BlueRoundedButton("REGISTER");
-        passwordField = new CustomPaswordField();
-        ConfirmpasswordField = new CustomPaswordField();
+        passwordField = new CustomPasswordField();
+        ConfirmpasswordField = new CustomPasswordField();
     }
 }

@@ -27,19 +27,16 @@ public class Medicamento {
     }
 
     public int getCodigo() { return codigo; }
-    public void setCodigo(int codigo) { this.codigo = codigo; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
 
     public String getPresentacion() { return presentacion; }
-    public void setPresentacion(String presentacion) { this.presentacion = presentacion; }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Medicamento)) return false;
-        Medicamento that = (Medicamento) o;
+        if (!(o instanceof Medicamento that)) return false;
         return codigo == that.codigo;
     }
 

@@ -34,12 +34,14 @@
           <component id="ecf99" class="javax.swing.JButton" binding="buscarButton" custom-create="true" default-binding="true">
             <constraints/>
             <properties>
+              <foreground color="-394241"/>
               <text value="Buscar"/>
             </properties>
           </component>
           <component id="efdab" class="javax.swing.JButton" binding="limpiarButton" custom-create="true">
             <constraints/>
             <properties>
+              <foreground color="-394241"/>
               <text value="Limpiar"/>
             </properties>
           </component>
@@ -99,6 +101,7 @@
           <component id="cb651" class="javax.swing.JButton" binding="cambiarEstadoButton" custom-create="true">
             <constraints/>
             <properties>
+              <foreground color="-394241"/>
               <text value="Cambiar Estado"/>
             </properties>
           </component>

@@ -34,12 +34,14 @@
           <component id="a46ee" class="javax.swing.JButton" binding="buscarButton" custom-create="true" default-binding="true">
             <constraints/>
             <properties>
+              <foreground color="-394241"/>
               <text value="Buscar"/>
             </properties>
           </component>
           <component id="acfb6" class="javax.swing.JButton" binding="DetallesButton" custom-create="true">
             <constraints/>
             <properties>
+              <foreground color="-394241"/>
               <text value="Detalles"/>
             </properties>
           </component>

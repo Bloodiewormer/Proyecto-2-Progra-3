@@ -92,6 +92,7 @@ public class MedicoController {
             }
         }
         tableModel.setMedicos(medicos);
+
     }
 
     private void validarId(int id) {

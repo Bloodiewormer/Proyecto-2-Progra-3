@@ -4,10 +4,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
-public class CustomPaswordField extends JPasswordField {
+public class CustomPasswordField extends JPasswordField {
     private final Image icon; // Declare the icon field
 
-    public CustomPaswordField() {
+    public CustomPasswordField() {
         setBorder(BorderFactory.createEmptyBorder(5, 32, 5, 5)); // Padding for icon
         setOpaque(false);
         // Load the icon from resources

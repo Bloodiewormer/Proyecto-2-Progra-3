@@ -2,7 +2,6 @@ package org.example.presentation_layer.Views;
 
 import org.example.domain_layer.Paciente;
 import org.example.domain_layer.Receta;
-import org.example.domain_layer.Usuario;
 import org.example.presentation_layer.Components.BlueRoundedButton;
 import org.example.presentation_layer.Controllers.HistoricoRecetasController;
 import org.example.presentation_layer.Models.RecetaTableModel;
@@ -10,7 +9,6 @@ import org.example.service_layer.MedicamentoService;
 import org.example.service_layer.PacienteService;
 import org.example.service_layer.RecetaService;
 import org.example.service_layer.UsuarioService;
-import org.example.utilities.EstadoReceta;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -99,7 +97,7 @@ public class HistoricoRecetasView extends JPanel {
         var paciente = pacienteService.leerPorId(receta.getIdPaciente());
         String pacienteInfo = (paciente != null)
                 ? paciente.getNombre() + " (ID " + paciente.getId() + "), Tel: " + paciente.getTelefono() +
-                ", Nacimiento: " + (paciente.getFechanacimiento() != null ? new SimpleDateFormat("dd/MM/yyyy").format(paciente.getFechanacimiento()) : "")
+                ", Nacimiento: " + (paciente.getFechaNacimiento() != null ? new SimpleDateFormat("dd/MM/yyyy").format(paciente.getFechaNacimiento()) : "")
                 : "Desconocido";
 
         // Get doctor info
@@ -212,7 +210,7 @@ public class HistoricoRecetasView extends JPanel {
     private void mostrarPaciente(Paciente p) {
         pacienteInfoLabel.setText("Paciente: " + p.getNombre() + " (ID " + p.getId() + ")");
         telefonoLabel.setText("Teléfono: " + p.getTelefono());
-        fechaNacimientoLabel.setText("Nacimiento: " + (p.getFechanacimiento() != null ? new SimpleDateFormat("dd/MM/yyyy").format(p.getFechanacimiento()) : ""));
+        fechaNacimientoLabel.setText("Nacimiento: " + (p.getFechaNacimiento() != null ? new SimpleDateFormat("dd/MM/yyyy").format(p.getFechaNacimiento()) : ""));
     }
 
     private void limpiar() {

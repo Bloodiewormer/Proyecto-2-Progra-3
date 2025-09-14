@@ -28,7 +28,7 @@ public class PacienteTableModel extends AbstractTableModel {
         switch (columnIndex) {
             case 0: return p.getId();
             case 1: return p.getNombre();
-            case 2: return p.getFechanacimiento() != null ? dateFormat.format(p.getFechanacimiento()) : "";
+            case 2: return p.getFechaNacimiento() != null ? dateFormat.format(p.getFechaNacimiento()) : "";
             case 3: return p.getTelefono();
             default: return null;
         }

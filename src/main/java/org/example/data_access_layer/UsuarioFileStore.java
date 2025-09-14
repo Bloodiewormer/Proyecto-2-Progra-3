@@ -7,26 +7,24 @@ import org.example.domain_layer.Usuario;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.stream.*;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-
-
-
 
 public class UsuarioFileStore implements IFileStore<Usuario> {
+    private static final Logger LOGGER = Logger.getLogger(UsuarioFileStore.class.getName());
     private final File xmlFile;
 
     public UsuarioFileStore(File xmlFile) {
@@ -34,12 +32,10 @@ public class UsuarioFileStore implements IFileStore<Usuario> {
         ensureFile();
     }
 
-
     @Override
     public List<Usuario> readAll() {
         List<Usuario> out = new ArrayList<>();
         if (xmlFile.length() == 0) return out;
-
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -56,17 +52,12 @@ public class UsuarioFileStore implements IFileStore<Usuario> {
                     Usuario uObj = (Usuario) u.unmarshal(node);
                     out.add(uObj);
                 }
-
-
             }
-
         } catch (Exception ex) {
-            System.err.println("[WARN] Error leyendo " + xmlFile + ": " + ex.getMessage());
-            ex.printStackTrace();
+            LOGGER.log(Level.WARNING, "Error reading " + xmlFile, ex);
         }
         return out;
     }
-
 
     @Override
     public void writeAll(List<Usuario> data) {
@@ -81,40 +72,37 @@ public class UsuarioFileStore implements IFileStore<Usuario> {
 
             xw.writeStartDocument("UTF-8", "1.0");
             xw.writeStartElement("usuarios");
-
             if (data != null) {
                 for (Usuario u : data) {
                     m.marshal(u, xw);
                 }
             }
-
             xw.writeEndElement();
             xw.writeEndDocument();
             xw.flush();
             xw.close();
         } catch (Exception ex) {
-            System.err.println("[WARN] Error escribiendo " + xmlFile);
-            ex.printStackTrace();
+            LOGGER.log(Level.WARNING, "Error writing " + xmlFile, ex);
         }
     }
 
-
-    /**
-     * Se asegura de que el archivo donde se guardara la informacion exista.
-     */
     private void ensureFile() {
         try {
             File parent = xmlFile.getParentFile();
-
-            if (parent != null) {
-                parent.mkdirs();
+            if (parent != null && !parent.exists()) {
+                if (!parent.mkdirs()) {
+                    LOGGER.warning("Failed to create directories for " + parent);
+                }
             }
-
             if (!xmlFile.exists()) {
-                xmlFile.createNewFile();
-                writeAll(new ArrayList<>());
+                if (!xmlFile.createNewFile()) {
+                    LOGGER.warning("Failed to create file " + xmlFile);
+                } else {
+                    writeAll(new ArrayList<>());
+                }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Error ensuring file " + xmlFile, ex);
+        }
     }
-
 }

@@ -75,7 +75,7 @@ public class PacienteForm extends JPanel {
         IDTextField.setText(String.valueOf(p.getId()));
         NameTextField.setText(p.getNombre());
         PhoneField.setText(p.getTelefono());
-        DatePicker.setDate(p.getFechanacimiento());
+        DatePicker.setDate(p.getFechaNacimiento());
     }
 
 

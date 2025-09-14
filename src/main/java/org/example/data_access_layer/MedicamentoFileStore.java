@@ -9,16 +9,13 @@ import org.example.domain_layer.Medicamento;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+@SuppressWarnings("ClassCanBeRecord")
 public class MedicamentoFileStore implements IFileStore<Medicamento> {
-
+    private static final Logger LOGGER = Logger.getLogger(MedicamentoFileStore.class.getName());
     private final File file;
-
-    public MedicamentoFileStore(String filePath) {
-        this.file = new File(filePath);
-        ensureFile();
-    }
-
 
     public MedicamentoFileStore(File file) {
         this.file = file;
@@ -33,6 +30,7 @@ public class MedicamentoFileStore implements IFileStore<Medicamento> {
             MedicamentoListWrapper wrapper = (MedicamentoListWrapper) unmarshaller.unmarshal(file);
             return wrapper.getMedicamentos();
         } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error reading medicamentos from file", e);
             return new ArrayList<>();
         }
     }
@@ -48,13 +46,25 @@ public class MedicamentoFileStore implements IFileStore<Medicamento> {
             wrapper.setMedicamentos(entities);
             marshaller.marshal(wrapper, file);
         } catch (JAXBException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error writing medicamentos to file", e);
         }
     }
 
     private void ensureFile() {
-        if (!file.exists()) {
-            writeAll(new ArrayList<>());
+        try {
+            if (!file.exists()) {
+                File parentDir = file.getParentFile();
+                if (parentDir != null && !parentDir.exists()) {
+                    if (!parentDir.mkdirs()) {
+                        throw new RuntimeException("Failed to create directories: " + parentDir.getAbsolutePath());
+                    }
+                }
+                if (!file.createNewFile()) {
+                    throw new RuntimeException("Failed to create file: " + file.getAbsolutePath());
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error ensuring file exists: " + file.getAbsolutePath(), e);
         }
     }
 

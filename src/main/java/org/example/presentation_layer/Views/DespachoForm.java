@@ -177,7 +177,7 @@ public class DespachoForm extends JPanel {
     private void mostrarPaciente(Paciente p) {
         pacienteInfoLabel.setText("Paciente: " + p.getNombre() + " (ID " + p.getId() + ")");
         telefonoLabel.setText("Teléfono: " + p.getTelefono());
-        fechaNacimientoLabel.setText("Nacimiento: " + (p.getFechanacimiento() != null ? new SimpleDateFormat("dd/MM/yyyy").format(p.getFechanacimiento()) : ""));
+        fechaNacimientoLabel.setText("Nacimiento: " + (p.getFechaNacimiento() != null ? new SimpleDateFormat("dd/MM/yyyy").format(p.getFechaNacimiento()) : ""));
     }
 
     private void limpiar() {

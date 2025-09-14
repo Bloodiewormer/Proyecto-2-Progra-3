@@ -54,6 +54,13 @@ public class MenuPrincipalView extends JFrame {
                              PacienteService pacienteService,
                              MedicamentoService medicamentoService,
                              RecetaService recetaService, int userId)  {
+
+        try {
+            ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/LogoAPP.png")));
+            setIconImage(icon.getImage());
+        } catch (Exception e) {
+            System.err.printf("Icon could not be loaded: %s%n", e.getMessage());
+        }
         this.usuarioService = usuarioService;
         this.pacienteService = pacienteService;
         this.medicamentoService = medicamentoService;
@@ -61,7 +68,7 @@ public class MenuPrincipalView extends JFrame {
         this.userid = userId;
         setContentPane(MainPanel);
         setTitle("Login");
-        setSize(680, 400);
+        setSize(800, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setUndecorated(true);
         setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 30, 30));
