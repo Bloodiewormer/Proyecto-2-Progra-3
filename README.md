@@ -187,7 +187,6 @@ Rutas de datos (puedes ajustarlas en tu código si usas otra ubicación):
 ---
 
 ## Capturas de pantalla (placeholders)
-Coloca tus imágenes en `docs/images/` y reemplaza los placeholders:
 
 - Login  
   ![Pantalla de Login](docs/images/login.png)
