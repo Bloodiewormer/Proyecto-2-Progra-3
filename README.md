@@ -1,249 +1,199 @@
-# Proyecto #1 — Sistema de Prescripción y Despacho de Recetas (Java, MVC, XML)
+# Sistema de Prescripción y Despacho de Recetas — Proyecto 2 (EIF206 2025-II)
 
-Universidad Nacional — Facultad de Ciencias Exactas y Naturales — Escuela de Informática  
-Curso: EIF206 Programación 3 (2025-II)
+Este proyecto es la evolución del Proyecto #1, migrado a una arquitectura distribuida con:
+- Frontend (presentación, MVC) en Java que se conecta a un Backend por sockets.
+- Backend (lógica + datos) en Java que expone un servicio por sockets TCP y persiste en MySQL.
+- Comunicación por sockets con notificaciones asíncronas para login/logout y mensajería tipo chat.
+- Uso del patrón Proxy en el Frontend para invocar al Service remoto del Backend.
 
-Sistema de escritorio en Java para:
-- Prescripción de recetas por parte de médicos.
-- Despacho de recetas por personal de farmacia.
-- Administración de usuarios (médicos, farmaceutas, pacientes) y catálogo de medicamentos.
-- Dashboard de indicadores y consulta histórica.
+Nota: Este repositorio parte de la base del Proyecto #1 y se reorganizará para cumplir estrictamente con la arquitectura distribuida y la persistencia en base de datos.
 
-La aplicación utiliza:
-- Interfaz gráfica (Swing/JavaFX, según implementación del proyecto).
-- Arquitectura por capas y patrón Modelo–Vista–Controlador (MVC).
-- Persistencia en archivos XML.
-
----
-
-## Tabla de Contenidos
+## Tabla de contenidos
+- [Arquitectura](#arquitectura)
 - [Requisitos](#requisitos)
-- [Arquitectura y estructura de carpetas](#arquitectura-y-estructura-de-carpetas)
-- [Datos iniciales (XML) y usuarios de prueba](#datos-iniciales-xml-y-usuarios-de-prueba)
-- [Cómo ejecutar](#cómo-ejecutar)
-- [Funcionalidades](#funcionalidades)
-- [Dashboard (Indicadores)](#dashboard-indicadores)
-- [Histórico de recetas](#histórico-de-recetas)
-- [Validaciones](#validaciones)
-- [Capturas de pantalla (placeholders)](#capturas-de-pantalla-placeholders)
-- [Roadmap y rúbrica](#roadmap-y-rúbrica)
-- [Convenciones](#convenciones)
+- [Estructura de proyecto (propuesta)](#estructura-de-proyecto-propuesta)
+- [Configuración](#configuración)
+- [Base de datos](#base-de-datos)
+- [Protocolo de red (mensajes)](#protocolo-de-red-mensajes)
+- [Ejecución](#ejecución)
+- [Funcionalidades (rúbrica)](#funcionalidades-rúbrica)
+- [Validación, seguridad y calidad](#validación-seguridad-y-calidad)
+- [Roadmap](#roadmap)
+- [Créditos](#créditos)
 - [Licencia](#licencia)
 
----
+## Arquitectura
+- Frontend:
+  - Java (recomendado: JavaFX para la UI), patrón MVC.
+  - No tiene ninguna dependencia ni referencia a la base de datos.
+  - Usa un Proxy (clase local) que envía/recibe peticiones por sockets al Backend.
+  - Recibe notificaciones asíncronas (usuarios activos, mensajes tipo chat).
+- Backend:
+  - Java (ServerSocket / NIO), diseño multihilo para atender múltiples Frontend.
+  - Capas: Service (lógica de negocio) + Datos (DAO/Repositorio) con MySQL vía JDBC.
+  - Único responsable de acceder a la base de datos.
+  - Emite notificaciones asíncronas a los Frontend conectados.
+- Comunicación:
+  - Sockets TCP.
+  - Formato de mensajes recomendado: JSON por línea (JSON Lines), UTF-8.
+  - Autenticación, autorización por rol, y manejo de sesión por conexión.
+- Persistencia:
+  - MySQL 8.x con esquema normalizado.
+  - Scripts SQL versionados en carpeta `db/`.
 
 ## Requisitos
-- Java JDK 17 o superior
-- IDE recomendado: IntelliJ IDEA / Eclipse / NetBeans
-- (Opcional) Maven o Gradle si el proyecto ya está configurado con alguno
-- Sistema de archivos con permisos de lectura/escritura para la carpeta de datos XML
+- Java 17+ (o la versión definida por la cátedra).
+- Maven 3.9+ o Gradle (se recomienda Maven multi-módulo).
+- MySQL 8.x.
+- Variables de entorno o archivo de propiedades para credenciales de BD.
 
----
+## Estructura de proyecto (propuesta)
+Se propone migrar a una estructura multi-módulo para separar claramente capas y reutilizar contratos/datos compartidos:
 
-## Arquitectura y estructura de carpetas
-Arquitectura por capas y patrón MVC:
-
-- Capa dominio (entidades): `domain/`
-- Capa repositorio (XML): `repository/` o `persistence/xml/`
-- Capa servicios (lógica de negocio): `service/`
-- Capa controladores (MVC): `controller/`
-- Capa vistas (MVC): `ui/` (formularios/pantallas)
-- Utilitarios y validaciones: `util/`
-- Configuración y constantes: `config/`
-
-Sugerencia de estructura (ajústala a la del proyecto si ya existe):
 ```
-src/
-  main/
-    java/
-      com/una/eif206/recetas/
-        domain/
-        repository/
-        service/
-        controller/
-        ui/
-        util/
-        config/
-    resources/
-      data/
-        usuarios.xml
-        pacientes.xml
-        medicamentos.xml
-        recetas.xml
-      i18n/
-  test/
-docs/
-  images/
+Proyecto-2-Progra-3/
+├─ common/                 # DTOs, contratos de servicio, constantes de protocolo
+│  └─ src/main/java/...
+├─ backend/                # Servidor (Service + DAO/Repositorio + notificaciones)
+│  ├─ src/main/java/...
+│  └─ src/main/resources/application.properties
+├─ frontend/               # Cliente (UI MVC + Proxy)
+│  ├─ src/main/java/...
+│  └─ src/main/resources/application.properties
+├─ db/
+│  ├─ schema.sql
+│  └─ seed.sql
+├─ docs/
+│  └─ protocolo.md
+├─ README.md
+└─ TODO.md
 ```
 
----
+Si ya tienes código del Proyecto #1, se refactoriza y redistribuye para ajustarse a esta estructura.
 
-## Datos iniciales (XML) y usuarios de prueba
-Se incluyen archivos XML de ejemplo en `src/main/resources/data/`:
-- `usuarios.xml`: usuarios de prueba (ADMIN, MÉDICO, FARMACEUTA)
-- `pacientes.xml`: pacientes iniciales
-- `medicamentos.xml`: catálogo inicial
-- `recetas.xml`: ejemplo de receta en estado “confeccionada”
+## Configuración
+- Backend (`backend/src/main/resources/application.properties`):
+  ```
+  server.port=5050
+  db.url=jdbc:mysql://localhost:3306/recetas?useSSL=false&serverTimezone=UTC
+  db.user=tu_usuario
+  db.password=tu_password
+  security.password.hashRounds=10
+  ```
+- Frontend (`frontend/src/main/resources/application.properties`):
+  ```
+  server.host=127.0.0.1
+  server.port=5050
+  ui.theme=light
+  ```
 
-Credenciales de prueba:
-- Administrador
-  - id: `admin`
-  - clave: `admin`
-- Médicos
-  - id: `m001` (Dra. Ana Pérez) — clave: `m001`
-  - id: `m002` (Dr. Carlos Gómez) — clave: `m002`
-- Farmaceuta
-  - id: `f001` (Farm. Juan Mora) — clave: `f001`
+Usa variables de entorno si prefieres no versionar credenciales (e.g., en tiempo de ejecución o con un wrapper).
+
+## Base de datos
+Esquema sugerido (resumen):
+- `users` (id, username, password_hash, role [ADMIN, MEDIC, PHARMACIST, PATIENT], is_active, created_at, updated_at)
+- `patients` (id, person_data…)
+- `medics` (id, person_data…, specialty)
+- `pharmacists` (id, person_data…)
+- `medications` (id, code, name, stock, unit, price, is_active)
+- `prescriptions` (id, code, patient_id, medic_id, created_at, status [NEW, DISPENSED, CANCELLED])
+- `prescription_items` (id, prescription_id, medication_id, quantity, indications)
+- `dispenses` (id, prescription_id, pharmacist_id, dispensed_at)
+- `messages` (id, sender_user_id, recipient_user_id, text, status [SENT, RECEIVED], created_at)
 
 Notas:
-- Al crear un usuario nuevo, la clave debe quedar igual al id por defecto, según los requerimientos.
-- Roles permitidos: `ADMIN`, `MEDICO`, `FARMACEUTA`.
-- Estados de receta: `confeccionada`, `proceso`, `lista`, `entregada`.
+- Para roles, puedes usar una única tabla `users` con columna `role` en lugar de tablas separadas, según lo prefieras.
+- Usa índices y claves foráneas.
+- Incluye datos de ejemplo en `seed.sql` para pruebas.
 
-Rutas de datos (puedes ajustarlas en tu código si usas otra ubicación):
-- Producción/IDE: `src/main/resources/data/`
-- En tiempo de ejecución, asegúrate de que el código resuelva correctamente el path de recursos.
+## Protocolo de red (mensajes)
+Formato recomendado: un JSON por línea. Ejemplo:
+```
+{ "op":"AUTH_LOGIN", "data": { "username":"alice", "password":"****" } }
+```
 
----
+Operaciones solicitadas por el Frontend (sincrónicas):
+- AUTH_LOGIN, AUTH_CHANGE_PASSWORD
+- USERS_LIST_ACTIVE
+- USERS_LIST (ADMIN), USERS_CREATE/UPDATE/DELETE (ADMIN)
+- MEDICS_LIST
+- PHARMACISTS_LIST
+- PATIENTS_LIST
+- DRUGS_LIST
+- PRESCRIPTION_CREATE
+- PRESCRIPTIONS_HISTORY_BY_PATIENT / BY_MEDIC
+- DISPENSE_PRESCRIPTION
+- DASHBOARD_METRICS
+- MESSAGE_SEND
+- MESSAGE_RECEIVE (pull para marcar como recibido/abrir ventana)
 
-## Cómo ejecutar
-- Opción A: IDE
-  1) Importa el proyecto como proyecto Java/Maven/Gradle.
-  2) Configura el SDK (JDK 17+).
-  3) Ejecuta la clase principal `Main` de tu aplicación (por ejemplo: `com.una.eif206.recetas.ui.Main`).
+Notificaciones del Backend (asíncronas, broadcast según corresponda):
+- USER_LOGIN, USER_LOGOUT
+- MESSAGE_DELIVERED (cuando llega un mensaje para un usuario)
+- STOCK_UPDATED (opcional, si el stock cambia tras despacho)
 
-- Opción B: Maven (si aplica)
-  - Compilar: `mvn clean package`
-  - Ejecutar: `mvn exec:java -Dexec.mainClass="com.una.eif206.recetas.ui.Main"`
+Cada mensaje debe incluir:
+- `op`: operación
+- `data`: carga útil
+- `reqId`: correlación (opcional pero recomendado)
+- `auth`: token de sesión o info de usuario autenticado (según diseño)
+- `error`: nulo o detalle de error con código/mensaje
 
-- Opción C: Gradle (si aplica)
-  - Compilar: `./gradlew build`
-  - Ejecutar: `./gradlew run` (si está configurado el plugin de aplicación)
+## Ejecución
+1) Backend:
+- Configura MySQL y ejecuta `db/schema.sql` y `db/seed.sql`.
+- Ajusta `backend/src/main/resources/application.properties`.
+- Compila y ejecuta el Backend:
+  - Maven: `mvn -pl backend -am clean package` y luego `java -jar backend/target/backend-*.jar`
 
----
+2) Frontend:
+- Ajusta `frontend/src/main/resources/application.properties` (host/puerto del backend).
+- Compila y ejecuta:
+  - Maven: `mvn -pl frontend -am clean javafx:run` o `java -jar frontend/target/frontend-*.jar` si empacas.
 
-## Funcionalidades
-1) Ingreso (login) y cambio de clave
-- Login por id/clave.
-- Cambio de clave para cualquier usuario autenticado.
+3) Pruebas básicas:
+- Hacer login con usuarios de `seed.sql`.
+- Ver “Usuarios activos”.
+- Enviar mensaje a otro usuario activo y recibirlo.
+- Crear una receta y luego despacharla (con impacto en stock).
+- Ver Dashboard.
 
-2) Prescripción (solo MÉDICO)
-- Búsqueda aproximada de paciente por id/nombre.
-- Búsqueda aproximada de medicamento por código/descripción (presentaciones con código distinto).
-- Agregar, modificar, eliminar detalles (cantidad, indicaciones, duración en días).
-- Guardar receta con `fecha_confeccion` (hoy) y `fecha_retiro`.
-- Estado final al registrar: `confeccionada`.
+## Funcionalidades (rúbrica)
+- 1. Ingreso (login) y cambio de clave
+- 2. Prescripción
+- 3. Despacho
+- 4. Lista de Médicos
+- 5. Lista de Farmacéuticos
+- 6. Lista de Pacientes
+- 7. Catálogo de medicamentos
+- 8. Dashboard (Indicadores)
+- 9. Histórico de recetas
+- 10. Usuarios
+- 11. Mostrar y recibir mensajes
 
-3) Despacho (solo FARMACEUTA)
-- Recibir receta `confeccionada` con fecha de retiro hoy o ±3 días.
-- Cambiar a `proceso`, luego a `lista` al alistar.
-- Entregar medicamentos y marcar `entregada`.
+Consulta el archivo [TODO.md](./TODO.md) para el plan detallado de implementación.
 
-4) Lista de Médicos (solo ADMIN)
-- CRUD + búsqueda (id/nombre).
-- Al agregar, clave = id.
+## Validación, seguridad y calidad
+- Validación en Frontend y Backend (reglas de negocio y de formato).
+- Manejo robusto de excepciones y mensajes de error claros al usuario.
+- Hash de contraseñas (BCrypt o PBKDF2).
+- Logging con niveles (INFO/WARN/ERROR) en servidor, logs rotados.
+- Pruebas unitarias (Service/DAO) y pruebas de integración (protocolo y BD).
+- Concurrencia: servidor multihilo, cuidado con sincronización de listas de usuarios y notificaciones.
+- Pool de conexiones JDBC (e.g., HikariCP) recomendado.
 
-5) Lista de Farmaceutas (solo ADMIN)
-- CRUD + búsqueda (id/nombre).
-- Al agregar, clave = id.
+## Roadmap
+- Migrar el código del Proyecto #1 a la estructura multi-módulo.
+- Implementar protocolo base (login, usuarios activos, mensajería).
+- Implementar CRUDs (médicos, farmacéuticos, pacientes, medicamentos).
+- Implementar prescripción y despacho con actualización de stock.
+- Implementar histórico y dashboard.
+- Pruebas, validaciones, manejo de errores.
+- Documentación final y empaquetado de entrega.
 
-6) Lista de Pacientes (solo ADMIN)
-- CRUD + búsqueda (id/nombre).
-- Campos: id, nombre, fecha de nacimiento, teléfono.
-
-7) Catálogo de Medicamentos (solo ADMIN)
-- CRUD + búsqueda (código/descripcion).
-- Campos: código, nombre, presentación.
-
-8) Dashboard (MÉDICO/FARMACEUTA/ADMIN)
-- Línea: cantidad de medicamentos prescritos por mes (filtrable por medicamentos y rango de meses).
-- Pastel: cantidad de recetas por estado.
-
-9) Histórico de Recetas (MÉDICO/FARMACEUTA/ADMIN)
-- Búsquedas y detalle, sin editar.
-
----
-
-## Dashboard (Indicadores)
-- Gráfico de línea: eje X = meses, eje Y = total de unidades prescritas por medicamento seleccionado.
-- Gráfico de pastel: distribución de recetas por estado (`confeccionada`, `proceso`, `lista`, `entregada`).
-- Filtros recomendados: rango de fechas, médico, paciente, medicamento(s).
-
----
-
-## Histórico de Recetas
-- Lista con filtros por id de receta, paciente, médico, rango de fechas, estado.
-- Vista detalle: información general, y detalle de medicamentos (cantidad, indicaciones, duración).
-
----
-
-## Validaciones
-- Login: id/clave no vacíos; usuario existente; clave correcta.
-- Prescripción: paciente y fecha de retiro válidos; cada detalle con cantidad (>0), indicaciones (texto), duración_dias (>0).
-- Búsquedas aproximadas: case-insensitive y por contiene.
-- CRUDs de administración: claves/ids únicas; formatos de fecha; teléfono válido.
-- Flujos de despacho respetan estados y ventanas de fecha de retiro (±3 días).
-
----
-
-## Capturas de pantalla (placeholders)
-
-- Login  
-  ![Pantalla de Login](docs/images/login.png)
-
-- Cambiar clave  
-  ![Cambiar clave](docs/images/cambiar-clave.png)
-
-- Médicos (Administrador)  
-  ![Gestión de Médicos](docs/images/medicos-admin.png)
-
-- Dashboard  
-  ![Dashboard](docs/images/dashboard.png)
-
-- Prescribir (Médico)  
-  ![Prescribir](docs/images/prescribir.png)
-
-- Prescribir — Buscar Paciente  
-  ![Prescribir - Buscar Paciente](docs/images/prescribir-buscar-paciente.png)
-
-- Prescribir — Agregar Medicamento  
-  ![Prescribir - Agregar Medicamento](docs/images/prescribir-agregar-medicamento.png)
-
-- Prescribir — Modificar Detalle  
-  ![Prescribir - Modificar Detalle](docs/images/prescribir-modificar-detalle.png)
-
-Sugerencia: usa 1280px de ancho para consistencia en el README.
-
----
-
-## Roadmap y rúbrica
-Checklist de implementación (mapea la rúbrica):
-
-- [ ] 1. Login y cambio de clave (10%)
-- [ ] 2. Prescripción (20%)
-- [ ] 3. Despacho (20%)
-- [ ] 4. Lista de Médicos (6%)
-- [ ] 5. Lista de Farmaceutas (6%)
-- [ ] 6. Lista de Pacientes (6%)
-- [ ] 7. Catálogo de Medicamentos (6%)
-- [ ] 8. Dashboard (Indicadores) (20%)
-- [ ] 9. Histórico de Recetas (6%)
-
-Extras recomendados:
-- [ ] Validaciones exhaustivas y mensajes de error claros.
-- [ ] Pruebas manuales guiadas (guión de pruebas).
-- [ ] Manejo de concurrencia en lectura/escritura XML si aplica.
-
----
-
-## Convenciones
-- Idioma: Español (es-CR).
-- Fechas en ISO-8601: `YYYY-MM-DD`.
-- Codificación: UTF-8.
-- Commits: mensaje corto en imperativo + descripción si es necesario.
-- Estados de receta permitidos: `confeccionada` → `proceso` → `lista` → `entregada`.
-
----
+## Créditos
+- Universidad Nacional — EIF206 Programación 3 (2025-II)
+- Equipo del Proyecto #1 (continuación en Proyecto #2)
 
 ## Licencia
-MIT
+Proyecto académico. Si no se especifica otra licencia, “All rights reserved” para efectos del curso.
