@@ -1,6 +1,5 @@
 # Sistema de Prescripción y Despacho de Recetas — Proyecto 2 (EIF206 2025-II)
 
-
 Este proyecto es la evolución del Proyecto #1, migrado a una arquitectura distribuida con:
 - Frontend (presentación, MVC) en Java que se conecta a un Backend por sockets.
 - Backend (lógica + datos) en Java que expone un servicio por sockets TCP y persiste en MySQL.
