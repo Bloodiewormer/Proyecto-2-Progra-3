@@ -1,7 +1,7 @@
 package org.example.presentation_layer.Views;
 
 import org.example.domain_layer.Paciente;
-import org.example.domain_layer.Receta;
+import org.example.Domain.Dtos.receta.Receta;
 import org.example.presentation_layer.Components.BlueRoundedButton;
 import org.example.presentation_layer.Models.RecetaTableModel;
 import org.example.presentation_layer.Controllers.DespachoController;

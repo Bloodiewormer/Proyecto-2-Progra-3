@@ -1,6 +1,6 @@
 package org.example.presentation_layer.Models;
 
-import org.example.domain_layer.Medicamento;
+import org.example.Domain.Dtos.medicamento.Medicamento;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.List;

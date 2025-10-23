@@ -1,13 +1,12 @@
 package org.example.presentation_layer.Views;
 
-import org.example.domain_layer.Farmaceuta;
+import org.example.Domain.Dtos.users.Farmaceuta;
 import org.example.presentation_layer.Components.BlueRoundedButton;
 import org.example.presentation_layer.Controllers.FarmaceutaController;
 import org.example.presentation_layer.Models.FarmaceutaTableModel;
 import org.example.service_layer.UsuarioService;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 
 public class FarmaceutaForm extends JPanel {

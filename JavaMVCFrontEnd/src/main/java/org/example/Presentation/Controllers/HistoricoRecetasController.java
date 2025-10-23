@@ -1,7 +1,7 @@
 package org.example.presentation_layer.Controllers;
 
 import org.example.domain_layer.Paciente;
-import org.example.domain_layer.Receta;
+import org.example.Domain.Dtos.receta.Receta;
 import org.example.service_layer.PacienteService;
 import org.example.service_layer.RecetaService;
 

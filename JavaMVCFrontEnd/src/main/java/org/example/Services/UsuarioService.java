@@ -1,13 +1,9 @@
-package org.example.service_layer;
+package org.example.Services;
 
-import org.example.data_access_layer.IFileStore;
-import org.example.domain_layer.Usuario;
-import org.example.utilities.ChangeType;
+//import org.example.data_access_layer.IFileStore;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class UsuarioService implements IService<Usuario> {
+/*public class UsuarioService implements IService<Usuario> {
 
     private final IFileStore<Usuario> fileStore;
     private final List<IServiceObserver<Usuario>> observers ;
@@ -91,4 +87,4 @@ public class UsuarioService implements IService<Usuario> {
     }
 
 
-}
+}*/

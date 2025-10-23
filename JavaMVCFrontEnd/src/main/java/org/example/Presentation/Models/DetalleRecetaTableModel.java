@@ -1,10 +1,8 @@
 package org.example.presentation_layer.Models;
 
-import org.example.domain_layer.DetalleReceta;
+import org.example.Domain.Dtos.receta.DetalleReceta;
 
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
-import java.awt.*;
 import java.util.List;
 
 public class DetalleRecetaTableModel extends AbstractTableModel {

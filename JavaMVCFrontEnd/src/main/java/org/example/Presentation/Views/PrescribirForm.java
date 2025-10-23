@@ -1,8 +1,8 @@
-package org.example.presentation_layer.Views;
+package org.example.Presentation.Views;
 
 import com.toedter.calendar.JDateChooser;
-import org.example.domain_layer.DetalleReceta;
-import org.example.domain_layer.Medicamento;
+import org.example.Domain.Dtos.receta.DetalleReceta;
+import org.example.Domain.Dtos.medicamento.Medicamento;
 import org.example.domain_layer.Paciente;
 import org.example.presentation_layer.Components.BlueRoundedButton;
 import org.example.presentation_layer.Components.CustomTextField;
@@ -12,7 +12,7 @@ import org.example.presentation_layer.Models.MedicamentoTableModel;
 import org.example.presentation_layer.Models.PacienteTableModel;
 import org.example.service_layer.MedicamentoService;
 import org.example.service_layer.PacienteService;
-import org.example.service_layer.RecetaService;
+import org.example.Services.RecetaService;
 import org.example.service_layer.UsuarioService;
 
 import javax.swing.*;

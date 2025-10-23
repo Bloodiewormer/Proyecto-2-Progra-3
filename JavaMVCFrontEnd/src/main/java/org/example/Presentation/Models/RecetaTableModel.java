@@ -1,6 +1,6 @@
 package org.example.presentation_layer.Models;
 
-import org.example.domain_layer.Receta;
+import org.example.Domain.Dtos.receta.Receta;
 
 import javax.swing.table.AbstractTableModel;
 import java.text.SimpleDateFormat;

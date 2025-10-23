@@ -1,4 +1,4 @@
-package org.example.domain_layer;
+package org.example.Domain.Dtos.receta;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;

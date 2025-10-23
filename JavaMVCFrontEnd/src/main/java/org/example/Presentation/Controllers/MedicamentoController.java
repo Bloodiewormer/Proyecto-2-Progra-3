@@ -1,6 +1,6 @@
 package org.example.presentation_layer.Controllers;
 
-import org.example.domain_layer.Medicamento;
+import org.example.Domain.Dtos.medicamento.Medicamento;
 import org.example.presentation_layer.Models.MedicamentoTableModel;
 import org.example.presentation_layer.Views.MedicamentoForm;
 import org.example.service_layer.MedicamentoService;

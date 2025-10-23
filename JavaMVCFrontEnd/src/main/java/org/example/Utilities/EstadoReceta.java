@@ -1,3 +1,3 @@
-package org.example.utilities;
+package org.example.Utilities;
 
 public enum EstadoReceta { CONFECCIONADA, PROCESO, LISTA, ENTREGADA}

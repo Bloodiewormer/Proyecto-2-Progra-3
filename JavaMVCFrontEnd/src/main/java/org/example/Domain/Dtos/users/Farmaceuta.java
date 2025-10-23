@@ -1,4 +1,4 @@
-package org.example.domain_layer;
+package org.example.Domain.Dtos.users;
 
 import jakarta.xml.bind.annotation.*;
 
