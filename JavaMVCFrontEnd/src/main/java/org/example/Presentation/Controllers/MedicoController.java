@@ -1,7 +1,5 @@
 package org.example.presentation_layer.Controllers;
 
-import org.example.Domain.Dtos.users.Medico;
-import org.example.Domain.Dtos.users.Usuario;
 import org.example.presentation_layer.Models.MedicoTableModel;
 import org.example.presentation_layer.Views.MedicoForm;
 import org.example.service_layer.UsuarioService;

@@ -1,9 +1,5 @@
 package org.example.presentation_layer.Controllers;
 
-import org.example.Domain.Dtos.receta.DetalleReceta;
-import org.example.Domain.Dtos.medicamento.Medicamento;
-import org.example.domain_layer.Paciente;
-import org.example.Domain.Dtos.receta.Receta;
 import org.example.presentation_layer.Models.DetalleRecetaTableModel;
 import org.example.presentation_layer.Models.MedicamentoTableModel;
 import org.example.presentation_layer.Models.PacienteTableModel;

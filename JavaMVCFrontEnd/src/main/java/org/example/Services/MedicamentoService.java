@@ -1,7 +1,6 @@
 package org.example.service_layer;
 
 import org.example.data_access_layer.IFileStore;
-import org.example.Domain.Dtos.medicamento.Medicamento;
 import org.example.utilities.ChangeType;
 
 import java.util.ArrayList;

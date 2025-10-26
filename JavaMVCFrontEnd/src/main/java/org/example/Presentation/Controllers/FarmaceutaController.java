@@ -1,7 +1,5 @@
 package org.example.presentation_layer.Controllers;
 
-import org.example.Domain.Dtos.users.Farmaceuta;
-import org.example.Domain.Dtos.users.Usuario;
 import org.example.presentation_layer.Models.FarmaceutaTableModel;
 import org.example.presentation_layer.Views.FarmaceutaForm;
 import org.example.service_layer.UsuarioService;
