@@ -1,4 +1,4 @@
-package org.example.presentation_layer.Controllers;
+package org.example.Presentation.Controllers;
 
 public class CambioClaveController {
     private final LoginController loginController;
@@ -30,7 +30,7 @@ public class CambioClaveController {
     }
 
     public boolean changePassword(int id, String newPassword) {
-            return loginController.changePassword(id, newPassword);
+        return loginController.changePassword(id, newPassword);
     }
-
 }
+

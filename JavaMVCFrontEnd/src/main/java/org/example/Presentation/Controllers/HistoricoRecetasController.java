@@ -1,4 +1,4 @@
-package org.example.presentation_layer.Controllers;
+package org.example.Presentation.Controllers;
 
 import org.example.service_layer.PacienteService;
 import org.example.service_layer.RecetaService;

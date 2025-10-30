@@ -1,4 +1,4 @@
-package org.example.presentation_layer.Controllers;
+package org.example.Presentation.Controllers;
 
 import org.example.presentation_layer.Models.MedicamentoTableModel;
 import org.example.presentation_layer.Views.MedicamentoForm;

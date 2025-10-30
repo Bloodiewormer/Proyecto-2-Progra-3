@@ -1,4 +1,7 @@
 package org.example.Presentation;
 
-public class IObserver {
+import org.example.Utilities.ChangeType;
+
+public interface IObserver {
+    void update(ChangeType changeType, Object data);
 }

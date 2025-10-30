@@ -1,16 +1,17 @@
-package org.example.presentation_layer.Models;
+package org.example.Presentation.Models;
+
+import org.example.Domain.Dtos.Medicamento.MedicamentoResponseDto;
+import org.example.Utilities.ChangeType;
+import org.example.Presentation.IObserver;
 
 import javax.swing.table.AbstractTableModel;
+import java.util.ArrayList;
 import java.util.List;
 
-public class MedicamentoTableModel extends AbstractTableModel {
+public class MedicamentoTableModel extends AbstractTableModel implements IObserver {
 
-    private final String[] columnas = {"Código", "Nombre", "Presentación"};
-    private List<Medicamento> medicamentos;
-
-    public MedicamentoTableModel(List<Medicamento> medicamentos) {
-        this.medicamentos = medicamentos;
-    }
+    private final List<MedicamentoResponseDto> medicamentos = new ArrayList<>();
+    private final String[] columnNames = {"Código", "Nombre", "Presentación"};
 
     @Override
     public int getRowCount() {
@@ -19,49 +20,68 @@ public class MedicamentoTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return columnas.length;
+        return columnNames.length;
+    }
+
+    @Override
+    public String getColumnName(int column) {
+        return columnNames[column];
     }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        Medicamento m = medicamentos.get(rowIndex);
+        MedicamentoResponseDto m = medicamentos.get(rowIndex);
         return switch (columnIndex) {
-            case 0 -> m.getCodigo();
+            case 0 -> m.getId();
             case 1 -> m.getNombre();
             case 2 -> m.getPresentacion();
             default -> null;
         };
     }
 
-
-
-    public void setRows(List<Medicamento> data) {
-        medicamentos.clear();
-        if (data != null) medicamentos.addAll(data);
-        fireTableDataChanged();
-    }
-
     @Override
-    public String getColumnName(int column) {
-        return columnas[column];
-    }
-
-    public void setMedicamentos(List<Medicamento> medicamentos) {
-        this.medicamentos.clear();
-        this.medicamentos.addAll(medicamentos);
-        fireTableDataChanged();
-    }
-
-    public Medicamento getMedicamentoAt(int row) {
-        return medicamentos.get(row);
-    }
-
-    private int indexOf(Medicamento m) {
-        for (int i = 0; i < medicamentos.size(); i++) {
-            if (medicamentos.get(i).getCodigo() == m.getCodigo()) {
-                return i;
+    public void update(ChangeType changeType, Object data) {
+        if (data == null) return;
+        switch (changeType) {
+            case CREATED -> {
+                MedicamentoResponseDto nuevo = (MedicamentoResponseDto) data;
+                medicamentos.add(nuevo);
+                fireTableRowsInserted(medicamentos.size() - 1, medicamentos.size() - 1);
+            }
+            case UPDATED -> {
+                MedicamentoResponseDto actualizado = (MedicamentoResponseDto) data;
+                for (int i = 0; i < medicamentos.size(); i++) {
+                    if (medicamentos.get(i).getId() == actualizado.getId()) {
+                        medicamentos.set(i, actualizado);
+                        fireTableRowsUpdated(i, i);
+                        break;
+                    }
+                }
+            }
+            case DELETED -> {
+                Integer deletedId = (Integer) data;
+                for (int i = 0; i < medicamentos.size(); i++) {
+                    if (medicamentos.get(i).getId() == deletedId) {
+                        medicamentos.remove(i);
+                        fireTableRowsDeleted(i, i);
+                        break;
+                    }
+                }
             }
         }
-        return -1;
+    }
+
+    public List<MedicamentoResponseDto> getMedicamentos() {
+        return new ArrayList<>(medicamentos);
+    }
+
+    public void setMedicamentos(List<MedicamentoResponseDto> nuevos) {
+        medicamentos.clear();
+        if (nuevos != null) medicamentos.addAll(nuevos);
+        fireTableDataChanged();
+    }
+
+    public MedicamentoResponseDto getMedicamentoAt(int row) {
+        return medicamentos.get(row);
     }
 }

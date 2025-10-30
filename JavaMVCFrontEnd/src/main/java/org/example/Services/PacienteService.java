@@ -1,7 +1,7 @@
-package org.example.service_layer;
+package org.example.Services;
 
 import org.example.data_access_layer.IFileStore;
-import org.example.utilities.ChangeType;
+import org.example.Utilities.ChangeType;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,90 +1,67 @@
 package org.example.Services;
 
-//import org.example.data_access_layer.IFileStore;
+import org.example.Domain.Dtos.Usuario.UsuarioResponseDto;
+import org.example.Domain.Dtos.Usuario.AddUsuarioRequestDto;
+import org.example.Domain.Dtos.Usuario.UpdateUsuarioRequestDto;
+import org.example.Utilities.ChangeType;
 
+import java.util.ArrayList;
+import java.util.List;
 
-/*public class UsuarioService implements IService<Usuario> {
+public class UsuarioService {
 
-    private final IFileStore<Usuario> fileStore;
-    private final List<IServiceObserver<Usuario>> observers ;
+    private final List<UsuarioResponseDto> usuarios = new ArrayList<>();
+    private final List<IServiceObserver<UsuarioResponseDto>> observers = new ArrayList<>();
 
-    public UsuarioService(IFileStore<Usuario> fileStore) {
-        this.fileStore = fileStore;
-        this.observers = new ArrayList<>();
+    public void agregar(AddUsuarioRequestDto dto) {
+        int newId = usuarios.size() + 1;
+        UsuarioResponseDto nuevo = new UsuarioResponseDto(newId, dto.getNombre());
+        usuarios.add(nuevo);
+        notifyObservers(ChangeType.CREATED, nuevo);
     }
 
-    @Override
-    public void agregar(Usuario usuario) {
-        List <Usuario> usuarios = fileStore.readAll();
-        //check if id is unique
-        for (Usuario u : usuarios) {
-            if (u.getId() == usuario.getId()) {
-                throw new IllegalArgumentException("ID ya existe");
+    public void actualizar(UpdateUsuarioRequestDto dto) {
+        for (int i = 0; i < usuarios.size(); i++) {
+            if (usuarios.get(i).getId() == dto.getId()) {
+                usuarios.set(i, new UsuarioResponseDto(dto.getId(), dto.getNombre()));
+                notifyObservers(ChangeType.UPDATED, usuarios.get(i));
+                return;
             }
         }
-        usuarios.add(usuario);
-        fileStore.writeAll(usuarios);
-        notifyObservers(ChangeType.CREATED, usuario);
+        throw new IllegalArgumentException("Usuario no encontrado");
     }
 
-    @Override
     public void borrar(int id) {
-        List<Usuario> usuarios = fileStore.readAll();
-        Usuario removed = null;
         for (int i = 0; i < usuarios.size(); i++) {
-            if (usuarios.get(i).getId() == id) { removed = usuarios.remove(i); break; }
-        }
-        fileStore.writeAll(usuarios);
-        if (removed != null) notifyObservers(ChangeType.DELETED, removed);
-    }
-
-    @Override
-    public void actualizar(Usuario usuario) {
-        List<Usuario> usuarios = fileStore.readAll();
-        for (int i = 0; i < usuarios.size(); i++) {
-            if (usuarios.get(i).getId() == usuario.getId()) {
-                usuarios.set(i, usuario);
-                break;
+            if (usuarios.get(i).getId() == id) {
+                UsuarioResponseDto eliminado = usuarios.remove(i);
+                notifyObservers(ChangeType.DELETED, eliminado);
+                return;
             }
         }
-        fileStore.writeAll(usuarios);
-        notifyObservers(ChangeType.UPDATED, usuario);
     }
 
-    @Override
-    public List<Usuario> leerTodos() {
-        return fileStore.readAll();
+    public List<UsuarioResponseDto> leerTodos() {
+        return new ArrayList<>(usuarios);
     }
 
-    @Override
-    public Usuario leerPorId(int id) {
-        return fileStore.readAll()
-                .stream()
-                .filter(u -> u.getId() == id)
-                .findFirst()
-                .orElse(null);
+    public UsuarioResponseDto leerPorId(int id) {
+        for (UsuarioResponseDto u : usuarios) {
+            if (u.getId() == id) return u;
+        }
+        return null;
     }
 
-    @Override
-    public void addObserver(IServiceObserver<Usuario> listener) {
-        if(listener != null) observers.add(listener);
-    }
-
-    private void notifyObservers(ChangeType type, Usuario entity) {
-        for (IServiceObserver<Usuario> observer : observers) {
-            observer.onDataChanged(type, entity);
+    public void addObserver(IServiceObserver<UsuarioResponseDto> observer) {
+        if (observer != null && !observers.contains(observer)) {
+            observers.add(observer);
         }
     }
 
-    public List<Usuario> leerPorTipo(Class<?> tipo) {
-        List<Usuario> resultado = new ArrayList<>();
-        for (Usuario u : fileStore.readAll()) {
-            if (tipo.isInstance(u)) {
-                resultado.add(u);
-            }
+    private void notifyObservers(ChangeType type, UsuarioResponseDto entity) {
+        for (IServiceObserver<UsuarioResponseDto> obs : observers) {
+            obs.onDataChanged(type, entity);
         }
-        return resultado;
     }
+}
 
-
-}*/

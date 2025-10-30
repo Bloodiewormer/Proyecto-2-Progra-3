@@ -1,4 +1,4 @@
-package org.example.presentation_layer.Models;
+package org.example.Presentation.Models;
 
 import javax.swing.table.AbstractTableModel;
 import java.text.SimpleDateFormat;
