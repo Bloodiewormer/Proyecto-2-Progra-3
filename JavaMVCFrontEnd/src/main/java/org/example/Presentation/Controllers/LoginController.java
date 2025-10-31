@@ -7,10 +7,10 @@ import org.example.presentation_layer.Models.UserType;
 import org.example.presentation_layer.Views.CambioClaveView;
 import org.example.presentation_layer.Views.LoginView;
 import org.example.presentation_layer.Views.MenuPrincipalView;
-import org.example.service_layer.MedicamentoService;
-import org.example.service_layer.PacienteService;
-import org.example.service_layer.RecetaService;
-import org.example.service_layer.UsuarioService;
+import org.example.Services.MedicamentoService;
+import org.example.Services.PacienteService;
+import org.example.Services.RecetaService;
+import org.example.Services.UsuarioService;
 
 import java.io.File;
 

@@ -1,10 +1,10 @@
-package org.example.presentation_layer.Views;
+package org.example.Presentation.Views;
 
 import com.toedter.calendar.JDateChooser;
-import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Controllers.PacienteController;
-import org.example.presentation_layer.Models.PacienteTableModel;
-import org.example.service_layer.PacienteService;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Controllers.PacienteController;
+import org.example.Presentation.Models.PacienteTableModel;
+import org.example.Services.PacienteService;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

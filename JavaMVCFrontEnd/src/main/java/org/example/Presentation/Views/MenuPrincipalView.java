@@ -1,15 +1,15 @@
-package org.example.presentation_layer.Views;
+package org.example.Presentation.Views;
 
-import org.example.presentation_layer.Components.CustomButton;
-import org.example.presentation_layer.Controllers.DashboardController;
-import org.example.presentation_layer.Controllers.HistoricoRecetasController;
-import org.example.presentation_layer.Controllers.LoginController;
-import org.example.presentation_layer.Models.UserType;
-import org.example.service_layer.MedicamentoService;
-import org.example.service_layer.PacienteService;
-import org.example.service_layer.RecetaService;
-import org.example.service_layer.UsuarioService;
-import org.example.presentation_layer.Controllers.PrescribirController;
+import org.example.Presentation.Components.CustomButton;
+import org.example.Presentation.Controllers.DashboardController;
+import org.example.Presentation.Controllers.HistoricoRecetasController;
+import org.example.Presentation.Controllers.LoginController;
+import org.example.Presentation.Models.UserType;
+import org.example.Services.MedicamentoService;
+import org.example.Services.PacienteService;
+import org.example.Services.RecetaService;
+import org.example.Services.UsuarioService;
+import org.example.Presentation.Controllers.PrescribirController;
 
 import javax.swing.*;
 import java.awt.*;

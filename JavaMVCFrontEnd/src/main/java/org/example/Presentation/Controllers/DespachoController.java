@@ -1,8 +1,8 @@
 package org.example.Presentation.Controllers;
 
-import org.example.service_layer.RecetaService;
-import org.example.service_layer.MedicamentoService;
-import org.example.utilities.EstadoReceta;
+import org.example.Services.RecetaService;
+import org.example.Services.MedicamentoService;
+import org.example.Utilities.EstadoReceta;
 
 import java.util.List;
 

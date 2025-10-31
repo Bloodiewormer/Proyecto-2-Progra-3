@@ -1,8 +1,8 @@
-package org.example.presentation_layer.Views;
+package org.example.Presentation.Views;
 
-import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Controllers.DashboardController;
-import org.example.service_layer.MedicamentoService;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Controllers.DashboardController;
+import org.example.Services.MedicamentoService;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;

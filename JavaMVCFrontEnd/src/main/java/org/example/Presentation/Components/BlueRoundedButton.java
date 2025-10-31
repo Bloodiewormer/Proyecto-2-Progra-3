@@ -1,4 +1,4 @@
-package org.example.Presentation_layer.Components;
+package org.example.Presentation.Components;
 
 import javax.swing.*;
 import java.awt.*;

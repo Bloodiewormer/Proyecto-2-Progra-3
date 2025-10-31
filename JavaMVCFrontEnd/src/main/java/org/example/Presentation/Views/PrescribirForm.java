@@ -1,16 +1,16 @@
 package org.example.Presentation.Views;
 
 import com.toedter.calendar.JDateChooser;
-import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Components.CustomTextField;
-import org.example.presentation_layer.Controllers.PrescribirController;
-import org.example.presentation_layer.Models.DetalleRecetaTableModel;
-import org.example.presentation_layer.Models.MedicamentoTableModel;
-import org.example.presentation_layer.Models.PacienteTableModel;
-import org.example.service_layer.MedicamentoService;
-import org.example.service_layer.PacienteService;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Components.CustomTextField;
+import org.example.Presentation.Controllers.PrescribirController;
+import org.example.Presentation.Models.DetalleRecetaTableModel;
+import org.example.Presentation.Models.MedicamentoTableModel;
+import org.example.Presentation.Models.PacienteTableModel;
+import org.example.Services.MedicamentoService;
+import org.example.Services.PacienteService;
 import org.example.Services.RecetaService;
-import org.example.service_layer.UsuarioService;
+import org.example.Services.UsuarioService;
 
 import javax.swing.*;
 import java.awt.*;

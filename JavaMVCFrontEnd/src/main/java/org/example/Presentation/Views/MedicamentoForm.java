@@ -1,9 +1,9 @@
-package org.example.presentation_layer.Views;
+package org.example.Presentation.Views;
 
-import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Controllers.MedicamentoController;
-import org.example.presentation_layer.Models.MedicamentoTableModel;
-import org.example.service_layer.MedicamentoService;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Controllers.MedicamentoController;
+import org.example.Presentation.Models.MedicamentoTableModel;
+import org.example.Services.MedicamentoService;
 
 import javax.swing.*;
 import java.util.List;

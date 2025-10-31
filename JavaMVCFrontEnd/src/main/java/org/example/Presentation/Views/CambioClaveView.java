@@ -1,10 +1,10 @@
-package org.example.presentation_layer.Views;
+package org.example.Presentation.Views;
 
-import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Components.CustomPasswordField;
-import org.example.presentation_layer.Components.CustomTextField;
-import org.example.presentation_layer.Controllers.CambioClaveController;
-import org.example.presentation_layer.Controllers.LoginController;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Components.CustomPasswordField;
+import org.example.Presentation.Components.CustomTextField;
+import org.example.Presentation.Controllers.CambioClaveController;
+import org.example.Presentation.Controllers.LoginController;
 
 import javax.swing.*;
 import java.awt.geom.RoundRectangle2D;
@@ -41,7 +41,7 @@ public class CambioClaveView extends JFrame{
     }
 
     private void initializeEvents() {
-        acceptButton.addActionListener(_ -> handleAccept());
+        acceptButton.addActionListener(e -> handleAccept());
     }
 
     private void handleAccept() {

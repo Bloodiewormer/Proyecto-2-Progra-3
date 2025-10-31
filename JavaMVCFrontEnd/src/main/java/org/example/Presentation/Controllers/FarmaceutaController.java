@@ -1,8 +1,8 @@
 package org.example.Presentation.Controllers;
 
-import org.example.presentation_layer.Models.FarmaceutaTableModel;
-import org.example.presentation_layer.Views.FarmaceutaForm;
-import org.example.service_layer.UsuarioService;
+import org.example.Presentation.Models.FarmaceutaTableModel;
+import org.example.Presentation.Views.FarmaceutaForm;
+import org.example.Services.UsuarioService;
 
 import javax.swing.*;
 import java.util.ArrayList;

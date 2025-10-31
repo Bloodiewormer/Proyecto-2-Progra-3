@@ -1,12 +1,12 @@
-package org.example.presentation_layer.Views;
+package org.example.Presentation.Views;
 
-import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Models.RecetaTableModel;
-import org.example.presentation_layer.Controllers.DespachoController;
-import org.example.service_layer.MedicamentoService;
-import org.example.service_layer.PacienteService;
-import org.example.service_layer.RecetaService;
-import org.example.utilities.EstadoReceta;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Models.RecetaTableModel;
+import org.example.Presentation.Controllers.DespachoController;
+import org.example.Services.MedicamentoService;
+import org.example.Services.PacienteService;
+import org.example.Services.RecetaService;
+import org.example.Utilities.EstadoReceta;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

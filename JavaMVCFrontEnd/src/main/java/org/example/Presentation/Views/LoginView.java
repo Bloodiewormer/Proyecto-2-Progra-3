@@ -1,10 +1,10 @@
-package org.example.presentation_layer.Views;
+package org.example.Presentation.Views;
 
-import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Components.CustomPasswordField;
-import org.example.presentation_layer.Components.CustomTextField;
-import org.example.presentation_layer.Controllers.LoginController;
-import org.example.presentation_layer.Models.UserType;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Components.CustomPasswordField;
+import org.example.Presentation.Components.CustomTextField;
+import org.example.Presentation.Controllers.LoginController;
+import org.example.Presentation.Models.UserType;
 import javax.swing.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
@@ -54,7 +54,7 @@ public class LoginView  extends  JFrame {
     }
 
     private void registerEventHandlers() {
-        loginButton.addActionListener(_ -> onLoginClicked());
+        loginButton.addActionListener(e -> onLoginClicked());
 
 
         forgotLabel.addMouseListener(new MouseAdapter() {

@@ -2,7 +2,7 @@ package org.example.Presentation.Controllers;
 
 import org.example.presentation_layer.Models.MedicamentoTableModel;
 import org.example.presentation_layer.Views.MedicamentoForm;
-import org.example.service_layer.MedicamentoService;
+import org.example.Services.MedicamentoService;
 
 import javax.swing.*;
 import java.util.ArrayList;

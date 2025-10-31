@@ -1,7 +1,7 @@
 package org.example.Presentation.Controllers;
 
-import org.example.service_layer.RecetaService;
-import org.example.service_layer.IServiceObserver;
+import org.example.Services.RecetaService;
+import org.example.Services.IServiceObserver;
 
 import java.util.List;
 

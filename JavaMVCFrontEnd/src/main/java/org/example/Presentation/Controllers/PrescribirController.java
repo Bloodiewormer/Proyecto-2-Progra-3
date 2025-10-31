@@ -3,10 +3,10 @@ import org.example.presentation_layer.Models.DetalleRecetaTableModel;
 import org.example.presentation_layer.Models.MedicamentoTableModel;
 import org.example.presentation_layer.Models.PacienteTableModel;
 import org.example.presentation_layer.Views.PrescribirForm;
-import org.example.service_layer.MedicamentoService;
-import org.example.service_layer.PacienteService;
-import org.example.service_layer.RecetaService;
-import org.example.utilities.EstadoReceta;
+import org.example.Services.MedicamentoService;
+import org.example.Services.PacienteService;
+import org.example.Services.RecetaService;
+import org.example.Utilities.EstadoReceta;
 
 import javax.swing.*;
 import java.util.Date;

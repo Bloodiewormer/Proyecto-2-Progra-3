@@ -1,7 +1,7 @@
 package org.example.Presentation.Controllers;
 
-import org.example.service_layer.PacienteService;
-import org.example.service_layer.RecetaService;
+import org.example.Services.PacienteService;
+import org.example.Services.RecetaService;
 
 import java.util.List;
 import java.util.stream.Collectors;
