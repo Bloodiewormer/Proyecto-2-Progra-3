@@ -1,159 +1,337 @@
 package org.example.Presentation.Controllers;
-import org.example.presentation_layer.Models.PacienteTableModel;
-import org.example.presentation_layer.Views.PacienteForm;
+
+import org.example.Presentation.Observable;
+import org.example.Presentation.Views.PacienteForm;
 import org.example.Services.PacienteService;
+import org.example.Utilities.EventType;
 
 import javax.swing.*;
-import java.util.ArrayList;
+import javax.swing.event.ListSelectionEvent;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class PacienteController {
-    private final PacienteForm view;
+public class PacienteController extends Observable {
+    private final PacienteForm pacienteView;
     private final PacienteService pacienteService;
-    private final PacienteTableModel tableModel;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    public PacienteController(PacienteForm view, PacienteService pacienteService, PacienteTableModel tableModel) {
-        this.view = view;
+    public PacienteController(PacienteForm pacienteView, PacienteService pacienteService) {
+        this.pacienteView = pacienteView;
         this.pacienteService = pacienteService;
-        this.tableModel  = tableModel;
-        cargarPacientes();
+
+        addObserver(pacienteView.getTableModel());
+        loadPacientesAsync();
+        addListeners();
     }
 
+    private void loadPacientesAsync() {
+        pacienteView.showLoading(true);
 
-    public void guardarPaciente() {
+        SwingWorker<List<PacienteResponseDto>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<PacienteResponseDto> doInBackground() throws Exception {
+                return pacienteService.listPacientesAsync().get();
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    List<PacienteResponseDto> pacientes = get();
+                    pacienteView.getTableModel().setPacientes(pacientes);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(
+                            pacienteView,
+                            "Error al cargar pacientes: " + e.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                } finally {
+                    pacienteView.showLoading(false);
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    private void addListeners() {
+        pacienteView.getGuardarButton().addActionListener(e -> handleAddPaciente());
+        pacienteView.getActualizarButton().addActionListener(e -> handleUpdatePaciente());
+        pacienteView.getBorrarButton().addActionListener(e -> handleDeletePaciente());
+        pacienteView.getLimpiarButton().addActionListener(e -> handleClearFields());
+        pacienteView.getBuscarButton().addActionListener(e -> handleSearch());
+        pacienteView.getReporteButton().addActionListener(e -> handleReport());
+        pacienteView.getPatientsTable().getSelectionModel().addListSelectionListener(this::handleRowSelection);
+    }
+
+    private void handleAddPaciente() {
         try {
-            int id = Integer.parseInt(view.getIdTextField().getText().trim());
-            String nombre = view.getNameTextField().getText().trim();
-            String telefono = view.getTelefonoTextField().getText().trim();
-            Date fechaNacimiento = view.getDatePicker().getDate();
+            String idText = pacienteView.getIdTextField().getText().trim();
+            String nombre = pacienteView.getNameTextField().getText().trim();
+            String telefono = pacienteView.getTelefonoTextField().getText().trim();
+            Date fechaNacimiento = pacienteView.getDatePicker().getDate();
 
-            Paciente p = new Paciente(id, nombre, telefono, fechaNacimiento);
+            if (idText.isEmpty() || nombre.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        pacienteView,
+                        "ID y Nombre son requeridos",
+                        "Validación",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
 
-           pacienteService.agregar(p);
+            String fechaNacStr = fechaNacimiento != null ? dateFormat.format(fechaNacimiento) : null;
+            AddPacienteRequestDto dto = new AddPacienteRequestDto(nombre, telefono, fechaNacStr);
 
-           cargarPacientes();
-           limpiarCampos();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(view, "ID inválido", "Error", JOptionPane.ERROR_MESSAGE);
+            pacienteView.showLoading(true);
+            SwingWorker<PacienteResponseDto, Void> worker = new SwingWorker<>() {
+                @Override
+                protected PacienteResponseDto doInBackground() throws Exception {
+                    return pacienteService.addPacienteAsync(dto).get();
+                }
 
-        } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(view, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                @Override
+                protected void done() {
+                    try {
+                        PacienteResponseDto paciente = get();
+                        if (paciente != null) {
+                            notifyObservers(EventType.CREATED, paciente);
+                            pacienteView.clearFields();
+                            JOptionPane.showMessageDialog(
+                                    pacienteView,
+                                    "Paciente agregado exitosamente",
+                                    "Éxito",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(
+                                pacienteView,
+                                "Error al agregar: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    } finally {
+                        pacienteView.showLoading(false);
+                    }
+                }
+            };
+            worker.execute();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    pacienteView,
+                    "Error: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
-    public void actualizarPaciente() {
-   // Implementar la lógica para actualizar un paciente ya existente
-        try {
-            int id = Integer.parseInt(view.getIdTextField().getText().trim());
-            String nombre = view.getNameTextField().getText().trim();
-            String telefono = view.getTelefonoTextField().getText().trim();
-            Date fechaNacimiento = view.getDatePicker().getDate();
-
-            Paciente p = new Paciente(id, nombre, telefono, fechaNacimiento);
-
-            pacienteService.actualizar(p);
-
-            cargarPacientes();
-            limpiarCampos();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(view, "ID inválido", "Error", JOptionPane.ERROR_MESSAGE);
-
-        } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(view, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-
-
-    }
-
-    public void borrarPaciente() {
-        int row = view.getPatientsTable().getSelectedRow();
-        if (row >= 0) {
-            int id = (int) tableModel.getValueAt(row, 0);
-            pacienteService.borrar(id);
-            cargarPacientes();
-        }
-
-    }
-
-    public  void buscarPaciente() {
-        String filtro = view.getBuscarTextField().getText().toLowerCase().trim();
-        if (filtro.isEmpty()) {
-            cargarPacientes();
+    private void handleUpdatePaciente() {
+        int selectedRow = pacienteView.getPatientsTable().getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(
+                    pacienteView,
+                    "Seleccione un paciente de la tabla",
+                    "Advertencia",
+                    JOptionPane.WARNING_MESSAGE
+            );
             return;
         }
 
-        List<Paciente> filtrados = new ArrayList<>();
-        for (Paciente p : pacienteService.leerTodos()) {
-            if (p.getNombre() != null && p.getNombre().toLowerCase().contains(filtro)) {
-                filtrados.add(p);
+        try {
+            String idText = pacienteView.getIdTextField().getText().trim();
+            String nombre = pacienteView.getNameTextField().getText().trim();
+            String telefono = pacienteView.getTelefonoTextField().getText().trim();
+            Date fechaNacimiento = pacienteView.getDatePicker().getDate();
+
+            if (idText.isEmpty() || nombre.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        pacienteView,
+                        "ID y Nombre son requeridos",
+                        "Validación",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
             }
-        }
-        tableModel.setPacientes(filtrados);
-    }
 
-    public void limpiarCampos() {
-        view.getIdTextField().setText("");
-        view.getNameTextField().setText("");
-        view.getTelefonoTextField().setText("");
-        view.getDatePicker().setDate(new Date());
-    }
+            int id = Integer.parseInt(idText);
+            String fechaNacStr = fechaNacimiento != null ? dateFormat.format(fechaNacimiento) : null;
+            UpdatePacienteRequestDto dto = new UpdatePacienteRequestDto(id, nombre, telefono, fechaNacStr);
 
+            pacienteView.showLoading(true);
+            SwingWorker<PacienteResponseDto, Void> worker = new SwingWorker<>() {
+                @Override
+                protected PacienteResponseDto doInBackground() throws Exception {
+                    return pacienteService.updatePacienteAsync(dto).get();
+                }
 
-    private void cargarPacientes() {
-        List<Paciente> pacientes = new ArrayList<>(pacienteService.leerTodos());
-        tableModel.setPacientes(pacientes);
-    }
+                @Override
+                protected void done() {
+                    try {
+                        PacienteResponseDto updatedPaciente = get();
+                        if (updatedPaciente != null) {
+                            notifyObservers(EventType.UPDATED, updatedPaciente);
+                            pacienteView.clearFields();
+                            JOptionPane.showMessageDialog(
+                                    pacienteView,
+                                    "Paciente actualizado exitosamente",
+                                    "Éxito",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(
+                                pacienteView,
+                                "Error al actualizar: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    } finally {
+                        pacienteView.showLoading(false);
+                    }
+                }
+            };
+            worker.execute();
 
-
-    public Paciente getPacienteById(int id) {
-        validarId(id);
-        return pacienteService.leerPorId( id);
-    }
-
-
-
-
-    private void validarId(int id) {
-        for (Paciente p : pacienteService.leerTodos()) {
-            if (id <= 0) {
-                throw new IllegalArgumentException("ID debe ser positivo");
-            }
-            if (p.getId() == id) {
-                throw new IllegalArgumentException("ID ya existe");
-            }
-        }
-    }
-
-    private void validarNombre(String nombre) {
-        if (nombre == null || nombre.trim().isEmpty())
-            throw new IllegalArgumentException("El nombre es obligatorio.");
-    }
-
-    public void generarReportePacienteSeleccionado() {
-        int row = view.getPatientsTable().getSelectedRow();
-        if (row >= 0) {
-            int id = (int) tableModel.getValueAt(row, 0);
-            Paciente u = pacienteService.leerPorId(id);
-            if (u != null) {
-                String reporte = "Reporte de Usuario\n\n" +
-                        "ID: " + u.getId() + "\n" +
-                        "Nombre: " + u.getNombre() + "\n" +
-                        "Tipo: " + u.getClass().getSimpleName() + "\n";
-                //Proximamente agregar mas detalles sobre medicamentos
-
-                JOptionPane.showMessageDialog(view, reporte, "Reporte de Paciente", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(view, "No se encontró el Paciente seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            JOptionPane.showMessageDialog(view, "Por favor, seleccione un Paciente de la tabla.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(
+                    pacienteView,
+                    "ID debe ser un número válido",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
+    private void handleDeletePaciente() {
+        int selectedRow = pacienteView.getPatientsTable().getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(
+                    pacienteView,
+                    "Seleccione un paciente de la tabla",
+                    "Advertencia",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
 
+        PacienteResponseDto selectedPaciente = pacienteView.getTableModel().getPacienteAt(selectedRow);
+
+        int confirm = JOptionPane.showConfirmDialog(
+                pacienteView,
+                "¿Está seguro de eliminar al paciente " + selectedPaciente.getNombre() + "?",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            DeletePacienteRequestDto dto = new DeletePacienteRequestDto(selectedPaciente.getId());
+
+            pacienteView.showLoading(true);
+            SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+                @Override
+                protected Boolean doInBackground() throws Exception {
+                    return pacienteService.deletePacienteAsync(dto).get();
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        Boolean success = get();
+                        if (success) {
+                            notifyObservers(EventType.DELETED, selectedPaciente.getId());
+                            pacienteView.clearFields();
+                            JOptionPane.showMessageDialog(
+                                    pacienteView,
+                                    "Paciente eliminado exitosamente",
+                                    "Éxito",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(
+                                pacienteView,
+                                "Error al eliminar: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    } finally {
+                        pacienteView.showLoading(false);
+                    }
+                }
+            };
+            worker.execute();
+        }
+    }
+
+    private void handleClearFields() {
+        pacienteView.clearFields();
+    }
+
+    private void handleSearch() {
+        String filtro = pacienteView.getBuscarTextField().getText().toLowerCase().trim();
+
+        if (filtro.isEmpty()) {
+            loadPacientesAsync();
+            return;
+        }
+
+        List<PacienteResponseDto> allPacientes = pacienteView.getTableModel().getPacientes();
+        List<PacienteResponseDto> filtrados = allPacientes.stream()
+                .filter(p -> p.getNombre().toLowerCase().contains(filtro))
+                .toList();
+
+        pacienteView.getTableModel().setPacientes(filtrados);
+    }
+
+    private void handleReport() {
+        int selectedRow = pacienteView.getPatientsTable().getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(
+                    pacienteView,
+                    "Seleccione un paciente de la tabla",
+                    "Advertencia",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        PacienteResponseDto paciente = pacienteView.getTableModel().getPacienteAt(selectedRow);
+        String reporte = String.format(
+                "Reporte de Paciente\n\n" +
+                        "ID: %d\n" +
+                        "Nombre: %s\n" +
+                        "Teléfono: %s\n" +
+                        "Fecha Nacimiento: %s\n",
+                paciente.getId(),
+                paciente.getNombre(),
+                paciente.getTelefono(),
+                paciente.getFechaNacimiento()
+        );
+
+        JOptionPane.showMessageDialog(
+                pacienteView,
+                reporte,
+                "Reporte de Paciente",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    private void handleRowSelection(ListSelectionEvent e) {
+        if (!e.getValueIsAdjusting()) {
+            int row = pacienteView.getPatientsTable().getSelectedRow();
+            if (row >= 0) {
+                PacienteResponseDto paciente = pacienteView.getTableModel().getPacienteAt(row);
+                pacienteView.populateFields(paciente);
+            }
+        }
+    }
 }
-
-
-
-

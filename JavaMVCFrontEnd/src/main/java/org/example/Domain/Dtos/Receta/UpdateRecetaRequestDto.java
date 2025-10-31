@@ -1,20 +1,20 @@
 package org.example.Domain.Dtos.Receta;
 
-import org.example.Domain.Dtos.DetalleReceta.DetalleRecetaResponseDto;
+import org.example.Domain.DetalleReceta.UpdateDetalleRecetaRequestDto;
 import java.util.List;
 
-public class RecetaResponseDto {
+public class UpdateRecetaRequestDto {
     private int id;
     private int idPaciente;
     private int idMedico;
     private String fechaConfeccion;
     private String fechaRetiro;
     private String estado;
-    private List<DetalleRecetaResponseDto> detalles;
+    private List<UpdateDetalleRecetaRequestDto> detalles;
 
-    public RecetaResponseDto() {}
+    public UpdateRecetaRequestDto() {}
 
-    public RecetaResponseDto(int id, int idPaciente, int idMedico, String fechaConfeccion, String fechaRetiro, String estado, List<DetalleRecetaResponseDto> detalles) {
+    public UpdateRecetaRequestDto(int id, int idPaciente, int idMedico, String fechaConfeccion, String fechaRetiro, String estado, List<UpdateDetalleRecetaRequestDto> detalles) {
         this.id = id;
         this.idPaciente = idPaciente;
         this.idMedico = idMedico;
@@ -42,8 +42,8 @@ public class RecetaResponseDto {
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
 
-    public List<DetalleRecetaResponseDto> getDetalles() { return detalles; }
-    public void setDetalles(List<DetalleRecetaResponseDto> detalles) { this.detalles = detalles; }
+    public List<UpdateDetalleRecetaRequestDto> getDetalles() { return detalles; }
+    public void setDetalles(List<UpdateDetalleRecetaRequestDto> detalles) { this.detalles = detalles; }
 }
 
 

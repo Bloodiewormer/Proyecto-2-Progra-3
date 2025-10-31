@@ -1,15 +1,13 @@
 package org.example.Presentation.Views;
 
+import org.example.Domain.Dtos.Medico.MedicoResponseDto;
 import org.example.Presentation.Components.BlueRoundedButton;
-import org.example.Presentation.Controllers.MedicoController;
+import org.example.Presentation.Components.LoadingOverlay;
 import org.example.Presentation.Models.MedicoTableModel;
-import org.example.Services.UsuarioService;
 
 import javax.swing.*;
-import java.util.List;
 
 public class MedicoForm extends JPanel {
-
     private JPanel MainPanel;
     private JPanel BanerPanel;
     private JPanel MedicoPanel;
@@ -28,30 +26,37 @@ public class MedicoForm extends JPanel {
     private JButton borrarButton;
     private JButton actualizarButton;
 
-    private MedicoController medicoController;
-    private MedicoTableModel medicoModel;
+    private final MedicoTableModel tableModel;
+    private final LoadingOverlay loadingOverlay;
+    private final JFrame parentFrame;
 
-    public MedicoForm(UsuarioService usuarioService) {
-        List<Medico> medicos = usuarioService.leerPorTipo(Medico.class)
-                .stream()
-                .filter(Medico.class::isInstance)
-                .map(Medico.class::cast)
-                .toList();
-        this.medicoModel = new MedicoTableModel(medicos);
-        this.medicoController = new MedicoController(this, usuarioService, medicoModel);
+    public MedicoForm(JFrame parentFrame) {
+        this.parentFrame = parentFrame;
+        this.tableModel = new MedicoTableModel();
+        this.loadingOverlay = new LoadingOverlay(parentFrame);
 
-        Medicostable.setModel(medicoModel);
-
-        buscarButton.addActionListener(e -> medicoController.buscarMedico());
-        guardarButton.addActionListener(e -> medicoController.guardarMedico());
-        limpiarButton.addActionListener(e -> medicoController.limpiarCampos());
-        borrarButton.addActionListener(e -> medicoController.borrarMedico());
-        actualizarButton.addActionListener(e -> medicoController.actualizarMedico());
-        reporteButton.addActionListener(e -> medicoController.generarReporteMedicoSeleccionado());
-        Medicostable.getSelectionModel().addListSelectionListener(this::onTableSelection);
+        Medicostable.setModel(tableModel);
     }
 
+    public void showLoading(boolean visible) {
+        loadingOverlay.show(visible);
+    }
 
+    public void clearFields() {
+        idTextField.setText("");
+        NametextField.setText("");
+        EspecialidadtextField.setText("");
+        Medicostable.clearSelection();
+    }
+
+    public void populateFields(MedicoResponseDto medico) {
+        idTextField.setText(String.valueOf(medico.getId()));
+        NametextField.setText(medico.getNombre());
+        EspecialidadtextField.setText(medico.getEspecialidad());
+    }
+
+    // Getters
+    public MedicoTableModel getTableModel() { return tableModel; }
     public JPanel getMainPanel() { return MainPanel; }
     public JTextField getBuscartextField() { return BuscartextField; }
     public JTextField getIDtextField() { return idTextField; }
@@ -65,7 +70,6 @@ public class MedicoForm extends JPanel {
     public JButton getBorrarButton() { return borrarButton; }
     public JButton getActualizarButton() { return actualizarButton; }
 
-
     private void createUIComponents() {
         buscarButton = new BlueRoundedButton("Buscar");
         reporteButton = new BlueRoundedButton("Reporte");
@@ -74,19 +78,4 @@ public class MedicoForm extends JPanel {
         borrarButton = new BlueRoundedButton("Borrar");
         actualizarButton = new BlueRoundedButton("Actualizar");
     }
-
-
-    private void onTableSelection(javax.swing.event.ListSelectionEvent e) {
-        if (e.getValueIsAdjusting()) return;
-        if (medicoModel == null) return;
-        int row = Medicostable.getSelectedRow();
-        if (row < 0) return;
-        Medico m = medicoModel.getMedicoAt(row);
-        if (m == null) return;
-
-        idTextField.setText(String.valueOf(m.getId()));
-        NametextField.setText(m.getNombre());
-        EspecialidadtextField.setText(m.getEspecialidad());
-    }
-
 }

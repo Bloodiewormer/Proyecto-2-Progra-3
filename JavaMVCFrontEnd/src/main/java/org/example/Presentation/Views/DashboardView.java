@@ -69,7 +69,7 @@ public class DashboardView extends JPanel {
     }
 
     private void initListeners() {
-        addButton.addActionListener(_ -> {
+        addButton.addActionListener(e -> {
             String nombreSel = (String) selectMedicamentoComboBox.getSelectedItem();
             if (nombreSel == null) return;
             Medicamento med = medicamentoService.leerTodos()

@@ -52,6 +52,9 @@ public class MenuPrincipalView extends JFrame {
     private final RecetaService recetaService;
     private final int userid;
 
+    private static final String SERVER_HOST = "localhost";
+    private static final int SERVER_PORT = 7000;
+
     public MenuPrincipalView(UserType userType,
                              LoginController controller,
                              UsuarioService usuarioService,
@@ -103,21 +106,21 @@ public class MenuPrincipalView extends JFrame {
         setVisible(true);
 
 
-        salirButton.addActionListener(_ -> {
+        salirButton.addActionListener(e -> {
             dispose();
             @SuppressWarnings("unused")
             LoginView loginView = new LoginView(controller); // Show LoginView again
         });
 
-        medicosButton.addActionListener(_ -> showMedicosView() );
-        farmaceutasButton.addActionListener(_ -> showFarmaceutasView() );
-        pacientesButton.addActionListener(_ -> showPacientesView() );
-        medicamentosButton.addActionListener(_ -> showMedicamentosView() );
-        dashboardButton.addActionListener(_ -> showDashboardView() );
-        acercadeButton.addActionListener(_ -> showAcercaDeView() );
-        prescribirButton.addActionListener(_ -> showPrescribirView() );
-        despachoButton.addActionListener(_ -> showDespachoview() );
-        historicoRecetasButton.addActionListener(_ ->showHistoricoRecetasView() );
+        medicosButton.addActionListener(e -> showMedicosView() );
+        farmaceutasButton.addActionListener(e -> showFarmaceutasView() );
+        pacientesButton.addActionListener(e -> showPacientesView() );
+        medicamentosButton.addActionListener(e -> showMedicamentosView() );
+        dashboardButton.addActionListener(e -> showDashboardView() );
+        acercadeButton.addActionListener(e -> showAcercaDeView() );
+        prescribirButton.addActionListener(e -> showPrescribirView() );
+        despachoButton.addActionListener(e -> showDespachoview() );
+        historicoRecetasButton.addActionListener(e ->showHistoricoRecetasView() );
 
 
         init(userType);
@@ -214,7 +217,7 @@ public class MenuPrincipalView extends JFrame {
         menuVisible = !menuVisible;
         int targetWidth = menuVisible ? MENU_WIDTH : 30;
         Timer timer = new Timer(10, null);
-        timer.addActionListener(_ -> {
+        timer.addActionListener(e -> {
             int currentWidth = collapsiblePanel.getWidth();
             if (currentWidth < targetWidth) { // Expand
                 MenuLabel.setVisible(true);

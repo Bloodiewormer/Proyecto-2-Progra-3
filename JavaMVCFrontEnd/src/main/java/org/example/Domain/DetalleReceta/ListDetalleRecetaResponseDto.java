@@ -1,4 +1,4 @@
-package org.example.Domain.Dtos.DetalleReceta;
+package org.example.Domain.DetalleReceta;
 
 import java.util.List;
 

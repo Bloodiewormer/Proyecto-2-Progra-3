@@ -1,131 +1,334 @@
 package org.example.Presentation.Controllers;
 
-import org.example.presentation_layer.Models.MedicamentoTableModel;
-import org.example.presentation_layer.Views.MedicamentoForm;
+import org.example.Presentation.Observable;
+import org.example.Presentation.Views.MedicamentoForm;
 import org.example.Services.MedicamentoService;
+import org.example.Utilities.EventType;
 
 import javax.swing.*;
-import java.util.ArrayList;
+import javax.swing.event.ListSelectionEvent;
 import java.util.List;
 
-public class MedicamentoController {
-    private final MedicamentoForm medicamentoForm;
-    private final MedicamentoService service;
-    private final MedicamentoTableModel tableModel;
+public class MedicamentoController extends Observable {
+    private final MedicamentoForm medicamentoView;
+    private final MedicamentoService medicamentoService;
 
+    public MedicamentoController(MedicamentoForm medicamentoView, MedicamentoService medicamentoService) {
+        this.medicamentoView = medicamentoView;
+        this.medicamentoService = medicamentoService;
 
-    public MedicamentoController(MedicamentoForm medicamentoForm, MedicamentoService service, MedicamentoTableModel tableModel) {
-        this.medicamentoForm = medicamentoForm;
-        this.service = service;
-        this.tableModel = tableModel;
-        cargarMedicamentos();
+        addObserver(medicamentoView.getTableModel());
+        loadMedicamentosAsync();
+        addListeners();
     }
 
-    public void agregarMedicamento() {
+    private void loadMedicamentosAsync() {
+        medicamentoView.showLoading(true);
+
+        SwingWorker<List<MedicamentoResponseDto>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<MedicamentoResponseDto> doInBackground() throws Exception {
+                return medicamentoService.listMedicamentosAsync().get();
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    List<MedicamentoResponseDto> medicamentos = get();
+                    medicamentoView.getTableModel().setMedicamentos(medicamentos);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(
+                            medicamentoView,
+                            "Error al cargar medicamentos: " + e.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                } finally {
+                    medicamentoView.showLoading(false);
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    private void addListeners() {
+        medicamentoView.getGuardarButton().addActionListener(e -> handleAddMedicamento());
+        medicamentoView.getActualizarButton().addActionListener(e -> handleUpdateMedicamento());
+        medicamentoView.getBorrarButton().addActionListener(e -> handleDeleteMedicamento());
+        medicamentoView.getLimpiarButton().addActionListener(e -> handleClearFields());
+        medicamentoView.getBuscarButton().addActionListener(e -> handleSearch());
+        medicamentoView.getReporteButton().addActionListener(e -> handleReport());
+        medicamentoView.getMedicamentotable().getSelectionModel().addListSelectionListener(this::handleRowSelection);
+    }
+
+    // ---------------------------
+    // Action Handlers
+    // ---------------------------
+    private void handleAddMedicamento() {
         try {
-            int codigo = Integer.parseInt(medicamentoForm.getCodigotextField().getText().trim());
-            validarCodigo(codigo);
-            String nombre = medicamentoForm.getNametextField().getText().trim();
-            String presentacion = medicamentoForm.getPresentaciontextField().getText().trim();
+            String codigoText = medicamentoView.getCodigotextField().getText().trim();
+            String nombre = medicamentoView.getNametextField().getText().trim();
+            String presentacion = medicamentoView.getPresentaciontextField().getText().trim();
 
-            Medicamento m = new Medicamento(codigo, nombre, presentacion);
-            service.agregar(m);
-
-            cargarMedicamentos();
-            limpiarCampos();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(medicamentoForm, "ID inválido", "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(medicamentoForm, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-
-
-    public void borrarMedicamento() {
-        int row = medicamentoForm.getMedicamentotable().getSelectedRow();
-        if (row >= 0) {
-            int codigo = (int) tableModel.getValueAt(row, 0);
-            service.borrar(codigo);
-            cargarMedicamentos();
-        }
-    }
-
-    public void buscarMedicamento() {
-        String filtro = medicamentoForm.getBuscartextField().getText().toLowerCase().trim();
-        List<Medicamento> medicamentos = service.leerTodos();
-        List<Medicamento> filtrados = new ArrayList<>();
-        for (Medicamento m : medicamentos) {
-            if (m.getNombre().toLowerCase().contains(filtro) ||
-                    m.getPresentacion().toLowerCase().contains(filtro) ||
-                    String.valueOf(m.getCodigo()).contains(filtro)) {
-                filtrados.add(m);
+            if (codigoText.isEmpty() || nombre.isEmpty() || presentacion.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        medicamentoView,
+                        "Todos los campos son requeridos",
+                        "Validación",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
             }
+
+            int codigo = Integer.parseInt(codigoText);
+            AddMedicamentoRequestDto dto = new AddMedicamentoRequestDto(nombre, presentacion);
+
+            medicamentoView.showLoading(true);
+            SwingWorker<MedicamentoResponseDto, Void> worker = new SwingWorker<>() {
+                @Override
+                protected MedicamentoResponseDto doInBackground() throws Exception {
+                    return medicamentoService.addMedicamentoAsync(dto).get();
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        MedicamentoResponseDto medicamento = get();
+                        if (medicamento != null) {
+                            notifyObservers(EventType.CREATED, medicamento);
+                            medicamentoView.clearFields();
+                            JOptionPane.showMessageDialog(
+                                    medicamentoView,
+                                    "Medicamento agregado exitosamente",
+                                    "Éxito",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(
+                                medicamentoView,
+                                "Error al agregar: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    } finally {
+                        medicamentoView.showLoading(false);
+                    }
+                }
+            };
+            worker.execute();
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(
+                    medicamentoView,
+                    "Código debe ser un número válido",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
-        tableModel.setMedicamentos(filtrados);
     }
 
-    public void actualizarMedicamento() {
+    private void handleUpdateMedicamento() {
+        int selectedRow = medicamentoView.getMedicamentotable().getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(
+                    medicamentoView,
+                    "Seleccione un medicamento de la tabla",
+                    "Advertencia",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
         try {
-            int codigo = Integer.parseInt(medicamentoForm.getCodigotextField().getText().trim());
-            String nombre = medicamentoForm.getNametextField().getText().trim();
-            String presentacion = medicamentoForm.getPresentaciontextField().getText().trim();
+            String codigoText = medicamentoView.getCodigotextField().getText().trim();
+            String nombre = medicamentoView.getNametextField().getText().trim();
+            String presentacion = medicamentoView.getPresentaciontextField().getText().trim();
 
-            Medicamento m = new Medicamento(codigo, nombre, presentacion);
-            service.actualizar(m);
+            if (codigoText.isEmpty() || nombre.isEmpty() || presentacion.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        medicamentoView,
+                        "Todos los campos son requeridos",
+                        "Validación",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
 
-            cargarMedicamentos();
-            limpiarCampos();
+            int codigo = Integer.parseInt(codigoText);
+            UpdateMedicamentoRequestDto dto = new UpdateMedicamentoRequestDto(codigo, nombre, presentacion);
+
+            medicamentoView.showLoading(true);
+            SwingWorker<MedicamentoResponseDto, Void> worker = new SwingWorker<>() {
+                @Override
+                protected MedicamentoResponseDto doInBackground() throws Exception {
+                    return medicamentoService.updateMedicamentoAsync(dto).get();
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        MedicamentoResponseDto updatedMedicamento = get();
+                        if (updatedMedicamento != null) {
+                            notifyObservers(EventType.UPDATED, updatedMedicamento);
+                            medicamentoView.clearFields();
+                            JOptionPane.showMessageDialog(
+                                    medicamentoView,
+                                    "Medicamento actualizado exitosamente",
+                                    "Éxito",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(
+                                medicamentoView,
+                                "Error al actualizar: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    } finally {
+                        medicamentoView.showLoading(false);
+                    }
+                }
+            };
+            worker.execute();
+
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(medicamentoForm, "ID inválido", "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(medicamentoForm, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    medicamentoView,
+                    "Código debe ser un número válido",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
+    private void handleDeleteMedicamento() {
+        int selectedRow = medicamentoView.getMedicamentotable().getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(
+                    medicamentoView,
+                    "Seleccione un medicamento de la tabla",
+                    "Advertencia",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
 
-    public void limpiarCampos() {
-        medicamentoForm.getCodigotextField().setText("");
-        medicamentoForm.getNametextField().setText("");
-        medicamentoForm.getPresentaciontextField().setText("");
-    }
+        MedicamentoResponseDto selectedMedicamento = medicamentoView.getTableModel().getMedicamentoAt(selectedRow);
 
-    private void cargarMedicamentos() {
-        List<Medicamento> medicamentos = service.leerTodos();
-        tableModel.setMedicamentos(medicamentos);
-    }
+        int confirm = JOptionPane.showConfirmDialog(
+                medicamentoView,
+                "¿Está seguro de eliminar el medicamento " + selectedMedicamento.getNombre() + "?",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
 
-    private void validarCodigo(int codigo) {
-        for (Medicamento m : service.leerTodos()) {
-            if (codigo <= 0) {
-                throw new IllegalArgumentException("El código debe ser positivo");
-            }
-            if (m.getCodigo() == codigo) {
-                throw new IllegalArgumentException("El código ya existe");
-            }
+        if (confirm == JOptionPane.YES_OPTION) {
+            DeleteMedicamentoRequestDto dto = new DeleteMedicamentoRequestDto(selectedMedicamento.getId());
+
+            medicamentoView.showLoading(true);
+            SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+                @Override
+                protected Boolean doInBackground() throws Exception {
+                    return medicamentoService.deleteMedicamentoAsync(dto).get();
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        Boolean success = get();
+                        if (success) {
+                            notifyObservers(EventType.DELETED, selectedMedicamento.getId());
+                            medicamentoView.clearFields();
+                            JOptionPane.showMessageDialog(
+                                    medicamentoView,
+                                    "Medicamento eliminado exitosamente",
+                                    "Éxito",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(
+                                medicamentoView,
+                                "Error al eliminar: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    } finally {
+                        medicamentoView.showLoading(false);
+                    }
+                }
+            };
+            worker.execute();
         }
     }
 
-    public void generarReporteMedicamentoSeleccionado() {
-        int row = medicamentoForm.getMedicamentotable().getSelectedRow();
-        if (row >= 0) {
-            int id = (int) tableModel.getValueAt(row, 0);
-            Medicamento u = service.leerPorId(id);
-            if (u != null) {
-                String reporte = "Reporte de Medicamento\n\n" +
-                        "ID: " + u.getCodigo() + "\n" +
-                        "Nombre: " + u.getNombre() + "\n" +
-                        "Tipo: " + u.getClass().getSimpleName() + "\n";
-                JOptionPane.showMessageDialog(medicamentoForm, reporte, "Reporte de Medicamento", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(medicamentoForm, "No se encontró el Medicamento seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            JOptionPane.showMessageDialog(medicamentoForm, "Por favor, seleccione un Medicamento de la tabla.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-        }
+    private void handleClearFields() {
+        medicamentoView.clearFields();
     }
 
+    private void handleSearch() {
+        String filtro = medicamentoView.getBuscartextField().getText().toLowerCase().trim();
 
+        if (filtro.isEmpty()) {
+            loadMedicamentosAsync();
+            return;
+        }
 
+        List<MedicamentoResponseDto> allMedicamentos = medicamentoView.getTableModel().getMedicamentos();
+        List<MedicamentoResponseDto> filtrados = allMedicamentos.stream()
+                .filter(m -> m.getNombre().toLowerCase().contains(filtro) ||
+                        m.getPresentacion().toLowerCase().contains(filtro) ||
+                        String.valueOf(m.getId()).contains(filtro))
+                .toList();
 
+        medicamentoView.getTableModel().setMedicamentos(filtrados);
+    }
+
+    private void handleReport() {
+        int selectedRow = medicamentoView.getMedicamentotable().getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(
+                    medicamentoView,
+                    "Seleccione un medicamento de la tabla",
+                    "Advertencia",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        MedicamentoResponseDto medicamento = medicamentoView.getTableModel().getMedicamentoAt(selectedRow);
+        String reporte = String.format(
+                "Reporte de Medicamento\n\n" +
+                        "Código: %d\n" +
+                        "Nombre: %s\n" +
+                        "Presentación: %s\n",
+                medicamento.getId(),
+                medicamento.getNombre(),
+                medicamento.getPresentacion()
+        );
+
+        JOptionPane.showMessageDialog(
+                medicamentoView,
+                reporte,
+                "Reporte de Medicamento",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    private void handleRowSelection(ListSelectionEvent e) {
+        if (!e.getValueIsAdjusting()) {
+            int row = medicamentoView.getMedicamentotable().getSelectedRow();
+            if (row >= 0) {
+                MedicamentoResponseDto medicamento = medicamentoView.getTableModel().getMedicamentoAt(row);
+                medicamentoView.populateFields(medicamento);
+            }
+        }
+    }
 }

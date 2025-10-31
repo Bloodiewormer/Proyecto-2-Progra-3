@@ -39,9 +39,9 @@ public class LoginController {
     public UserType getUserType(int id) {
         Usuario usuario = usuarioService.leerPorId(id);
         return switch (usuario) {
-            case Administrador _ -> UserType.ADMINISTRADOR;
-            case Farmaceuta _ -> UserType.FARMACEUTA;
-            case Medico _ -> UserType.MEDICO;
+            case Administrador e -> UserType.ADMINISTRADOR;
+            case Farmaceuta e -> UserType.FARMACEUTA;
+            case Medico e -> UserType.MEDICO;
             case null, default -> UserType.NULL;
         };
     }

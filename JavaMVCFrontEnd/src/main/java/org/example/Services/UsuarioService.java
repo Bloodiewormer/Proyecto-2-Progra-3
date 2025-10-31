@@ -1,67 +1,134 @@
 package org.example.Services;
 
-import org.example.Domain.Dtos.Usuario.UsuarioResponseDto;
-import org.example.Domain.Dtos.Usuario.AddUsuarioRequestDto;
-import org.example.Domain.Dtos.Usuario.UpdateUsuarioRequestDto;
-import org.example.Utilities.ChangeType;
+import org.example.Domain.Dtos.Farmaceuta.*;
+import org.example.Domain.Dtos.RequestDto;
+import org.example.Domain.Dtos.ResponseDto;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-public class UsuarioService {
+public class UsuarioService extends BaseService {
+    private final ExecutorService executor = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
 
-    private final List<UsuarioResponseDto> usuarios = new ArrayList<>();
-    private final List<IServiceObserver<UsuarioResponseDto>> observers = new ArrayList<>();
-
-    public void agregar(AddUsuarioRequestDto dto) {
-        int newId = usuarios.size() + 1;
-        UsuarioResponseDto nuevo = new UsuarioResponseDto(newId, dto.getNombre());
-        usuarios.add(nuevo);
-        notifyObservers(ChangeType.CREATED, nuevo);
+    public UsuarioService(String host, int port) {
+        super(host, port);
     }
 
-    public void actualizar(UpdateUsuarioRequestDto dto) {
-        for (int i = 0; i < usuarios.size(); i++) {
-            if (usuarios.get(i).getId() == dto.getId()) {
-                usuarios.set(i, new UsuarioResponseDto(dto.getId(), dto.getNombre()));
-                notifyObservers(ChangeType.UPDATED, usuarios.get(i));
-                return;
-            }
-        }
-        throw new IllegalArgumentException("Usuario no encontrado");
+    // ==================== FARMACEUTA ====================
+
+    public Future<FarmaceutaResponseDto> addFarmaceutaAsync(AddFarmaceutaRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Farmaceuta",
+                    "add",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), FarmaceutaResponseDto.class);
+        });
     }
 
-    public void borrar(int id) {
-        for (int i = 0; i < usuarios.size(); i++) {
-            if (usuarios.get(i).getId() == id) {
-                UsuarioResponseDto eliminado = usuarios.remove(i);
-                notifyObservers(ChangeType.DELETED, eliminado);
-                return;
-            }
-        }
+    public Future<FarmaceutaResponseDto> updateFarmaceutaAsync(UpdateFarmaceutaRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Farmaceuta",
+                    "update",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), FarmaceutaResponseDto.class);
+        });
     }
 
-    public List<UsuarioResponseDto> leerTodos() {
-        return new ArrayList<>(usuarios);
+    public Future<Boolean> deleteFarmaceutaAsync(DeleteFarmaceutaRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Farmaceuta",
+                    "delete",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            return response.isSuccess();
+        });
     }
 
-    public UsuarioResponseDto leerPorId(int id) {
-        for (UsuarioResponseDto u : usuarios) {
-            if (u.getId() == id) return u;
-        }
-        return null;
+    public Future<List<FarmaceutaResponseDto>> listFarmaceutasAsync() {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Farmaceuta",
+                    "list",
+                    "",
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            ListFarmaceutaResponseDto listResponse = gson.fromJson(response.getData(), ListFarmaceutaResponseDto.class);
+            return listResponse.getFarmaceutas();
+        });
     }
 
-    public void addObserver(IServiceObserver<UsuarioResponseDto> observer) {
-        if (observer != null && !observers.contains(observer)) {
-            observers.add(observer);
-        }
+    // ==================== MEDICO ====================
+
+    public Future<MedicoResponseDto> addMedicoAsync(AddMedicoRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medico",
+                    "add",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), MedicoResponseDto.class);
+        });
     }
 
-    private void notifyObservers(ChangeType type, UsuarioResponseDto entity) {
-        for (IServiceObserver<UsuarioResponseDto> obs : observers) {
-            obs.onDataChanged(type, entity);
-        }
+    public Future<MedicoResponseDto> updateMedicoAsync(UpdateMedicoRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medico",
+                    "update",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), MedicoResponseDto.class);
+        });
+    }
+
+    public Future<Boolean> deleteMedicoAsync(DeleteMedicoRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medico",
+                    "delete",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            return response.isSuccess();
+        });
+    }
+
+    public Future<List<MedicoResponseDto>> listMedicosAsync() {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medico",
+                    "list",
+                    "",
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            ListMedicoResponseDto listResponse = gson.fromJson(response.getData(), ListMedicoResponseDto.class);
+            return listResponse.getMedicos();
+        });
     }
 }
-

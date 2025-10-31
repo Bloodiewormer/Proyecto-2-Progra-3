@@ -1,24 +1,19 @@
-package org.example.Domain.Dtos.DetalleReceta;
+package org.example.Domain.DetalleReceta;
 
-public class UpdateDetalleRecetaRequestDto {
-    private int id;
+public class AddDetalleRecetaRequestDto {
     private int idMedicamento;
     private int cantidad;
     private String indicaciones;
     private int dias;
 
-    public UpdateDetalleRecetaRequestDto() {}
+    public AddDetalleRecetaRequestDto() {}
 
-    public UpdateDetalleRecetaRequestDto(int id, int idMedicamento, int cantidad, String indicaciones, int dias) {
-        this.id = id;
+    public AddDetalleRecetaRequestDto(int idMedicamento, int cantidad, String indicaciones, int dias) {
         this.idMedicamento = idMedicamento;
         this.cantidad = cantidad;
         this.indicaciones = indicaciones;
         this.dias = dias;
     }
-
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
 
     public int getIdMedicamento() { return idMedicamento; }
     public void setIdMedicamento(int idMedicamento) { this.idMedicamento = idMedicamento; }

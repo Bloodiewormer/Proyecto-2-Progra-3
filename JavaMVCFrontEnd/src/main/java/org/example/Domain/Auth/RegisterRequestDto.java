@@ -1,4 +1,4 @@
-package org.example.Domain.Dtos.Auth;
+package org.example.Domain.Auth;
 
 public class RegisterRequestDto {
     private String username;

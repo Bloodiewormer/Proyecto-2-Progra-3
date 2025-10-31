@@ -1,82 +1,73 @@
 package org.example.Services;
 
-import org.example.data_access_layer.IFileStore;
-import org.example.Utilities.ChangeType;
+import org.example.Domain.Dtos.RequestDto;
+import org.example.Domain.Dtos.ResponseDto;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-public class MedicamentoService implements IService<Medicamento> {
+public class MedicamentoService extends BaseService {
+    private final ExecutorService executor = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
 
-    private final IFileStore<Medicamento> fileStore;
-    private final List<IServiceObserver<Medicamento>> observers = new ArrayList<>();
-
-    public MedicamentoService(IFileStore<Medicamento> fileStore) {
-        this.fileStore = fileStore;
+    public MedicamentoService(String host, int port) {
+        super(host, port);
     }
 
-    @Override
-    public void agregar(Medicamento entity) {
-        List<Medicamento> medicamentos = fileStore.readAll();
-        medicamentos.add(entity);
-        fileStore.writeAll(medicamentos);
-        notifyObservers(ChangeType.CREATED ,entity);
+    public Future<MedicamentoResponseDto> addMedicamentoAsync(AddMedicamentoRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medicamento",
+                    "add",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), MedicamentoResponseDto.class);
+        });
     }
 
-    @Override
-    public void borrar(int id) {
-        List<Medicamento> medicamentos = fileStore.readAll();
-        medicamentos.removeIf(m -> m.getCodigo() == id);
-        fileStore.writeAll(medicamentos);
-        notifyObservers(ChangeType.DELETED ,null);
+    public Future<MedicamentoResponseDto> updateMedicamentoAsync(UpdateMedicamentoRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medicamento",
+                    "update",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), MedicamentoResponseDto.class);
+        });
     }
 
-    @Override
-    public void actualizar(Medicamento entity) {
-        List<Medicamento> medicamentos = fileStore.readAll();
-        for (int i = 0; i < medicamentos.size(); i++) {
-            if (medicamentos.get(i).getCodigo() == entity.getCodigo()) {
-                medicamentos.set(i, entity);
-                break;
-            }
-        }
-        fileStore.writeAll(medicamentos);
-        notifyObservers(ChangeType.UPDATED ,entity);
+    public Future<Boolean> deleteMedicamentoAsync(DeleteMedicamentoRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medicamento",
+                    "delete",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            return response.isSuccess();
+        });
     }
 
-    @Override
-    public List<Medicamento> leerTodos() {
-        return fileStore.readAll();
-    }
-
-    @Override
-    public Medicamento leerPorId(int id) {
-        return fileStore.readAll()
-                .stream()
-                .filter(m -> m.getCodigo() == id)
-                .findFirst()
-                .orElse(null);
-    }
-
-    @Override
-    public void addObserver(IServiceObserver<Medicamento> listener) {
-        observers.add(listener);
-    }
-
-    private void notifyObservers(ChangeType c, Medicamento entity) {
-        for (IServiceObserver<Medicamento> obs : observers) {
-            obs.onDataChanged(c, entity);
-        }
-    }
-
-
-    public List<Medicamento> buscarPorNombre(String nombre) {
-        List<Medicamento> result = new ArrayList<>();
-        for (Medicamento m : leerTodos()) {
-            if (m.getNombre().toLowerCase().contains(nombre.toLowerCase())) {
-                result.add(m);
-            }
-        }
-        return result;
+    public Future<List<MedicamentoResponseDto>> listMedicamentosAsync() {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medicamento",
+                    "list",
+                    "",
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            ListMedicamentoResponseDto listResponse = gson.fromJson(response.getData(), ListMedicamentoResponseDto.class);
+            return listResponse.getMedicamentos();
+        });
     }
 }

@@ -1,4 +1,4 @@
-package org.example.Domain.Dtos.Administrador;
+package org.example.Domain.Administrador;
 
 public class UpdateAdministradorRequestDto {
     private int id;
