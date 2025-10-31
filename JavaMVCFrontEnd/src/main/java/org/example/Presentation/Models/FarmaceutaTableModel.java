@@ -38,7 +38,6 @@ public class FarmaceutaTableModel extends AbstractTableModel implements IObserve
         };
     }
 
-    // Implementación del observer
     @Override
     public void update(ChangeType changeType, Object data) {
         if (data == null) return;
@@ -71,7 +70,6 @@ public class FarmaceutaTableModel extends AbstractTableModel implements IObserve
         }
     }
 
-    // Métodos utilitarios
     public List<FarmaceutaResponseDto> getFarmaceutas() {
         return new ArrayList<>(farmaceutas);
     }
@@ -86,4 +84,3 @@ public class FarmaceutaTableModel extends AbstractTableModel implements IObserve
         return farmaceutas.get(row);
     }
 }
-

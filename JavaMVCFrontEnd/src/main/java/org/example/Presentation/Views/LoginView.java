@@ -1,38 +1,37 @@
 package org.example.Presentation.Views;
 
+import org.example.Domain.Dtos.Auth.UserResponseDto;
 import org.example.Presentation.Components.BlueRoundedButton;
 import org.example.Presentation.Components.CustomPasswordField;
 import org.example.Presentation.Components.CustomTextField;
-import org.example.Presentation.Controllers.LoginController;
-import org.example.Presentation.Models.UserType;
+import org.example.Presentation.Components.LoadingOverlay;
+import org.example.Presentation.IObserver;
+import org.example.Utilities.ChangeType;
+
 import javax.swing.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 import java.util.Objects;
 
-public class LoginView  extends  JFrame {
+public class LoginView extends JFrame implements IObserver {
     private JPanel mainPanel;
     private JTextField userIdField;
     private JPasswordField passwordField;
     private JButton loginButton;
     private JLabel forgotLabel;
     private JLabel closeProgramLabel;
-    @SuppressWarnings("unused")
     private JPanel loginPanel;
-    @SuppressWarnings("unused")
     private JPanel IconPanel;
-    @SuppressWarnings("unused")
     private JLabel icon;
-    @SuppressWarnings("unused")
     private JLabel LoginLabel;
     private JLabel infoLabel;
 
-    private final LoginController controller;
+    private final LoadingOverlay loadingOverlay;
 
-    public LoginView(LoginController controller) {
-        this.controller = controller;
+    public LoginView() {
         initializeUI();
         registerEventHandlers();
+        loadingOverlay = new LoadingOverlay(this);
     }
 
     private void initializeUI() {
@@ -42,8 +41,9 @@ public class LoginView  extends  JFrame {
         } catch (Exception e) {
             System.err.printf("Icon could not be loaded: %s%n", e.getMessage());
         }
+
         setContentPane(mainPanel);
-        setTitle("Login");
+        setTitle("Sistema de Gestión - Login");
         setSize(500, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setUndecorated(true);
@@ -54,36 +54,12 @@ public class LoginView  extends  JFrame {
     }
 
     private void registerEventHandlers() {
-        loginButton.addActionListener(e -> onLoginClicked());
-
-
-        forgotLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                controller.showPasswordChangeView();
-            }
-        });
-
-
-        closeProgramLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                controller.exitApplication();
-            }
-        });
-
-        infoLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                showGroupInfo();
-            }
-        });
-
+        // Enter key support on text fields
         KeyAdapter enterKeyListener = new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    onLoginClicked();
+                    loginButton.doClick();
                 }
             }
         };
@@ -91,52 +67,93 @@ public class LoginView  extends  JFrame {
         userIdField.addKeyListener(enterKeyListener);
         passwordField.addKeyListener(enterKeyListener);
 
-    }
+        // Close button
+        closeProgramLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // This will be handled by the controller
+                System.exit(0);
+            }
+        });
 
+        // Info button
+        infoLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                showGroupInfo();
+            }
+        });
 
-
-    private void onLoginClicked() {
-        String userInput = userIdField.getText().trim();
-        String password = new String(passwordField.getPassword());
-        int id;
-        try {
-            id = Integer.parseInt(userInput);
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Invalid ID format.");
-            return;
-        }
-        boolean success = controller.login(id, password);
-
-        if (success) {
-            UserType userType = controller.getUserType(id);
-            // Delegate navigation to controller
-            controller.onLoginSuccess(userType, this, id);
-        } else {
-            JOptionPane.showMessageDialog(this, "Invalid credentials.");
-        }
-
+        // Forgot password label
+        forgotLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // This will be handled by the controller
+            }
+        });
     }
 
     private void showGroupInfo() {
         JOptionPane.showMessageDialog(this,
                 """
-                Group Members:
-                - David Gonzalez Cordoba
+                Miembros del Grupo:
+                - David González Córdoba
                 - Dany Montero Romero
-                - Emmanuel Nunez Jimenez
+                - Emmanuel Núñez Jiménez
+                
+                Sistema de Gestión v1.0
+                Universidad Nacional de Costa Rica
                 """,
-                "Group Members",
+                "Información del Grupo",
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void createUIComponents() {
-        loginButton = new BlueRoundedButton("LOGIN");
-        userIdField = new CustomTextField();
-        passwordField = new CustomPasswordField();
+    // Public methods for controller
+    public void addLoginListener(java.awt.event.ActionListener listener) {
+        loginButton.addActionListener(listener);
+    }
+
+    public void addForgotPasswordListener(MouseAdapter listener) {
+        forgotLabel.addMouseListener(listener);
+    }
+
+    public String getUsername() {
+        return userIdField.getText().trim();
+    }
+
+    public String getPassword() {
+        return new String(passwordField.getPassword());
+    }
+
+    public void clearFields() {
+        userIdField.setText("");
+        passwordField.setText("");
+        userIdField.requestFocus();
+    }
+
+    public void showLoading(boolean visible) {
+        loadingOverlay.show(visible);
+    }
+
+    @Override
+    public void update(ChangeType changeType, Object data) {
+        if (changeType == ChangeType.UPDATED && data instanceof UserResponseDto user) {
+            // Login successful - could show a welcome message
+            System.out.println("Login successful for user: " + user.getUsername());
+        } else if (changeType == ChangeType.DELETED) {
+            // Logout
+            clearFields();
+            setVisible(true);
+        }
     }
 
     public JPanel getMainPanel() {
         return mainPanel;
     }
 
+    private void createUIComponents() {
+        loginButton = new BlueRoundedButton("INICIAR SESIÓN");
+        userIdField = new CustomTextField();
+        passwordField = new CustomPasswordField();
+    }
 }

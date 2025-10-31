@@ -4,7 +4,6 @@ import org.example.Domain.Dtos.Farmaceuta.FarmaceutaResponseDto;
 import org.example.Presentation.Components.BlueRoundedButton;
 import org.example.Presentation.Components.LoadingOverlay;
 import org.example.Presentation.Models.FarmaceutaTableModel;
-import org.example.Services.UsuarioService;
 
 import javax.swing.*;
 
@@ -28,10 +27,8 @@ public class FarmaceutaForm extends JPanel {
 
     private final FarmaceutaTableModel tableModel;
     private final LoadingOverlay loadingOverlay;
-    private final JFrame parentFrame;
 
-    public FarmaceutaForm(JFrame parentFrame, UsuarioService usuarioService) {
-        this.parentFrame = parentFrame;
+    public FarmaceutaForm(JFrame parentFrame) {
         this.tableModel = new FarmaceutaTableModel();
         this.loadingOverlay = new LoadingOverlay(parentFrame);
 
@@ -53,7 +50,7 @@ public class FarmaceutaForm extends JPanel {
         NametextField.setText(farmaceuta.getNombre());
     }
 
-    // ... getters ...
+    // Getters
     public FarmaceutaTableModel getTableModel() { return tableModel; }
     public JPanel getMainPanel() { return MainPanel; }
     public JTextField getIDtextFiel() { return IDtextFiel; }
@@ -76,5 +73,3 @@ public class FarmaceutaForm extends JPanel {
         actualizarButton = new BlueRoundedButton("Actualizar");
     }
 }
-
-

@@ -1,8 +1,8 @@
 package org.example.Presentation.Controllers;
-import org.example.presentation_layer.Models.DetalleRecetaTableModel;
-import org.example.presentation_layer.Models.MedicamentoTableModel;
-import org.example.presentation_layer.Models.PacienteTableModel;
-import org.example.presentation_layer.Views.PrescribirForm;
+import org.example.Presentation.Models.DetalleRecetaTableModel;
+import org.example.Presentation.Models.MedicamentoTableModel;
+import org.example.Presentation.Models.PacienteTableModel;
+import org.example.Presentation.Views.PrescribirForm;
 import org.example.Services.MedicamentoService;
 import org.example.Services.PacienteService;
 import org.example.Services.RecetaService;
@@ -21,7 +21,7 @@ public class PrescribirController {
     private final int idMedico;
 
     public PrescribirController(PrescribirForm view,
-                                org.example.service_layer.UsuarioService usuarioService,
+                                org.example.Services.UsuarioService usuarioService,
                                 PacienteService pacienteService,
                                 MedicamentoService medicamentoService,
                                 RecetaService recetaService,

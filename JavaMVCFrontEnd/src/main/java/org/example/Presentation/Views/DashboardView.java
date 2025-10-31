@@ -86,7 +86,7 @@ public class DashboardView extends JPanel {
             }
         });
 
-        deleteSelectedButton.addActionListener(_ -> {
+        deleteSelectedButton.addActionListener(e -> {
             int row = medicamentosTable.getSelectedRow();
             if (row >= 0) {
                 medicamentosTableModel.removeRow(row);
@@ -97,7 +97,7 @@ public class DashboardView extends JPanel {
         addMonthYearSync(startMonthChooser);
         addMonthYearSync(endMonthChooser);
 
-        selectGraphicTypeComboBox.addActionListener(_ -> refreshCharts());
+        selectGraphicTypeComboBox.addActionListener(e -> refreshCharts());
     }
 
     private void addMonthYearSync(JMonthChooser chooser) {

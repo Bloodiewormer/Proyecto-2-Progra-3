@@ -1,4 +1,4 @@
-package org.example.Domain.Auth;
+package org.example.Domain.Dtos.Auth;
 
 public class UserResponseDto {
     private Long id;

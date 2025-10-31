@@ -1,5 +1,9 @@
 package org.example.Presentation.Controllers;
 
+import org.example.Domain.Dtos.Medicamento.AddMedicamentoRequestDto;
+import org.example.Domain.Dtos.Medicamento.DeleteMedicamentoRequestDto;
+import org.example.Domain.Dtos.Medicamento.MedicamentoResponseDto;
+import org.example.Domain.Dtos.Medicamento.UpdateMedicamentoRequestDto;
 import org.example.Presentation.Observable;
 import org.example.Presentation.Views.MedicamentoForm;
 import org.example.Services.MedicamentoService;

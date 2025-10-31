@@ -28,10 +28,8 @@ public class MedicoForm extends JPanel {
 
     private final MedicoTableModel tableModel;
     private final LoadingOverlay loadingOverlay;
-    private final JFrame parentFrame;
 
     public MedicoForm(JFrame parentFrame) {
-        this.parentFrame = parentFrame;
         this.tableModel = new MedicoTableModel();
         this.loadingOverlay = new LoadingOverlay(parentFrame);
 

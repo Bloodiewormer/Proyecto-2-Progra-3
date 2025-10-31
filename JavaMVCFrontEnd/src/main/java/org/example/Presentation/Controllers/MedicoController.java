@@ -2,10 +2,9 @@ package org.example.Presentation.Controllers;
 
 import org.example.Domain.Dtos.Medico.*;
 import org.example.Presentation.Observable;
-import org.example.Presentation.Models.MedicoTableModel;
 import org.example.Presentation.Views.MedicoForm;
 import org.example.Services.UsuarioService;
-import org.example.Utilities.EventType;
+import org.example.Utilities.ChangeType;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -25,7 +24,7 @@ public class MedicoController extends Observable {
     }
 
     private void loadMedicosAsync() {
-        medicoView.showLoading(true);
+        showLoading(true);
 
         SwingWorker<List<MedicoResponseDto>, Void> worker = new SwingWorker<>() {
             @Override
@@ -39,15 +38,9 @@ public class MedicoController extends Observable {
                     List<MedicoResponseDto> medicos = get();
                     medicoView.getTableModel().setMedicos(medicos);
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(
-                            medicoView,
-                            "Error al cargar médicos: " + e.getMessage(),
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE
-                    );
+                    handleError("Error al cargar médicos", e);
                 } finally {
-                    medicoView.showLoading(false);
+                    showLoading(false);
                 }
             }
         };
@@ -68,155 +61,69 @@ public class MedicoController extends Observable {
     // Action Handlers
     // ---------------------------
     private void handleAddMedico() {
+        if (!validateFields()) return;
+
         try {
-            String idText = medicoView.getIDtextField().getText().trim();
             String nombre = medicoView.getNametextField().getText().trim();
             String especialidad = medicoView.getEspecialidadtextField().getText().trim();
 
-            if (idText.isEmpty() || nombre.isEmpty() || especialidad.isEmpty()) {
-                JOptionPane.showMessageDialog(
-                        medicoView,
-                        "Todos los campos son requeridos",
-                        "Validación",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                return;
-            }
-
-            int id = Integer.parseInt(idText);
             AddMedicoRequestDto dto = new AddMedicoRequestDto(nombre, "default123", especialidad);
 
-            medicoView.showLoading(true);
-            SwingWorker<MedicoResponseDto, Void> worker = new SwingWorker<>() {
-                @Override
-                protected MedicoResponseDto doInBackground() throws Exception {
-                    return usuarioService.addMedicoAsync(dto).get();
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        MedicoResponseDto medico = get();
+            showLoading(true);
+            executeAsync(
+                    () -> usuarioService.addMedicoAsync(dto).get(),
+                    medico -> {
                         if (medico != null) {
-                            notifyObservers(EventType.CREATED, medico);
+                            notifyObservers(ChangeType.CREATED, medico);
                             medicoView.clearFields();
-                            JOptionPane.showMessageDialog(
-                                    medicoView,
-                                    "Médico agregado exitosamente",
-                                    "Éxito",
-                                    JOptionPane.INFORMATION_MESSAGE
-                            );
+                            showSuccess("Médico agregado exitosamente");
                         }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(
-                                medicoView,
-                                "Error al agregar: " + ex.getMessage(),
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE
-                        );
-                    } finally {
-                        medicoView.showLoading(false);
-                    }
-                }
-            };
-            worker.execute();
-
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(
-                    medicoView,
-                    "ID debe ser un número válido",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
+                    },
+                    "Error al agregar médico"
             );
+        } catch (Exception ex) {
+            handleError("Error en los datos del médico", ex);
         }
     }
 
     private void handleUpdateMedico() {
         int selectedRow = medicoView.getMedicostable().getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(
-                    medicoView,
-                    "Seleccione un médico de la tabla",
-                    "Advertencia",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            showWarning("Seleccione un médico de la tabla");
             return;
         }
+
+        if (!validateFields()) return;
 
         try {
             String idText = medicoView.getIDtextField().getText().trim();
             String nombre = medicoView.getNametextField().getText().trim();
             String especialidad = medicoView.getEspecialidadtextField().getText().trim();
 
-            if (idText.isEmpty() || nombre.isEmpty() || especialidad.isEmpty()) {
-                JOptionPane.showMessageDialog(
-                        medicoView,
-                        "Todos los campos son requeridos",
-                        "Validación",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                return;
-            }
-
             int id = Integer.parseInt(idText);
             UpdateMedicoRequestDto dto = new UpdateMedicoRequestDto(id, nombre, null, especialidad);
 
-            medicoView.showLoading(true);
-            SwingWorker<MedicoResponseDto, Void> worker = new SwingWorker<>() {
-                @Override
-                protected MedicoResponseDto doInBackground() throws Exception {
-                    return usuarioService.updateMedicoAsync(dto).get();
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        MedicoResponseDto updatedMedico = get();
-                        if (updatedMedico != null) {
-                            notifyObservers(EventType.UPDATED, updatedMedico);
+            showLoading(true);
+            executeAsync(
+                    () -> usuarioService.updateMedicoAsync(dto).get(),
+                    medico -> {
+                        if (medico != null) {
+                            notifyObservers(ChangeType.UPDATED, medico);
                             medicoView.clearFields();
-                            JOptionPane.showMessageDialog(
-                                    medicoView,
-                                    "Médico actualizado exitosamente",
-                                    "Éxito",
-                                    JOptionPane.INFORMATION_MESSAGE
-                            );
+                            showSuccess("Médico actualizado exitosamente");
                         }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(
-                                medicoView,
-                                "Error al actualizar: " + ex.getMessage(),
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE
-                        );
-                    } finally {
-                        medicoView.showLoading(false);
-                    }
-                }
-            };
-            worker.execute();
-
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(
-                    medicoView,
-                    "ID debe ser un número válido",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
+                    },
+                    "Error al actualizar médico"
             );
+        } catch (NumberFormatException ex) {
+            showError("ID debe ser un número válido");
         }
     }
 
     private void handleDeleteMedico() {
         int selectedRow = medicoView.getMedicostable().getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(
-                    medicoView,
-                    "Seleccione un médico de la tabla",
-                    "Advertencia",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            showWarning("Seleccione un médico de la tabla");
             return;
         }
 
@@ -233,41 +140,18 @@ public class MedicoController extends Observable {
         if (confirm == JOptionPane.YES_OPTION) {
             DeleteMedicoRequestDto dto = new DeleteMedicoRequestDto(selectedMedico.getId());
 
-            medicoView.showLoading(true);
-            SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
-                @Override
-                protected Boolean doInBackground() throws Exception {
-                    return usuarioService.deleteMedicoAsync(dto).get();
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        Boolean success = get();
+            showLoading(true);
+            executeAsync(
+                    () -> usuarioService.deleteMedicoAsync(dto).get(),
+                    success -> {
                         if (success) {
-                            notifyObservers(EventType.DELETED, selectedMedico.getId());
+                            notifyObservers(ChangeType.DELETED, selectedMedico.getId());
                             medicoView.clearFields();
-                            JOptionPane.showMessageDialog(
-                                    medicoView,
-                                    "Médico eliminado exitosamente",
-                                    "Éxito",
-                                    JOptionPane.INFORMATION_MESSAGE
-                            );
+                            showSuccess("Médico eliminado exitosamente");
                         }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(
-                                medicoView,
-                                "Error al eliminar: " + ex.getMessage(),
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE
-                        );
-                    } finally {
-                        medicoView.showLoading(false);
-                    }
-                }
-            };
-            worker.execute();
+                    },
+                    "Error al eliminar médico"
+            );
         }
     }
 
@@ -285,7 +169,9 @@ public class MedicoController extends Observable {
 
         List<MedicoResponseDto> allMedicos = medicoView.getTableModel().getMedicos();
         List<MedicoResponseDto> filtrados = allMedicos.stream()
-                .filter(m -> m.getNombre().toLowerCase().contains(filtro))
+                .filter(m -> m.getNombre().toLowerCase().contains(filtro) ||
+                        m.getEspecialidad().toLowerCase().contains(filtro) ||
+                        String.valueOf(m.getId()).contains(filtro))
                 .toList();
 
         medicoView.getTableModel().setMedicos(filtrados);
@@ -294,18 +180,13 @@ public class MedicoController extends Observable {
     private void handleReport() {
         int selectedRow = medicoView.getMedicostable().getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(
-                    medicoView,
-                    "Seleccione un médico de la tabla",
-                    "Advertencia",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            showWarning("Seleccione un médico de la tabla");
             return;
         }
 
         MedicoResponseDto medico = medicoView.getTableModel().getMedicoAt(selectedRow);
         String reporte = String.format(
-                "Reporte de Médico\n\n" +
+                "=== REPORTE DE MÉDICO ===\n\n" +
                         "ID: %d\n" +
                         "Nombre: %s\n" +
                         "Especialidad: %s\n",
@@ -330,5 +211,79 @@ public class MedicoController extends Observable {
                 medicoView.populateFields(medico);
             }
         }
+    }
+
+    // ---------------------------
+    // Validation & Utility Methods
+    // ---------------------------
+    private boolean validateFields() {
+        String nombre = medicoView.getNametextField().getText().trim();
+        String especialidad = medicoView.getEspecialidadtextField().getText().trim();
+
+        if (nombre.isEmpty()) {
+            showWarning("El nombre es requerido");
+            return false;
+        }
+
+        if (especialidad.isEmpty()) {
+            showWarning("La especialidad es requerida");
+            return false;
+        }
+
+        return true;
+    }
+
+    private <T> void executeAsync(AsyncTask<T> task, ResultHandler<T> onSuccess, String errorMessage) {
+        SwingWorker<T, Void> worker = new SwingWorker<>() {
+            @Override
+            protected T doInBackground() throws Exception {
+                return task.execute();
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    T result = get();
+                    onSuccess.handle(result);
+                } catch (Exception ex) {
+                    handleError(errorMessage, ex);
+                } finally {
+                    showLoading(false);
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    private void showLoading(boolean visible) {
+        medicoView.showLoading(visible);
+    }
+
+    private void showSuccess(String message) {
+        JOptionPane.showMessageDialog(medicoView, message, "Éxito", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void showError(String message) {
+        JOptionPane.showMessageDialog(medicoView, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void showWarning(String message) {
+        JOptionPane.showMessageDialog(medicoView, message, "Advertencia", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private void handleError(String message, Exception ex) {
+        ex.printStackTrace();
+        showError(message + ": " + ex.getMessage());
+    }
+
+    // Functional interfaces for cleaner async code
+    @FunctionalInterface
+    private interface AsyncTask<T> {
+        T execute() throws Exception;
+    }
+
+    @FunctionalInterface
+    private interface ResultHandler<T> {
+        void handle(T result);
     }
 }

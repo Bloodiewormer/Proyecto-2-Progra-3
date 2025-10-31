@@ -1,9 +1,10 @@
 package org.example.Presentation.Controllers;
 
+import org.example.Domain.Dtos.Paciente.*;
 import org.example.Presentation.Observable;
 import org.example.Presentation.Views.PacienteForm;
 import org.example.Services.PacienteService;
-import org.example.Utilities.EventType;
+import org.example.Utilities.ChangeType;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -26,7 +27,7 @@ public class PacienteController extends Observable {
     }
 
     private void loadPacientesAsync() {
-        pacienteView.showLoading(true);
+        showLoading(true);
 
         SwingWorker<List<PacienteResponseDto>, Void> worker = new SwingWorker<>() {
             @Override
@@ -40,15 +41,9 @@ public class PacienteController extends Observable {
                     List<PacienteResponseDto> pacientes = get();
                     pacienteView.getTableModel().setPacientes(pacientes);
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(
-                            pacienteView,
-                            "Error al cargar pacientes: " + e.getMessage(),
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE
-                    );
+                    handleError("Error al cargar pacientes", e);
                 } finally {
-                    pacienteView.showLoading(false);
+                    showLoading(false);
                 }
             }
         };
@@ -66,82 +61,41 @@ public class PacienteController extends Observable {
     }
 
     private void handleAddPaciente() {
+        if (!validateFields()) return;
+
         try {
-            String idText = pacienteView.getIdTextField().getText().trim();
             String nombre = pacienteView.getNameTextField().getText().trim();
             String telefono = pacienteView.getTelefonoTextField().getText().trim();
             Date fechaNacimiento = pacienteView.getDatePicker().getDate();
 
-            if (idText.isEmpty() || nombre.isEmpty()) {
-                JOptionPane.showMessageDialog(
-                        pacienteView,
-                        "ID y Nombre son requeridos",
-                        "Validación",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                return;
-            }
-
             String fechaNacStr = fechaNacimiento != null ? dateFormat.format(fechaNacimiento) : null;
             AddPacienteRequestDto dto = new AddPacienteRequestDto(nombre, telefono, fechaNacStr);
 
-            pacienteView.showLoading(true);
-            SwingWorker<PacienteResponseDto, Void> worker = new SwingWorker<>() {
-                @Override
-                protected PacienteResponseDto doInBackground() throws Exception {
-                    return pacienteService.addPacienteAsync(dto).get();
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        PacienteResponseDto paciente = get();
+            showLoading(true);
+            executeAsync(
+                    () -> pacienteService.addPacienteAsync(dto).get(),
+                    paciente -> {
                         if (paciente != null) {
-                            notifyObservers(EventType.CREATED, paciente);
+                            notifyObservers(ChangeType.CREATED, paciente);
                             pacienteView.clearFields();
-                            JOptionPane.showMessageDialog(
-                                    pacienteView,
-                                    "Paciente agregado exitosamente",
-                                    "Éxito",
-                                    JOptionPane.INFORMATION_MESSAGE
-                            );
+                            showSuccess("Paciente agregado exitosamente");
                         }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(
-                                pacienteView,
-                                "Error al agregar: " + ex.getMessage(),
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE
-                        );
-                    } finally {
-                        pacienteView.showLoading(false);
-                    }
-                }
-            };
-            worker.execute();
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(
-                    pacienteView,
-                    "Error: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
+                    },
+                    "Error al agregar paciente"
             );
+        } catch (Exception ex) {
+            handleError("Error en los datos del paciente", ex);
         }
     }
 
     private void handleUpdatePaciente() {
         int selectedRow = pacienteView.getPatientsTable().getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(
-                    pacienteView,
-                    "Seleccione un paciente de la tabla",
-                    "Advertencia",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            showWarning("Seleccione un paciente de la tabla");
             return;
         }
+
+        if (!validateFields()) return;
 
         try {
             String idText = pacienteView.getIdTextField().getText().trim();
@@ -149,75 +103,31 @@ public class PacienteController extends Observable {
             String telefono = pacienteView.getTelefonoTextField().getText().trim();
             Date fechaNacimiento = pacienteView.getDatePicker().getDate();
 
-            if (idText.isEmpty() || nombre.isEmpty()) {
-                JOptionPane.showMessageDialog(
-                        pacienteView,
-                        "ID y Nombre son requeridos",
-                        "Validación",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                return;
-            }
-
             int id = Integer.parseInt(idText);
             String fechaNacStr = fechaNacimiento != null ? dateFormat.format(fechaNacimiento) : null;
             UpdatePacienteRequestDto dto = new UpdatePacienteRequestDto(id, nombre, telefono, fechaNacStr);
 
-            pacienteView.showLoading(true);
-            SwingWorker<PacienteResponseDto, Void> worker = new SwingWorker<>() {
-                @Override
-                protected PacienteResponseDto doInBackground() throws Exception {
-                    return pacienteService.updatePacienteAsync(dto).get();
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        PacienteResponseDto updatedPaciente = get();
-                        if (updatedPaciente != null) {
-                            notifyObservers(EventType.UPDATED, updatedPaciente);
+            showLoading(true);
+            executeAsync(
+                    () -> pacienteService.updatePacienteAsync(dto).get(),
+                    paciente -> {
+                        if (paciente != null) {
+                            notifyObservers(ChangeType.UPDATED, paciente);
                             pacienteView.clearFields();
-                            JOptionPane.showMessageDialog(
-                                    pacienteView,
-                                    "Paciente actualizado exitosamente",
-                                    "Éxito",
-                                    JOptionPane.INFORMATION_MESSAGE
-                            );
+                            showSuccess("Paciente actualizado exitosamente");
                         }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(
-                                pacienteView,
-                                "Error al actualizar: " + ex.getMessage(),
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE
-                        );
-                    } finally {
-                        pacienteView.showLoading(false);
-                    }
-                }
-            };
-            worker.execute();
-
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(
-                    pacienteView,
-                    "ID debe ser un número válido",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
+                    },
+                    "Error al actualizar paciente"
             );
+        } catch (NumberFormatException ex) {
+            showError("ID debe ser un número válido");
         }
     }
 
     private void handleDeletePaciente() {
         int selectedRow = pacienteView.getPatientsTable().getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(
-                    pacienteView,
-                    "Seleccione un paciente de la tabla",
-                    "Advertencia",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            showWarning("Seleccione un paciente de la tabla");
             return;
         }
 
@@ -234,41 +144,18 @@ public class PacienteController extends Observable {
         if (confirm == JOptionPane.YES_OPTION) {
             DeletePacienteRequestDto dto = new DeletePacienteRequestDto(selectedPaciente.getId());
 
-            pacienteView.showLoading(true);
-            SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
-                @Override
-                protected Boolean doInBackground() throws Exception {
-                    return pacienteService.deletePacienteAsync(dto).get();
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        Boolean success = get();
+            showLoading(true);
+            executeAsync(
+                    () -> pacienteService.deletePacienteAsync(dto).get(),
+                    success -> {
                         if (success) {
-                            notifyObservers(EventType.DELETED, selectedPaciente.getId());
+                            notifyObservers(ChangeType.DELETED, selectedPaciente.getId());
                             pacienteView.clearFields();
-                            JOptionPane.showMessageDialog(
-                                    pacienteView,
-                                    "Paciente eliminado exitosamente",
-                                    "Éxito",
-                                    JOptionPane.INFORMATION_MESSAGE
-                            );
+                            showSuccess("Paciente eliminado exitosamente");
                         }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(
-                                pacienteView,
-                                "Error al eliminar: " + ex.getMessage(),
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE
-                        );
-                    } finally {
-                        pacienteView.showLoading(false);
-                    }
-                }
-            };
-            worker.execute();
+                    },
+                    "Error al eliminar paciente"
+            );
         }
     }
 
@@ -286,7 +173,9 @@ public class PacienteController extends Observable {
 
         List<PacienteResponseDto> allPacientes = pacienteView.getTableModel().getPacientes();
         List<PacienteResponseDto> filtrados = allPacientes.stream()
-                .filter(p -> p.getNombre().toLowerCase().contains(filtro))
+                .filter(p -> p.getNombre().toLowerCase().contains(filtro) ||
+                        (p.getTelefono() != null && p.getTelefono().contains(filtro)) ||
+                        String.valueOf(p.getId()).contains(filtro))
                 .toList();
 
         pacienteView.getTableModel().setPacientes(filtrados);
@@ -295,26 +184,21 @@ public class PacienteController extends Observable {
     private void handleReport() {
         int selectedRow = pacienteView.getPatientsTable().getSelectedRow();
         if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(
-                    pacienteView,
-                    "Seleccione un paciente de la tabla",
-                    "Advertencia",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            showWarning("Seleccione un paciente de la tabla");
             return;
         }
 
         PacienteResponseDto paciente = pacienteView.getTableModel().getPacienteAt(selectedRow);
         String reporte = String.format(
-                "Reporte de Paciente\n\n" +
+                "=== REPORTE DE PACIENTE ===\n\n" +
                         "ID: %d\n" +
                         "Nombre: %s\n" +
                         "Teléfono: %s\n" +
                         "Fecha Nacimiento: %s\n",
                 paciente.getId(),
                 paciente.getNombre(),
-                paciente.getTelefono(),
-                paciente.getFechaNacimiento()
+                paciente.getTelefono() != null ? paciente.getTelefono() : "N/A",
+                paciente.getFechaNacimiento() != null ? paciente.getFechaNacimiento() : "N/A"
         );
 
         JOptionPane.showMessageDialog(
@@ -333,5 +217,72 @@ public class PacienteController extends Observable {
                 pacienteView.populateFields(paciente);
             }
         }
+    }
+
+    // ---------------------------
+    // Validation & Utility Methods
+    // ---------------------------
+    private boolean validateFields() {
+        String nombre = pacienteView.getNameTextField().getText().trim();
+
+        if (nombre.isEmpty()) {
+            showWarning("El nombre es requerido");
+            return false;
+        }
+
+        return true;
+    }
+
+    private <T> void executeAsync(AsyncTask<T> task, ResultHandler<T> onSuccess, String errorMessage) {
+        SwingWorker<T, Void> worker = new SwingWorker<>() {
+            @Override
+            protected T doInBackground() throws Exception {
+                return task.execute();
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    T result = get();
+                    onSuccess.handle(result);
+                } catch (Exception ex) {
+                    handleError(errorMessage, ex);
+                } finally {
+                    showLoading(false);
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    private void showLoading(boolean visible) {
+        pacienteView.showLoading(visible);
+    }
+
+    private void showSuccess(String message) {
+        JOptionPane.showMessageDialog(pacienteView, message, "Éxito", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void showError(String message) {
+        JOptionPane.showMessageDialog(pacienteView, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void showWarning(String message) {
+        JOptionPane.showMessageDialog(pacienteView, message, "Advertencia", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private void handleError(String message, Exception ex) {
+        ex.printStackTrace();
+        showError(message + ": " + ex.getMessage());
+    }
+
+    @FunctionalInterface
+    private interface AsyncTask<T> {
+        T execute() throws Exception;
+    }
+
+    @FunctionalInterface
+    private interface ResultHandler<T> {
+        void handle(T result);
     }
 }

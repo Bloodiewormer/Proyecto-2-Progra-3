@@ -1,5 +1,6 @@
 package org.example.Services;
 
+import org.example.Domain.Dtos.Medicamento.*;
 import org.example.Domain.Dtos.RequestDto;
 import org.example.Domain.Dtos.ResponseDto;
 

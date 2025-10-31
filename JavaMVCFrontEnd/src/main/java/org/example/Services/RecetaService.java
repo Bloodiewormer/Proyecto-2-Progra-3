@@ -1,14 +1,14 @@
 package org.example.Services;
 
-/*import org.example.Domain.Dtos.Receta.AddRecetaRequestDto;
+import org.example.Domain.Dtos.Receta.AddRecetaRequestDto;
 import org.example.Domain.Dtos.Receta.DeleteRecetaRequestDto;
 import org.example.Domain.Dtos.Receta.RecetaResponseDto;
 import org.example.Domain.Dtos.Receta.ListRecetaResponseDto;
 import org.example.Domain.Dtos.DetalleReceta.DetalleRecetaResponseDto;
-import org.example.domain_layer.Receta;
-import org.example.domain_layer.DetalleReceta;
-import org.example.domain_layer.Medicamento;
-import org.example.utilities.ChangeType;
+import org.example.Domain.Receta;
+import org.example.Domain.DetalleReceta;
+import org.example.Domain.Medicamento;
+import org.example.Domain.ChangeType;
 
 import javax.sql.DataSource;
 import java.sql.*;

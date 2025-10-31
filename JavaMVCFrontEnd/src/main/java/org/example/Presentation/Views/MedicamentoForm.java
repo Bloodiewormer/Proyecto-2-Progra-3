@@ -30,10 +30,8 @@ public class MedicamentoForm extends JPanel {
 
     private final MedicamentoTableModel tableModel;
     private final LoadingOverlay loadingOverlay;
-    private final JFrame parentFrame;
 
     public MedicamentoForm(JFrame parentFrame) {
-        this.parentFrame = parentFrame;
         this.tableModel = new MedicamentoTableModel();
         this.loadingOverlay = new LoadingOverlay(parentFrame);
 

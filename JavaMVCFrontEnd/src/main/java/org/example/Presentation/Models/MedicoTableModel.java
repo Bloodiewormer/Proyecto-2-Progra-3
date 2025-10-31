@@ -2,7 +2,7 @@ package org.example.Presentation.Models;
 
 import org.example.Domain.Dtos.Medico.MedicoResponseDto;
 import org.example.Presentation.IObserver;
-import org.example.Utilities.EventType;
+import org.example.Utilities.ChangeType;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
@@ -40,10 +40,10 @@ public class MedicoTableModel extends AbstractTableModel implements IObserver {
     }
 
     @Override
-    public void update(EventType eventType, Object data) {
+    public void update(ChangeType changeType, Object data) {
         if (data == null) return;
 
-        switch (eventType) {
+        switch (changeType) {
             case CREATED -> {
                 MedicoResponseDto nuevo = (MedicoResponseDto) data;
                 medicos.add(nuevo);
