@@ -1,4 +1,4 @@
-package org.example.Domain.Administrador;
+package org.example.Domain.Dtos.Administrador;
 
 public class AddAdministradorRequestDto {
     private String nombre;

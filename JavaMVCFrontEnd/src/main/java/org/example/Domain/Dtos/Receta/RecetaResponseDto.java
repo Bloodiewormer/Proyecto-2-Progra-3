@@ -1,6 +1,6 @@
 package org.example.Domain.Dtos.Receta;
 
-import org.example.Domain.DetalleReceta.DetalleRecetaResponseDto;
+import org.example.Domain.Dtos.DetalleReceta.DetalleRecetaResponseDto;
 import java.util.List;
 
 public class RecetaResponseDto {

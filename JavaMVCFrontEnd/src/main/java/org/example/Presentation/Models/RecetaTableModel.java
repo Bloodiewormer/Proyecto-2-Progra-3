@@ -2,7 +2,7 @@ package org.example.Presentation.Models;
 
 import org.example.Domain.Dtos.Receta.RecetaResponseDto;
 import org.example.Presentation.IObserver;
-import org.example.Utilities.EventType;
+import org.example.Utilities.ChangeType;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
@@ -43,9 +43,9 @@ public class RecetaTableModel extends AbstractTableModel implements IObserver {
     }
 
     @Override
-    public void update(EventType eventType, Object data) {
+    public void update(ChangeType changeType, Object data) {
         if (data == null) return;
-        switch (eventType) {
+        switch (changeType) {
             case CREATED -> {
                 RecetaResponseDto nueva = (RecetaResponseDto) data;
                 recetas.add(nueva);
@@ -85,6 +85,16 @@ public class RecetaTableModel extends AbstractTableModel implements IObserver {
     }
 
     public RecetaResponseDto getRecetaAt(int row) {
-        return recetas.get(row);
+        if (row >= 0 && row < recetas.size()) {
+            return recetas.get(row);
+        }
+        return null;
+    }
+
+    public RecetaResponseDto getRecetaById(int id) {
+        return recetas.stream()
+                .filter(r -> r.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 }

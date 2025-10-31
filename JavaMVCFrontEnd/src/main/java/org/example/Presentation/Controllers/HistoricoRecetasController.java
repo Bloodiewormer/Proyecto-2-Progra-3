@@ -1,44 +1,51 @@
 package org.example.Presentation.Controllers;
 
-import org.example.Services.PacienteService;
-import org.example.Services.RecetaService;
+import org.example.Domain.Dtos.Paciente.PacienteResponseDto;
+import org.example.Domain.Dtos.Receta.RecetaResponseDto;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class HistoricoRecetasController {
 
-    private final PacienteService pacienteService;
-    private final RecetaService recetaService;
+    private final List<PacienteResponseDto> pacientes;
+    private final List<RecetaResponseDto> recetas;
 
-    public HistoricoRecetasController(PacienteService pacienteService, RecetaService recetaService) {
-        this.pacienteService = pacienteService;
-        this.recetaService = recetaService;
+    public HistoricoRecetasController(List<PacienteResponseDto> pacientes, List<RecetaResponseDto> recetas) {
+        this.pacientes = pacientes != null ? pacientes : List.of();
+        this.recetas = recetas != null ? recetas : List.of();
     }
 
-    public Paciente buscarPacientePorId(int id) {
-        return pacienteService.leerPorId(id);
+    public PacienteResponseDto buscarPacientePorId(int id) {
+        return pacientes.stream()
+                .filter(p -> p.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
-    public List<Paciente> buscarPacientePorNombre(String nombre) {
-        return pacienteService.leerTodos()
-                .stream()
+    public List<PacienteResponseDto> buscarPacientePorNombre(String nombre) {
+        return pacientes.stream()
                 .filter(p -> p.getNombre().toLowerCase().contains(nombre.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
-    public List<Receta> obtenerHistorialRecetas(Paciente paciente) {
-        return recetaService.leerTodos()
-                .stream()
+    public List<RecetaResponseDto> obtenerHistorialRecetas(PacienteResponseDto paciente) {
+        if (paciente == null) return List.of();
+
+        return recetas.stream()
                 .filter(r -> r.getIdPaciente() == paciente.getId())
                 .collect(Collectors.toList());
     }
 
-    public List<Receta> obtenerRecetasPorPaciente(Integer pacienteSeleccionadoId) {
-        return recetaService.buscarPorPacienteId(pacienteSeleccionadoId);
+    public List<RecetaResponseDto> obtenerRecetasPorPaciente(Integer pacienteId) {
+        if (pacienteId == null) return List.of();
+
+        return recetas.stream()
+                .filter(r -> r.getIdPaciente() == pacienteId)
+                .collect(Collectors.toList());
     }
 
-    public List<Receta> obtenerRecetas() {
-        return recetaService.leerTodos();
+    public List<RecetaResponseDto> obtenerRecetas() {
+        return recetas;
     }
 }

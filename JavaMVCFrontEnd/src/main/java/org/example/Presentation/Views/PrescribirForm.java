@@ -1,16 +1,16 @@
 package org.example.Presentation.Views;
 
 import com.toedter.calendar.JDateChooser;
+import org.example.Domain.Dtos.DetalleReceta.DetalleRecetaResponseDto;
+import org.example.Domain.Dtos.Paciente.PacienteResponseDto;
+import org.example.Domain.Dtos.Medicamento.MedicamentoResponseDto;
+
 import org.example.Presentation.Components.BlueRoundedButton;
 import org.example.Presentation.Components.CustomTextField;
 import org.example.Presentation.Controllers.PrescribirController;
 import org.example.Presentation.Models.DetalleRecetaTableModel;
 import org.example.Presentation.Models.MedicamentoTableModel;
 import org.example.Presentation.Models.PacienteTableModel;
-import org.example.Services.MedicamentoService;
-import org.example.Services.PacienteService;
-import org.example.Services.RecetaService;
-import org.example.Services.UsuarioService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -61,33 +61,35 @@ public class PrescribirForm extends JPanel {
 
     private JDateChooser DatePicker;
 
-    private final List<DetalleReceta> detalleRecetaList = new ArrayList<>();
-    private Paciente selectedPaciente;
-    private Medicamento currentMedicamento;
+    private final List<DetalleRecetaResponseDto> detalleRecetaList = new ArrayList<>();
+    private PacienteResponseDto selectedPaciente;
+    private MedicamentoResponseDto currentMedicamento;
 
     private JDialog buscarPacienteDialog;
     private JDialog agregarMedicamentoDialog;
     private JDialog detalleDialog;
 
-    private PrescribirController controller;
-
-    public PrescribirForm(UsuarioService usuarioService,
-                          PacienteService pacienteService,
-                          MedicamentoService medicamentoService,
-                          RecetaService recetaService,
+    public PrescribirForm(List<PacienteResponseDto> pacientes,
+                          List<MedicamentoResponseDto> medicamentos,
                           int idMedico) {
 
-        controller = new PrescribirController(this, usuarioService, pacienteService, medicamentoService, recetaService, idMedico);
-        MedicamentoRecetatable.setModel(new DetalleRecetaTableModel(detalleRecetaList));
+        MedicamentoRecetatable.setModel(new DetalleRecetaTableModel());
         initDatePicker();
-        MedicamentosTable.setModel(new MedicamentoTableModel(medicamentoService.leerTodos()));
-        pacientesTable.setModel(new PacienteTableModel(pacienteService.leerTodos()));
+        MedicamentosTable.setModel(new MedicamentoTableModel());
+        pacientesTable.setModel(new PacienteTableModel());
+
+        // Populate models
+        ((MedicamentoTableModel) MedicamentosTable.getModel()).setMedicamentos(medicamentos);
+        ((PacienteTableModel) pacientesTable.getModel()).setPacientes(pacientes);
 
         catidadSpinner.setModel(new SpinnerNumberModel(1, 1, 1000, 1));
         duracionSpinner.setModel(new SpinnerNumberModel(1, 1, 365, 1));
 
         filtrarPacientecomboBox.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
         FiltraMedicamentoComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
+
+        // Create controller
+        new PrescribirController(this, pacientes, medicamentos, idMedico);
     }
 
     // --- Getters for Controller ---
@@ -117,14 +119,13 @@ public class PrescribirForm extends JPanel {
     public JTextField getIndicacionesField() { return textField1; }
     public JLabel getPacientePromtPlace() { return pacientePromtPlace; }
     public JDateChooser getDatePicker() { return DatePicker; }
-    public List<DetalleReceta> getDetalleRecetaList() { return detalleRecetaList; }
-    public Medicamento getCurrentMedicamento() { return currentMedicamento; }
-    public void setCurrentMedicamento(Medicamento m) { this.currentMedicamento = m; }
-    public Paciente getSelectedPaciente() { return selectedPaciente; }
-    public void setSelectedPaciente(Paciente paciente) { this.selectedPaciente = paciente; }
+    public List<DetalleRecetaResponseDto> getDetalleRecetaList() { return detalleRecetaList; }
+    public MedicamentoResponseDto getCurrentMedicamento() { return currentMedicamento; }
+    public void setCurrentMedicamento(MedicamentoResponseDto m) { this.currentMedicamento = m; }
+    public PacienteResponseDto getSelectedPaciente() { return selectedPaciente; }
+    public void setSelectedPaciente(PacienteResponseDto paciente) { this.selectedPaciente = paciente; }
 
-
-    // --- Dialog Builders (for controller to call) ---
+    // --- Dialog Builders ---
     public void showBuscarPacienteDialog() {
         if (buscarPacienteDialog == null) {
             buscarPacienteDialog = buildDialog("Buscar Paciente", buscarPatientPanel);
@@ -149,9 +150,17 @@ public class PrescribirForm extends JPanel {
         else detalleDialog.toFront();
     }
 
-    public void closeBuscarPacienteDialog() { if (buscarPacienteDialog != null) buscarPacienteDialog.setVisible(false); }
-    public void closeAgregarMedicamentoDialog() { if (agregarMedicamentoDialog != null) agregarMedicamentoDialog.setVisible(false); }
-    public void closeDetalleDialog() { if (detalleDialog != null) detalleDialog.setVisible(false); }
+    public void closeBuscarPacienteDialog() {
+        if (buscarPacienteDialog != null) buscarPacienteDialog.setVisible(false);
+    }
+
+    public void closeAgregarMedicamentoDialog() {
+        if (agregarMedicamentoDialog != null) agregarMedicamentoDialog.setVisible(false);
+    }
+
+    public void closeDetalleDialog() {
+        if (detalleDialog != null) detalleDialog.setVisible(false);
+    }
 
     private JDialog buildDialog(String title, JPanel content) {
         JDialog d = new JDialog(SwingUtilities.getWindowAncestor(mainPanel), title, Dialog.ModalityType.APPLICATION_MODAL);
