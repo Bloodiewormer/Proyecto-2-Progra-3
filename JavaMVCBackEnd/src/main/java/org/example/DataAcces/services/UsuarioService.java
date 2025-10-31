@@ -1,4 +1,4 @@
 package org.example.DataAcces.services;
 
-public class AuthService {
+public class UsuarioService {
 }
