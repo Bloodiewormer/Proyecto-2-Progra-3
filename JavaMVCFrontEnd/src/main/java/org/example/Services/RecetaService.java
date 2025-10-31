@@ -1,11 +1,8 @@
 package org.example.Services;
 
+import org.example.Domain.Dtos.Receta.*;
 import org.example.Domain.Dtos.RequestDto;
 import org.example.Domain.Dtos.ResponseDto;
-import org.example.Domain.Dtos.Receta.AddRecetaRequestDto;
-import org.example.Domain.Dtos.Receta.DeleteRecetaRequestDto;
-import org.example.Domain.Dtos.Receta.RecetaResponseDto;
-import org.example.Domain.Dtos.Receta.ListRecetaResponseDto;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -19,26 +16,55 @@ public class RecetaService extends BaseService {
         super(host, port);
     }
 
-    public Future<RecetaResponseDto> addRecetaAsync(AddRecetaRequestDto dto, String userId) {
+    public Future<RecetaResponseDto> addRecetaAsync(AddRecetaRequestDto dto) {
         return executor.submit(() -> {
-            RequestDto request = new RequestDto("Receta", "add", gson.toJson(dto), userId);
+            RequestDto request = new RequestDto(
+                    "Receta",
+                    "add",
+                    gson.toJson(dto),
+                    null
+            );
             ResponseDto response = sendRequest(request);
             if (!response.isSuccess()) return null;
             return gson.fromJson(response.getData(), RecetaResponseDto.class);
         });
     }
 
-    public Future<Boolean> deleteRecetaAsync(DeleteRecetaRequestDto dto, String userId) {
+    public Future<RecetaResponseDto> updateRecetaAsync(UpdateRecetaRequestDto dto) {
         return executor.submit(() -> {
-            RequestDto request = new RequestDto("Receta", "delete", gson.toJson(dto), userId);
+            RequestDto request = new RequestDto(
+                    "Receta",
+                    "update",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), RecetaResponseDto.class);
+        });
+    }
+
+    public Future<Boolean> deleteRecetaAsync(DeleteRecetaRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Receta",
+                    "delete",
+                    gson.toJson(dto),
+                    null
+            );
             ResponseDto response = sendRequest(request);
             return response.isSuccess();
         });
     }
 
-    public Future<List<RecetaResponseDto>> listRecetasAsync(String userId) {
+    public Future<List<RecetaResponseDto>> listRecetasAsync() {
         return executor.submit(() -> {
-            RequestDto request = new RequestDto("Receta", "list", "", userId);
+            RequestDto request = new RequestDto(
+                    "Receta",
+                    "list",
+                    "",
+                    null
+            );
             ResponseDto response = sendRequest(request);
             if (!response.isSuccess()) return null;
             ListRecetaResponseDto listResponse = gson.fromJson(response.getData(), ListRecetaResponseDto.class);
@@ -46,19 +72,14 @@ public class RecetaService extends BaseService {
         });
     }
 
-    public Future<List<RecetaResponseDto>> listRecetasByPacienteAsync(int idPaciente, String userId) {
+    public Future<RecetaResponseDto> getRecetaByIdAsync(int id) {
         return executor.submit(() -> {
-            RequestDto request = new RequestDto("Receta", "listByPaciente", String.valueOf(idPaciente), userId);
-            ResponseDto response = sendRequest(request);
-            if (!response.isSuccess()) return null;
-            ListRecetaResponseDto listResponse = gson.fromJson(response.getData(), ListRecetaResponseDto.class);
-            return listResponse.getRecetas();
-        });
-    }
-
-    public Future<RecetaResponseDto> getRecetaByIdAsync(int id, String userId) {
-        return executor.submit(() -> {
-            RequestDto request = new RequestDto("Receta", "getById", String.valueOf(id), userId);
+            RequestDto request = new RequestDto(
+                    "Receta",
+                    "getById",
+                    String.valueOf(id),
+                    null
+            );
             ResponseDto response = sendRequest(request);
             if (!response.isSuccess()) return null;
             return gson.fromJson(response.getData(), RecetaResponseDto.class);

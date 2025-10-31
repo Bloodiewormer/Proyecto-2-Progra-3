@@ -7,7 +7,7 @@ import org.example.Domain.Dtos.Farmaceuta.UpdateFarmaceutaRequestDto;
 import org.example.Presentation.Observable;
 import org.example.Presentation.Views.FarmaceutaForm;
 import org.example.Services.UsuarioService;
-import org.example.Utilities.EventType;
+import org.example.Utilities.ChangeType;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -99,7 +99,7 @@ public class FarmaceutaController extends Observable {
                     try {
                         FarmaceutaResponseDto farmaceuta = get();
                         if (farmaceuta != null) {
-                            notifyObservers(EventType.CREATED, farmaceuta);
+                            notifyObservers(ChangeType.CREATED, farmaceuta);
                             farmaceutaView.clearFields();
                             JOptionPane.showMessageDialog(
                                     farmaceutaView,
@@ -177,7 +177,7 @@ public class FarmaceutaController extends Observable {
                     try {
                         FarmaceutaResponseDto updatedFarmaceuta = get();
                         if (updatedFarmaceuta != null) {
-                            notifyObservers(EventType.UPDATED, updatedFarmaceuta);
+                            notifyObservers(ChangeType.UPDATED, updatedFarmaceuta);
                             farmaceutaView.clearFields();
                             JOptionPane.showMessageDialog(
                                     farmaceutaView,
@@ -248,7 +248,7 @@ public class FarmaceutaController extends Observable {
                     try {
                         Boolean success = get();
                         if (success) {
-                            notifyObservers(EventType.DELETED, selectedFarmaceuta.getId());
+                            notifyObservers(ChangeType.DELETED, selectedFarmaceuta.getId());
                             farmaceutaView.clearFields();
                             JOptionPane.showMessageDialog(
                                     farmaceutaView,

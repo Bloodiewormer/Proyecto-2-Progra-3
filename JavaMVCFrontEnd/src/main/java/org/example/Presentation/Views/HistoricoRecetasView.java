@@ -1,20 +1,18 @@
+// java
 package org.example.Presentation.Views;
 
 import org.example.Presentation.Components.BlueRoundedButton;
-import org.example.Presentation.Controllers.HistoricoRecetasController;
+import org.example.Presentation.Components.LoadingOverlay;
 import org.example.Presentation.Models.RecetaTableModel;
-import org.example.Services.MedicamentoService;
-import org.example.Services.PacienteService;
+import org.example.Domain.Dtos.Receta.RecetaResponseDto;
 import org.example.Services.RecetaService;
-import org.example.Services.UsuarioService;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import java.text.SimpleDateFormat;
+import java.awt.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class HistoricoRecetasView extends JPanel {
+
     private JPanel mainPanel;
     private JPanel searchPanel;
     private JComboBox<String> comboBusqueda;
@@ -28,207 +26,74 @@ public class HistoricoRecetasView extends JPanel {
     private JPanel tablePanel;
     private JScrollPane scrollPane;
     private JTable recetasTable;
+    private final LoadingOverlay overlay;
 
-    private final HistoricoRecetasController controller;
-
-    private final PacienteService pacienteService;
     private final RecetaService recetaService;
-    private final MedicamentoService medicamentoService;
-    private final UsuarioService medicoService;
 
-
-    private RecetaTableModel recetaTableModel;
-    private Integer pacienteSeleccionadoId;
-    private Integer recetaSeleccionadaId;
-
-    public HistoricoRecetasView(HistoricoRecetasController controller,
-                                PacienteService pacienteService,
-                                RecetaService recetaService,
-                                MedicamentoService medicamentoService,
-                                UsuarioService medicoService) {
-        this.controller = controller;
-        this.pacienteService = pacienteService;
+    public HistoricoRecetasView(JFrame parent, RecetaService recetaService) {
         this.recetaService = recetaService;
-        this.medicamentoService = medicamentoService;
-        this.medicoService = medicoService;
-        initUI();
-        initTable();
-        wireEvents();
+        this.overlay = new LoadingOverlay(parent);
+
+        setLayout(new BorderLayout());
+
+        JPanel top = new JPanel(new BorderLayout(8, 8));
+        top.add(DatoPacienteField, BorderLayout.CENTER);
+        top.add(buscarButton, BorderLayout.EAST);
+
+        recetasTable.setModel(recetasTable.getModel());
+
+        add(top, BorderLayout.NORTH);
+        add(new JScrollPane(recetasTable), BorderLayout.CENTER);
+
+        buscarButton.addActionListener(e -> loadRecetasAsync());
+        loadRecetasAsync();
     }
 
-    private void initUI() {
-        setSize(700, 400);
-        // Panel búsqueda
-        comboBusqueda.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
-
-
-    }
-    public JPanel getMainPanel() {
-        return mainPanel;
-    }
-
-    private void initTable() {
-        recetaTableModel = new RecetaTableModel(controller.obtenerRecetas());
-        recetasTable.setModel(recetaTableModel);
-        recetasTable.getSelectionModel().addListSelectionListener(this::onTableSelection);
-    }
-
-
-
-    private void wireEvents() {
-        buscarButton.addActionListener(e -> buscarPaciente());
-        DetallesButton.addActionListener(e -> mostrarDetallesReceta());
-    }
-
-    private void mostrarDetallesReceta() {
-        if (recetaSeleccionadaId == null) {
-            mostrarMsg("Seleccione una receta");
-            return;
-        }
-        Receta receta = recetaTableModel.getRecetaById(recetaSeleccionadaId);
-        if (receta == null) {
-            mostrarMsg("Receta no encontrada");
-            return;
-        }
-
-        // Get patient info
-        var paciente = pacienteService.leerPorId(receta.getIdPaciente());
-        String pacienteInfo = (paciente != null)
-                ? paciente.getNombre() + " (ID " + paciente.getId() + "), Tel: " + paciente.getTelefono() +
-                ", Nacimiento: " + (paciente.getFechaNacimiento() != null ? new SimpleDateFormat("dd/MM/yyyy").format(paciente.getFechaNacimiento()) : "")
-                : "Desconocido";
-
-        // Get doctor info
-        var medico = medicoService.leerPorId(receta.getIdMedico());
-        String medicoInfo;
-        if (medico != null) {
-            medicoInfo = medico.getNombre() + " (ID " + medico.getId() + "), Usuario: " + medico.getNombre();
-        }
-        else {
-            medicoInfo = "Desconocido";
-        }
-
-
-        StringBuilder detalles = new StringBuilder();
-        detalles.append("ID Receta: ").append(receta.getId()).append("\n");
-        detalles.append("Paciente: ").append(pacienteInfo).append("\n");
-        detalles.append("Médico: ").append(medicoInfo).append("\n");
-        detalles.append("Fecha Confección: ").append(receta.getFechaConfeccion()).append("\n");
-        detalles.append("Fecha Retiro: ").append(receta.getFechaRetiro()).append("\n");
-        detalles.append("Estado: ").append(receta.getEstado()).append("\n\n");
-        detalles.append("Detalles:\n");
-
-        for (var d : receta.getDetalles()) {
-            detalles.append("- Medicamento: ").append(d.getMedicamento().getNombre())
-                    .append(", Cantidad: ").append(d.getCantidad())
-                    .append(", Indicaciones: ").append(d.getIndicaciones())
-                    .append(", Días: ").append(d.getDias())
-                    .append("\n");
-        }
-
-        JTextArea textArea = new JTextArea(detalles.toString());
-        textArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        scrollPane.setPreferredSize(new java.awt.Dimension(400, 300));
-
-        JOptionPane.showMessageDialog(this, scrollPane, "Detalles de Receta", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-
-    private void buscarPaciente() {
-        String tipo = (String) comboBusqueda.getSelectedItem();
-        if ("ID".equals(tipo)) {
-            buscarPorId();
-        } else if ("Nombre".equals(tipo)) {
-            buscarPorNombre();
-        }
-    }
-
-    private void buscarPorId() {
-        recetaSeleccionadaId = null;
-        try {
-            int id = Integer.parseInt(DatoPacienteField.getText().trim());
-            Paciente p = pacienteService.leerPorId(id);
-            if (p == null) {
-                mostrarMsg("Paciente no encontrado");
-                return;
-            }
-            pacienteSeleccionadoId = p.getId();
-            mostrarPaciente(p);
-            cargarRecetasPaciente();
-        } catch (NumberFormatException ex) {
-            mostrarMsg("ID inválido");
-        }
-    }
-
-    private void buscarPorNombre() {
-        recetaSeleccionadaId = null;
+    private void loadRecetasAsync() {
         String filtro = DatoPacienteField.getText().trim().toLowerCase();
-        if (filtro.isEmpty()) {
-            mostrarMsg("Ingrese un nombre");
-            return;
-        }
-        List<Paciente> candidatos = pacienteService.leerTodos().stream()
-                .filter(p -> p.getNombre().toLowerCase().contains(filtro))
-                .collect(Collectors.toList());
-        if (candidatos.isEmpty()) {
-            mostrarMsg("Sin coincidencias");
-            return;
-        }
-        if (candidatos.size() > 1) {
-            String names = candidatos.stream().map(Paciente::getNombre).collect(Collectors.joining(", "));
-            mostrarMsg("Múltiples: " + names);
-            return;
-        }
-        Paciente p = candidatos.get(0);
-        pacienteSeleccionadoId = p.getId();
-        mostrarPaciente(p);
-        cargarRecetasPaciente();
+
+        overlay.show(true);
+        SwingWorker<List<RecetaResponseDto>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<RecetaResponseDto> doInBackground() throws Exception {
+                return recetaService.listRecetasAsync().get();
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    List<RecetaResponseDto> recetas = get();
+                    if (filtro.isEmpty()) {
+                        RecetaTableModel tableModel = (RecetaTableModel) recetasTable.getModel();
+                        tableModel.setRecetas(recetas);
+                    } else {
+                        var filtradas = recetas.stream()
+                                .filter(r -> String.valueOf(r.getId()).contains(filtro)
+                                        || String.valueOf(r.getIdPaciente()).contains(filtro)
+                                        || String.valueOf(r.getIdMedico()).contains(filtro)
+                                        || (r.getEstado() != null && r.getEstado().toLowerCase().contains(filtro)))
+                                .toList();
+                        RecetaTableModel tableModel = (RecetaTableModel) recetasTable.getModel();
+                        tableModel.setRecetas(filtradas);
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(HistoricoRecetasView.this,
+                            "Error al cargar recetas: " + ex.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    overlay.show(false);
+                }
+            }
+        };
+        worker.execute();
     }
 
-    private void cargarRecetasPaciente() {
-        if (pacienteSeleccionadoId == null) return;
-        List<Receta> recetas = controller.obtenerRecetasPorPaciente(pacienteSeleccionadoId);
-        recetaTableModel.setRecetas(recetas);
-        recetaSeleccionadaId = null;
-    }
-
-
-    private void onTableSelection(ListSelectionEvent e) {
-        if (e.getValueIsAdjusting()) return;
-        int row = recetasTable.getSelectedRow();
-        if (row < 0) {
-            recetaSeleccionadaId = null;
-            return;
-        }
-        Receta r = recetaTableModel.getRecetaAt(row);
-        recetaSeleccionadaId = r.getId();
-    }
-
-    private void mostrarPaciente(Paciente p) {
-        pacienteInfoLabel.setText("Paciente: " + p.getNombre() + " (ID " + p.getId() + ")");
-        telefonoLabel.setText("Teléfono: " + p.getTelefono());
-        fechaNacimientoLabel.setText("Nacimiento: " + (p.getFechaNacimiento() != null ? new SimpleDateFormat("dd/MM/yyyy").format(p.getFechaNacimiento()) : ""));
-    }
-
-    private void limpiar() {
-        DatoPacienteField.setText("");
-        pacienteInfoLabel.setText("Seleccione un paciente");
-        telefonoLabel.setText("");
-        fechaNacimientoLabel.setText("");
-        pacienteSeleccionadoId = null;
-        recetaSeleccionadaId = null;
-        recetaTableModel.setRecetas(List.of());
-    }
-
-    private void mostrarMsg(String msg) {
-        JOptionPane.showMessageDialog(this, msg);
+    public void showLoading(boolean visible) {
+        overlay.show(visible);
     }
 
     private void createUIComponents() {
         DetallesButton = new BlueRoundedButton("Historico Recetas");
         buscarButton = new BlueRoundedButton("Historico Recetas");
-
-
     }
 }

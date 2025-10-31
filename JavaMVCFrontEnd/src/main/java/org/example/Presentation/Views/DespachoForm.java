@@ -1,19 +1,12 @@
 package org.example.Presentation.Views;
 
 import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Components.LoadingOverlay;
 import org.example.Presentation.Models.RecetaTableModel;
-import org.example.Presentation.Controllers.DespachoController;
-import org.example.Services.MedicamentoService;
-import org.example.Services.PacienteService;
-import org.example.Services.RecetaService;
 import org.example.Utilities.EstadoReceta;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class DespachoForm extends JPanel {
 
@@ -34,169 +27,62 @@ public class DespachoForm extends JPanel {
     private JComboBox<String> searchBycomboBox;
     private JButton buscarButton;
 
-    private final PacienteService pacienteService;
-    private final RecetaService recetaService;
-    private final MedicamentoService medicamentoService;
-    private final DespachoController controller;
+    private final RecetaTableModel recetaTableModel;
+    private final LoadingOverlay loadingOverlay;
+    private final JFrame parentFrame;
 
-
-
-    private RecetaTableModel recetaTableModel;
-    private Integer pacienteSeleccionadoId;
-    private Integer recetaSeleccionadaId;
-
-    public DespachoForm(PacienteService pacienteService,
-                        RecetaService recetaService,
-                        MedicamentoService medicamentoService) {
-        this.pacienteService = pacienteService;
-        this.recetaService = recetaService;
-        this.medicamentoService = medicamentoService;
-        this.controller = new DespachoController(recetaService, medicamentoService);
-
-        searchBycomboBox.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
+    public DespachoForm(JFrame parentFrame) {
+        this.parentFrame = parentFrame;
+        this.recetaTableModel = new RecetaTableModel();
+        this.loadingOverlay = new LoadingOverlay(parentFrame);
 
         setLayout(new BorderLayout());
         add(MainPanel, BorderLayout.CENTER);
 
-        initTable();
-        initEstadoCombo();
-        wireEvents();
+        initComponents();
     }
 
-    public JPanel getMainPanel() {
-        return MainPanel;
-    }
+    private void initComponents() {
+        searchBycomboBox.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
 
-    private void initTable() {
-        recetaTableModel = new RecetaTableModel(controller.obtenerRecetas());
         recetasTable.setModel(recetaTableModel);
-        recetasTable.getSelectionModel().addListSelectionListener(this::onTableSelection);
-    }
 
-    private void initEstadoCombo() {
         estadoComboBox.removeAllItems();
         for (EstadoReceta e : EstadoReceta.values()) {
             estadoComboBox.addItem(e);
         }
     }
 
-    private void wireEvents() {
-        buscarButton.addActionListener(e -> buscarPaciente());
-        limpiarButton.addActionListener(e -> limpiar());
-        cambiarEstadoButton.addActionListener(e -> cambiarEstado());
+    public void showLoading(boolean visible) {
+        loadingOverlay.show(visible);
     }
 
-    private void buscarPaciente() {
-        String tipo = (String) searchBycomboBox.getSelectedItem();
-        if ("ID".equals(tipo)) {
-            buscarPorId();
-        } else if ("Nombre".equals(tipo)) {
-            buscarPorNombre();
-        }
-    }
-
-    private void buscarPorId() {
-        recetaSeleccionadaId = null;
-        try {
-            int id = Integer.parseInt(DatoPacienteField.getText().trim());
-            Paciente p = pacienteService.leerPorId(id);
-            if (p == null) {
-                mostrarMsg("Paciente no encontrado");
-                return;
-            }
-            pacienteSeleccionadoId = p.getId();
-            mostrarPaciente(p);
-            cargarRecetasPaciente();
-        } catch (NumberFormatException ex) {
-            mostrarMsg("ID inválido");
-        }
-    }
-
-    private void buscarPorNombre() {
-        recetaSeleccionadaId = null;
-        String filtro = DatoPacienteField.getText().trim().toLowerCase();
-        if (filtro.isEmpty()) {
-            mostrarMsg("Ingrese un nombre");
-            return;
-        }
-        List<Paciente> candidatos = pacienteService.leerTodos().stream()
-                .filter(p -> p.getNombre().toLowerCase().contains(filtro))
-                .collect(Collectors.toList());
-        if (candidatos.isEmpty()) {
-            mostrarMsg("Sin coincidencias");
-            return;
-        }
-        if (candidatos.size() > 1) {
-            String names = candidatos.stream().map(Paciente::getNombre).collect(Collectors.joining(", "));
-            mostrarMsg("Múltiples: " + names);
-            return;
-        }
-        Paciente p = candidatos.get(0);
-        pacienteSeleccionadoId = p.getId();
-        mostrarPaciente(p);
-        cargarRecetasPaciente();
-    }
-
-    private void cargarRecetasPaciente() {
-        if (pacienteSeleccionadoId == null) return;
-        List<Receta> recetas = controller.obtenerRecetasPorPaciente(pacienteSeleccionadoId);
-        recetaTableModel.setRecetas(recetas);
-        recetaSeleccionadaId = null;
-    }
-
-    private void cambiarEstado() {
-        if (recetaSeleccionadaId == null) {
-            mostrarMsg("Seleccione una receta");
-            return;
-        }
-        EstadoReceta nuevo = (EstadoReceta) estadoComboBox.getSelectedItem();
-        if (nuevo == null) {
-            mostrarMsg("Seleccione un estado");
-            return;
-        }
-        controller.actualizarEstadoReceta(recetaSeleccionadaId, nuevo);
-        cargarRecetasPaciente();
-    }
-
-    private void onTableSelection(ListSelectionEvent e) {
-        if (e.getValueIsAdjusting()) return;
-        int row = recetasTable.getSelectedRow();
-        if (row < 0) {
-            recetaSeleccionadaId = null;
-            return;
-        }
-        Receta r = recetaTableModel.getRecetaAt(row);
-        recetaSeleccionadaId = r.getId();
-        try {
-            estadoComboBox.setSelectedItem(r.getEstadoEnum());
-        } catch (Exception ignored) {}
-    }
-
-    private void mostrarPaciente(Paciente p) {
-        pacienteInfoLabel.setText("Paciente: " + p.getNombre() + " (ID " + p.getId() + ")");
-        telefonoLabel.setText("Teléfono: " + p.getTelefono());
-        fechaNacimientoLabel.setText("Nacimiento: " + (p.getFechaNacimiento() != null ? new SimpleDateFormat("dd/MM/yyyy").format(p.getFechaNacimiento()) : ""));
-    }
-
-    private void limpiar() {
+    public void clearFields() {
         DatoPacienteField.setText("");
         pacienteInfoLabel.setText("Seleccione un paciente");
         telefonoLabel.setText("");
         fechaNacimientoLabel.setText("");
-        pacienteSeleccionadoId = null;
-        recetaSeleccionadaId = null;
-        recetaTableModel.setRecetas(List.of());
     }
 
-    private void mostrarMsg(String msg) {
-        JOptionPane.showMessageDialog(this, msg);
+    public void setPacienteInfo(String nombre, String telefono, String fechaNacimiento) {
+        pacienteInfoLabel.setText("Paciente: " + nombre);
+        telefonoLabel.setText("Teléfono: " + telefono);
+        fechaNacimientoLabel.setText("Nacimiento: " + fechaNacimiento);
     }
 
-    // Generated component creation hook (if using custom buttons later)
+    // Getters
+    public JPanel getMainPanel() { return MainPanel; }
+    public RecetaTableModel getTableModel() { return recetaTableModel; }
+    public JTable getRecetasTable() { return recetasTable; }
+    public JTextField getDatoPacienteField() { return DatoPacienteField; }
+    public JComboBox<String> getSearchByComboBox() { return searchBycomboBox; }
+    public JComboBox<EstadoReceta> getEstadoComboBox() { return estadoComboBox; }
+    public JButton getBuscarButton() { return buscarButton; }
+    public JButton getLimpiarButton() { return limpiarButton; }
+    public JButton getCambiarEstadoButton() { return cambiarEstadoButton; }
+
     private void createUIComponents() {
-
-
-        buscarButton = new BlueRoundedButton( "Buscar") ;
+        buscarButton = new BlueRoundedButton("Buscar");
         limpiarButton = new BlueRoundedButton( "Limpiar") ;
         cambiarEstadoButton = new BlueRoundedButton( "Cambiar Estado") ;
     }

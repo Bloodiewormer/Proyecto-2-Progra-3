@@ -17,16 +17,24 @@ public class MenuPrincipalView extends JFrame {
 
     private JPanel mainPanel;
     private JPanel collapsiblePanel;
+    @SuppressWarnings("unused")
     private JPanel optionsPanel;
     private JPanel contentPanel;
+
 
     private JButton salirButton;
     private JButton medicosButton;
     private JButton farmaceutasButton;
     private JButton pacientesButton;
     private JButton medicamentosButton;
+    private JButton dashboardButton;
+    private JButton acercadeButton;
+    private JButton prescribirButton;
     private JLabel toggleButton;
     private JLabel MenuLabel;
+    private JButton despachoButton;
+    private JButton historicoRecetasButton;
+
 
     private boolean menuVisible = false;
     private static final int MENU_WIDTH = 170;
@@ -299,4 +307,5 @@ public class MenuPrincipalView extends JFrame {
         pacientesButton = new CustomButton("Pacientes", buttonColor, textColor, pacienteIcon);
         medicamentosButton = new CustomButton("Medicamentos", buttonColor, textColor, medicamentoIcon);
     }
+
 }

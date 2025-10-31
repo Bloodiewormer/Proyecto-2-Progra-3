@@ -2,7 +2,7 @@ package org.example.Presentation.Models;
 
 import org.example.Domain.Dtos.Paciente.PacienteResponseDto;
 import org.example.Presentation.IObserver;
-import org.example.Utilities.EventType;
+import org.example.Utilities.ChangeType;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class PacienteTableModel extends AbstractTableModel implements IObserver 
     }
 
     @Override
-    public void update(EventType eventType, Object data) {
+    public void update(ChangeType eventType, Object data) {
         if (data == null) return;
 
         switch (eventType) {
@@ -84,6 +84,9 @@ public class PacienteTableModel extends AbstractTableModel implements IObserver 
     }
 
     public PacienteResponseDto getPacienteAt(int row) {
-        return pacientes.get(row);
+        if (row >= 0 && row < pacientes.size()) {
+            return pacientes.get(row);
+        }
+        return null;
     }
 }
