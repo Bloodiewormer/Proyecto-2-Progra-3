@@ -1,9 +1,6 @@
 package org.example.Presentation.Views;
 
 import com.toedter.calendar.JDateChooser;
-import org.example.Domain.Dtos.receta.DetalleReceta;
-import org.example.Domain.Dtos.medicamento.Medicamento;
-import org.example.domain_layer.Paciente;
 import org.example.presentation_layer.Components.BlueRoundedButton;
 import org.example.presentation_layer.Components.CustomTextField;
 import org.example.presentation_layer.Controllers.PrescribirController;

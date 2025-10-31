@@ -1,18 +1,17 @@
-package org.example.presentation_layer.Models;
+package org.example.Presentation.Models;
 
-import org.example.Domain.Dtos.users.Farmaceuta;
+import org.example.Domain.Dtos.Farmaceuta.FarmaceutaResponseDto;
+import org.example.Utilities.ChangeType;
+import org.example.Presentation.IObserver;
 
 import javax.swing.table.AbstractTableModel;
+import java.util.ArrayList;
 import java.util.List;
 
-public class FarmaceutaTableModel extends AbstractTableModel {
+public class FarmaceutaTableModel extends AbstractTableModel implements IObserver {
+
+    private final List<FarmaceutaResponseDto> farmaceutas = new ArrayList<>();
     private final String[] columnNames = {"ID", "Nombre"};
-    private List<Farmaceuta> farmaceutas;
-
-    public FarmaceutaTableModel(List<Farmaceuta> farmaceutas) {
-        this.farmaceutas = farmaceutas;
-    }
-
 
     @Override
     public int getRowCount() {
@@ -25,44 +24,66 @@ public class FarmaceutaTableModel extends AbstractTableModel {
     }
 
     @Override
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        Farmaceuta m = farmaceutas.get(rowIndex);
-        switch (columnIndex) {
-            case 0: return m.getId();
-            case 1: return m.getNombre();
-            default: return null;
-        }
-    }
-
-    @Override
     public String getColumnName(int column) {
         return columnNames[column];
     }
 
-    public void setFarmaceuta(List<Farmaceuta> farmaceutas) {
-        this.farmaceutas = farmaceutas;
-        fireTableDataChanged();
-        // Notify the table that the data has changed
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        FarmaceutaResponseDto f = farmaceutas.get(rowIndex);
+        return switch (columnIndex) {
+            case 0 -> f.getId();
+            case 1 -> f.getNombre();
+            default -> null;
+        };
     }
 
-    public Farmaceuta getFarmaceutaAt(int row) {
-        return farmaceutas.get(row);
-    }
-
-
-
-    public void setRows(List<Farmaceuta> data) {
-        farmaceutas.clear();
-        if (data != null) farmaceutas.addAll(data);
-        fireTableDataChanged();
-    }
-
-    private int indexOf(Farmaceuta m) {
-        for (int i = 0; i < farmaceutas.size(); i++) {
-            if (farmaceutas.get(i).getId() == m.getId()) {
-                return i;
+    // Implementación del observer
+    @Override
+    public void update(ChangeType changeType, Object data) {
+        if (data == null) return;
+        switch (changeType) {
+            case CREATED -> {
+                FarmaceutaResponseDto nuevo = (FarmaceutaResponseDto) data;
+                farmaceutas.add(nuevo);
+                fireTableRowsInserted(farmaceutas.size() - 1, farmaceutas.size() - 1);
+            }
+            case UPDATED -> {
+                FarmaceutaResponseDto actualizado = (FarmaceutaResponseDto) data;
+                for (int i = 0; i < farmaceutas.size(); i++) {
+                    if (farmaceutas.get(i).getId() == actualizado.getId()) {
+                        farmaceutas.set(i, actualizado);
+                        fireTableRowsUpdated(i, i);
+                        break;
+                    }
+                }
+            }
+            case DELETED -> {
+                Integer deletedId = (Integer) data;
+                for (int i = 0; i < farmaceutas.size(); i++) {
+                    if (farmaceutas.get(i).getId() == deletedId) {
+                        farmaceutas.remove(i);
+                        fireTableRowsDeleted(i, i);
+                        break;
+                    }
+                }
             }
         }
-        return -1;
+    }
+
+    // Métodos utilitarios
+    public List<FarmaceutaResponseDto> getFarmaceutas() {
+        return new ArrayList<>(farmaceutas);
+    }
+
+    public void setFarmaceutas(List<FarmaceutaResponseDto> nuevos) {
+        farmaceutas.clear();
+        if (nuevos != null) farmaceutas.addAll(nuevos);
+        fireTableDataChanged();
+    }
+
+    public FarmaceutaResponseDto getFarmaceutaAt(int row) {
+        return farmaceutas.get(row);
     }
 }
+

@@ -1,6 +1,5 @@
-package org.example.presentation_layer.Controllers;
+package org.example.Presentation.Controllers;
 
-import org.example.Domain.Dtos.receta.Receta;
 import org.example.service_layer.RecetaService;
 import org.example.service_layer.MedicamentoService;
 import org.example.utilities.EstadoReceta;

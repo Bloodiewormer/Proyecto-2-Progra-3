@@ -1,8 +1,6 @@
-package org.example.Service_layer;
+package org.example.Services;
 
-import org.example.Domain.Dtos.medicamento.Medicamento;
-import org.example.Domain.Dtos.receta.Receta;
-import org.example.utilities.ChangeType;
+import org.example.Utilities.ChangeType;
 
 import java.util.ArrayList;
 import java.util.List;

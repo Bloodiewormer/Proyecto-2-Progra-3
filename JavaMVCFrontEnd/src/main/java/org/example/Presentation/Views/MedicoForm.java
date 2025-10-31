@@ -1,6 +1,5 @@
 package org.example.presentation_layer.Views;
 
-import org.example.Domain.Dtos.users.Medico;
 import org.example.presentation_layer.Components.BlueRoundedButton;
 import org.example.presentation_layer.Controllers.MedicoController;
 import org.example.presentation_layer.Models.MedicoTableModel;

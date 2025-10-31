@@ -1,22 +1,17 @@
-package org.example.presentation_layer.Models;
+package org.example.Presentation.Models;
 
-import org.example.Domain.Dtos.receta.Receta;
+import org.example.Domain.Dtos.Receta.RecetaResponseDto;
+import org.example.Presentation.IObserver;
+import org.example.Utilities.EventType;
 
 import javax.swing.table.AbstractTableModel;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RecetaTableModel extends AbstractTableModel {
+public class RecetaTableModel extends AbstractTableModel implements IObserver {
 
-    private final List<Receta> recetas = new ArrayList<>();
-    private final String[] columnas = {"ID", "Fecha Confección", "Fecha Retiro", "Estado"};
-
-    public RecetaTableModel(List<Receta> recetas) {
-        if (recetas != null) {
-            this.recetas.addAll(recetas);
-        }
-    }
+    private final List<RecetaResponseDto> recetas = new ArrayList<>();
+    private final String[] columnNames = {"ID", "Paciente", "Médico", "Fecha Confección", "Fecha Retiro", "Estado"};
 
     @Override
     public int getRowCount() {
@@ -25,40 +20,71 @@ public class RecetaTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return columnas.length;
+        return columnNames.length;
+    }
+
+    @Override
+    public String getColumnName(int column) {
+        return columnNames[column];
     }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        Receta r = recetas.get(rowIndex);
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        RecetaResponseDto receta = recetas.get(rowIndex);
         return switch (columnIndex) {
-            case 0 -> r.getId();
-            case 1 -> sdf.format(r.getFechaConfeccion());
-            case 2 -> sdf.format(r.getFechaRetiro());
-            case 3 -> r.getEstado().toString();
-
+            case 0 -> receta.getId();
+            case 1 -> receta.getIdPaciente();
+            case 2 -> receta.getIdMedico();
+            case 3 -> receta.getFechaConfeccion();
+            case 4 -> receta.getFechaRetiro();
+            case 5 -> receta.getEstado();
             default -> null;
         };
     }
 
     @Override
-    public String getColumnName(int column) {
-        return columnas[column];
+    public void update(EventType eventType, Object data) {
+        if (data == null) return;
+        switch (eventType) {
+            case CREATED -> {
+                RecetaResponseDto nueva = (RecetaResponseDto) data;
+                recetas.add(nueva);
+                fireTableRowsInserted(recetas.size() - 1, recetas.size() - 1);
+            }
+            case UPDATED -> {
+                RecetaResponseDto actualizada = (RecetaResponseDto) data;
+                for (int i = 0; i < recetas.size(); i++) {
+                    if (recetas.get(i).getId() == actualizada.getId()) {
+                        recetas.set(i, actualizada);
+                        fireTableRowsUpdated(i, i);
+                        break;
+                    }
+                }
+            }
+            case DELETED -> {
+                Integer deletedId = (Integer) data;
+                for (int i = 0; i < recetas.size(); i++) {
+                    if (recetas.get(i).getId() == deletedId) {
+                        recetas.remove(i);
+                        fireTableRowsDeleted(i, i);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
-    public Receta getRecetaAt(int row) {
-        return recetas.get(row);
+    public List<RecetaResponseDto> getRecetas() {
+        return new ArrayList<>(recetas);
     }
 
-    public void setRecetas(List<Receta> recetas) {
-        this.recetas.clear();
-        this.recetas.addAll(recetas);
+    public void setRecetas(List<RecetaResponseDto> nuevas) {
+        recetas.clear();
+        if (nuevas != null) recetas.addAll(nuevas);
         fireTableDataChanged();
     }
 
-
-    public Receta getRecetaById(Integer recetaSeleccionadaId) {
-        return recetas.stream().filter(r -> r.getId() == recetaSeleccionadaId).findFirst().orElse(null);
+    public RecetaResponseDto getRecetaAt(int row) {
+        return recetas.get(row);
     }
 }

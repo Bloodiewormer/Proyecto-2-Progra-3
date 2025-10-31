@@ -1,8 +1,6 @@
-package org.example.presentation_layer.Controllers;
+package org.example.Presentation.Controllers;
 
 
-import org.example.Domain.Dtos.receta.DetalleReceta;
-import org.example.Domain.Dtos.receta.Receta;
 import org.example.service_layer.RecetaService;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;

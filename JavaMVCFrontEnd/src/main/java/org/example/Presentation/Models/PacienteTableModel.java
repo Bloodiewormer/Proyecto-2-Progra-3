@@ -1,6 +1,4 @@
-package org.example.presentation_layer.Models;
-
-import org.example.domain_layer.Paciente;
+package org.example.Presentation.Models;
 
 import javax.swing.table.AbstractTableModel;
 import java.text.SimpleDateFormat;

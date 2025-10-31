@@ -1,7 +1,6 @@
 package org.example.presentation_layer.Views;
 
 import com.toedter.calendar.JDateChooser;
-import org.example.domain_layer.Paciente;
 import org.example.presentation_layer.Components.BlueRoundedButton;
 import org.example.presentation_layer.Controllers.PacienteController;
 import org.example.presentation_layer.Models.PacienteTableModel;

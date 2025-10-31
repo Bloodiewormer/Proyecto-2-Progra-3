@@ -1,6 +1,5 @@
 package org.example.presentation_layer.Views;
 
-import org.example.Domain.Dtos.users.Farmaceuta;
 import org.example.presentation_layer.Components.BlueRoundedButton;
 import org.example.presentation_layer.Controllers.FarmaceutaController;
 import org.example.presentation_layer.Models.FarmaceutaTableModel;
