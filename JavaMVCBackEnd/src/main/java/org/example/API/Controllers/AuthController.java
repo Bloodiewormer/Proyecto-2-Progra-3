@@ -2,12 +2,14 @@ package org.example.API.Controllers;
 
 import com.google.gson.Gson;
 import org.example.DataAcces.services.UsuarioService;
+import org.example.Domain.dtos.Auth.ChangePasswordRequestDto;
 import org.example.Domain.dtos.RequestDto;
 import org.example.Domain.dtos.ResponseDto;
 import org.example.Domain.dtos.Auth.LoginRequestDto;
 import org.example.Domain.dtos.Auth.RegisterRequestDto;
 import org.example.Domain.dtos.Auth.UserResponseDto;
 import org.example.Domain.models.Usuario;
+import org.example.Utilities.PasswordUtils;
 
 /**
  * Controlador de autenticación que maneja login, registro y logout
@@ -34,6 +36,8 @@ public class AuthController {
                     return handleLogin(request);
                 case "register":
                     return handleRegister(request);
+                case "changePassword":
+                    return handleChangePassword(request);
                 case "logout":
                     return handleLogout(request);
                 default:
@@ -178,6 +182,38 @@ public class AuthController {
         } catch (Exception e) {
             System.err.println("[AuthController] Error en getUserByUsername: " + e.getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Maneja el cambio de contraseña
+     */
+    private ResponseDto handleChangePassword(RequestDto request) {
+        try {
+            ChangePasswordRequestDto dto = gson.fromJson(request.getData(), ChangePasswordRequestDto.class);
+
+            // Buscar usuario por ID
+            Usuario usuario = usuarioService.getUserById((long) dto.getUserId());
+            if (usuario == null) {
+                return new ResponseDto(false, "Usuario no encontrado", null);
+            }
+
+            // Verificar contraseña actual
+            if (!PasswordUtils.verifyPassword(dto.getCurrentPassword(), usuario.getSalt(), usuario.getClave())) {
+                return new ResponseDto(false, "Contraseña actual incorrecta", null);
+            }
+
+            // Generar nuevo salt y hash
+            String newSalt = PasswordUtils.generateSalt();
+            String newHash = PasswordUtils.hashPassword(dto.getNewPassword(), newSalt);
+
+            // Actualizar usuario
+            usuarioService.updatePassword(usuario.getId(), newHash, newSalt);
+
+            return new ResponseDto(true, "Contraseña actualizada exitosamente", null);
+        } catch (Exception e) {
+            System.err.println("[AuthController] Error en handleChangePassword: " + e.getMessage());
+            return new ResponseDto(false, "Error cambiando contraseña: " + e.getMessage(), null);
         }
     }
 }

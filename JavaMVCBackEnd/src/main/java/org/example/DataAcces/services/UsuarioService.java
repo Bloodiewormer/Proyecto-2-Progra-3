@@ -1,6 +1,7 @@
 package org.example.DataAcces.services;
 
 import org.example.Domain.models.*;
+import org.example.Utilities.PasswordUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -28,13 +29,17 @@ public class UsuarioService {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
-            // Verificar que no exista un usuario con ese nombre
             Usuario usuarioExistente = getUserByNombre(nombre);
             if (usuarioExistente != null) {
                 throw new IllegalArgumentException("Ya existe un usuario con ese nombre");
             }
 
-            Medico medico = new Medico(nombre, clave, especialidad);
+            // Generar salt y hashear contraseña
+            String salt = PasswordUtils.generateSalt();
+            String hashedPassword = PasswordUtils.hashPassword(clave, salt);
+
+            Medico medico = new Medico(nombre, hashedPassword, especialidad);
+            medico.setSalt(salt);
             session.persist(medico);
             tx.commit();
 
@@ -140,7 +145,11 @@ public class UsuarioService {
                 throw new IllegalArgumentException("Ya existe un usuario con ese nombre");
             }
 
-            Farmaceuta farmaceuta = new Farmaceuta(nombre, clave);
+            String salt = PasswordUtils.generateSalt();
+            String hashedPassword = PasswordUtils.hashPassword(clave, salt);
+
+            Farmaceuta farmaceuta = new Farmaceuta(nombre, hashedPassword);
+            farmaceuta.setSalt(salt);
             session.persist(farmaceuta);
             tx.commit();
 
@@ -236,22 +245,22 @@ public class UsuarioService {
      */
     public Usuario login(String nombre, String clave) {
         try (Session session = sessionFactory.openSession()) {
+            // Buscar usuario solo por nombre
             Query<Usuario> query = session.createQuery(
-                    "FROM Usuario WHERE nombre = :nombre AND clave = :clave",
+                    "FROM Usuario WHERE nombre = :nombre",
                     Usuario.class
             );
             query.setParameter("nombre", nombre);
-            query.setParameter("clave", clave);
-
             Usuario usuario = query.uniqueResult();
 
-            if (usuario != null) {
+            // Verificar la contraseña con salt
+            if (usuario != null && PasswordUtils.verifyPassword(clave, usuario.getSalt(), usuario.getClave())) {
                 System.out.println("[UsuarioService] Login exitoso: " + nombre);
-            } else {
-                System.out.println("[UsuarioService] Login fallido: " + nombre);
+                return usuario;
             }
 
-            return usuario;
+            System.out.println("[UsuarioService] Login fallido: " + nombre);
+            return null;
         } catch (Exception e) {
             System.err.println("[UsuarioService] Error en login: " + e.getMessage());
             throw e;
@@ -288,4 +297,35 @@ public class UsuarioService {
             return null;
         }
     }
+
+    public Usuario getUserById(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.find(Usuario.class, id);
+        } catch (Exception e) {
+            System.err.println("[UsuarioService] Error obteniendo usuario: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public void updatePassword(Long userId, String newHash, String newSalt) {
+        Transaction tx = null;
+        try (Session session = sessionFactory.openSession()) {
+            tx = session.beginTransaction();
+
+            Usuario usuario = session.find(Usuario.class, userId);
+            if (usuario != null) {
+                usuario.setClave(newHash);
+                usuario.setSalt(newSalt);
+                session.merge(usuario);
+            }
+
+            tx.commit();
+            System.out.println("[UsuarioService] Contraseña actualizada para usuario ID: " + userId);
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            System.err.println("[UsuarioService] Error actualizando contraseña: " + e.getMessage());
+            throw e;
+        }
+    }
+
 }
