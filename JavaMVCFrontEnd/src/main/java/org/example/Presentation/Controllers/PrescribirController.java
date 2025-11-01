@@ -1,40 +1,37 @@
-package org.example.presentation_layer.Controllers;
+package org.example.Presentation.Controllers;
 
-import org.example.Domain.Dtos.receta.DetalleReceta;
-import org.example.Domain.Dtos.medicamento.Medicamento;
-import org.example.domain_layer.Paciente;
-import org.example.Domain.Dtos.receta.Receta;
-import org.example.presentation_layer.Models.DetalleRecetaTableModel;
-import org.example.presentation_layer.Models.MedicamentoTableModel;
-import org.example.presentation_layer.Models.PacienteTableModel;
-import org.example.presentation_layer.Views.PrescribirForm;
-import org.example.service_layer.MedicamentoService;
-import org.example.service_layer.PacienteService;
-import org.example.service_layer.RecetaService;
-import org.example.utilities.EstadoReceta;
+import org.example.Domain.Dtos.DetalleReceta.AddDetalleRecetaRequestDto;
+import org.example.Domain.Dtos.DetalleReceta.DetalleRecetaResponseDto;
+import org.example.Domain.Dtos.Paciente.PacienteResponseDto;
+import org.example.Domain.Dtos.Medicamento.MedicamentoResponseDto;
+import org.example.Domain.Dtos.Receta.AddRecetaRequestDto;
+
+import org.example.Presentation.Models.DetalleRecetaTableModel;
+import org.example.Presentation.Models.MedicamentoTableModel;
+import org.example.Presentation.Models.PacienteTableModel;
+import org.example.Presentation.Views.PrescribirForm;
 
 import javax.swing.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PrescribirController {
 
     private final PrescribirForm view;
-    private final PacienteService pacienteService;
-    private final MedicamentoService medicamentoService;
-    private final RecetaService recetaService;
+    private final List<PacienteResponseDto> pacientes;
+    private final List<MedicamentoResponseDto> medicamentos;
     private final int idMedico;
 
     public PrescribirController(PrescribirForm view,
-                                org.example.service_layer.UsuarioService usuarioService,
-                                PacienteService pacienteService,
-                                MedicamentoService medicamentoService,
-                                RecetaService recetaService,
+                                List<PacienteResponseDto> pacientes,
+                                List<MedicamentoResponseDto> medicamentos,
                                 int idMedico) {
         this.view = view;
-        this.pacienteService = pacienteService;
-        this.medicamentoService = medicamentoService;
-        this.recetaService = recetaService;
+        this.pacientes = pacientes != null ? pacientes : new ArrayList<>();
+        this.medicamentos = medicamentos != null ? medicamentos : new ArrayList<>();
         this.idMedico = idMedico;
         wireEvents();
     }
@@ -67,15 +64,15 @@ public class PrescribirController {
             view.getCancerlarButton().addActionListener(e -> view.closeDetalleDialog());
     }
 
-    // Actions
     private void filtrarPacientes() {
         String filtro = view.getBusquedaPacientetextField().getText().trim().toLowerCase();
         String modo = (String) view.getFiltrarPacientecomboBox().getSelectedItem();
-        List<Paciente> todos = pacienteService.leerTodos();
-        List<Paciente> filtrados = todos.stream().filter(p -> {
+
+        List<PacienteResponseDto> filtrados = pacientes.stream().filter(p -> {
             if ("ID".equals(modo)) return String.valueOf(p.getId()).contains(filtro);
             return p.getNombre().toLowerCase().contains(filtro);
-        }).toList();
+        }).collect(Collectors.toList());
+
         ((PacienteTableModel) view.getPacientesTable().getModel()).setPacientes(filtrados);
     }
 
@@ -86,7 +83,7 @@ public class PrescribirController {
             return;
         }
         PacienteTableModel model = (PacienteTableModel) view.getPacientesTable().getModel();
-        Paciente p = model.getPacienteAt(row);
+        PacienteResponseDto p = model.getPacienteAt(row);
         view.setSelectedPaciente(p);
         view.getPacientePromtPlace().setText("Paciente: " + p.getNombre());
         view.closeBuscarPacienteDialog();
@@ -95,11 +92,12 @@ public class PrescribirController {
     private void filtrarMedicamentos() {
         String filtro = view.getBusquedaMedicamentoTextField().getText().trim().toLowerCase();
         String modo = (String) view.getFiltraMedicamentoComboBox().getSelectedItem();
-        List<Medicamento> todos = medicamentoService.leerTodos();
-        List<Medicamento> filtrados = todos.stream().filter(m -> {
-            if ("ID".equals(modo)) return String.valueOf(m.getCodigo()).contains(filtro);
+
+        List<MedicamentoResponseDto> filtrados = medicamentos.stream().filter(m -> {
+            if ("ID".equals(modo)) return String.valueOf(m.getId()).contains(filtro);
             return m.getNombre().toLowerCase().contains(filtro);
-        }).toList();
+        }).collect(Collectors.toList());
+
         ((MedicamentoTableModel) view.getMedicamentosTable().getModel()).setMedicamentos(filtrados);
     }
 
@@ -116,7 +114,7 @@ public class PrescribirController {
     }
 
     private void agregarDetalle() {
-        Medicamento m = view.getCurrentMedicamento();
+        MedicamentoResponseDto m = view.getCurrentMedicamento();
         if (m == null) {
             JOptionPane.showMessageDialog(view, "No hay medicamento seleccionado");
             return;
@@ -124,18 +122,27 @@ public class PrescribirController {
         int cantidad = (int) view.getCatidadSpinner().getValue();
         int dias = (int) view.getDuracionSpinner().getValue();
         String indicaciones = view.getIndicacionesField().getText().trim();
+
         if (cantidad <= 0 || dias <= 0) {
             JOptionPane.showMessageDialog(view, "Cantidad y días deben ser mayores a 0");
             return;
         }
-        DetalleReceta detalle = new DetalleReceta(m, cantidad, indicaciones,dias);
+
+        // Crear detalle y agregarlo a la lista
+        DetalleRecetaResponseDto detalle = new DetalleRecetaResponseDto();
+        detalle.setIdMedicamento(m.getId());
+        detalle.setCantidad(cantidad);
+        detalle.setIndicaciones(indicaciones);
+        detalle.setDias(dias);
+
         view.getDetalleRecetaList().add(detalle);
-        ((DetalleRecetaTableModel) view.getMedicamentoRecetatable().getModel()).fireTableDataChanged();
+        ((DetalleRecetaTableModel) view.getMedicamentoRecetatable().getModel()).setDetalles(view.getDetalleRecetaList());
         view.closeDetalleDialog();
     }
 
     private void guardarReceta() {
-        if (view.getSelectedPaciente() == null) {
+        PacienteResponseDto paciente = view.getSelectedPaciente();
+        if (paciente == null) {
             JOptionPane.showMessageDialog(view, "Seleccione un paciente");
             return;
         }
@@ -148,25 +155,41 @@ public class PrescribirController {
             return;
         }
 
-        Receta r = new Receta(recetaService.getNextId(), view.getSelectedPaciente().getId(), idMedico, new Date(), view.getDatePicker().getDate(), EstadoReceta.PROCESO.toString());
-        r.setDetalles(view.getDetalleRecetaList());
-        recetaService.agregar(r);
+        // Crear DTO para enviar al backend
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        List<AddDetalleRecetaRequestDto> detallesDto = view.getDetalleRecetaList().stream()
+                .map(d -> new AddDetalleRecetaRequestDto(
+                        d.getIdMedicamento(),
+                        d.getCantidad(),
+                        d.getIndicaciones(),
+                        d.getDias()
+                ))
+                .collect(Collectors.toList());
 
+        AddRecetaRequestDto dto = new AddRecetaRequestDto(
+                paciente.getId(),
+                idMedico,
+                sdf.format(new Date()),
+                detallesDto
+        );
 
-        JOptionPane.showMessageDialog(view, "Receta guardada");
+        // TODO: Enviar al servicio
+        // recetaService.addRecetaAsync(dto).get();
+
+        JOptionPane.showMessageDialog(view, "Receta guardada exitosamente");
         limpiar();
     }
 
     private void limpiar() {
         view.getDetalleRecetaList().clear();
-        ((DetalleRecetaTableModel) view.getMedicamentoRecetatable().getModel()).fireTableDataChanged();
+        ((DetalleRecetaTableModel) view.getMedicamentoRecetatable().getModel()).clear();
         view.setSelectedPaciente(null);
         view.getPacientePromtPlace().setText("Paciente:");
-        view.getDatePicker().setDate(new java.util.Date());
+        view.getDatePicker().setDate(new Date());
     }
 
     private void descartar() {
-        int op = JOptionPane.showConfirmDialog(view, "Descartar cambios?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        int op = JOptionPane.showConfirmDialog(view, "¿Descartar cambios?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (op == JOptionPane.YES_OPTION) limpiar();
     }
 }

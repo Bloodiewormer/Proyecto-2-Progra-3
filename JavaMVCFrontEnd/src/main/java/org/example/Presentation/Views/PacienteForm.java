@@ -1,28 +1,22 @@
-package org.example.presentation_layer.Views;
+package org.example.Presentation.Views;
 
 import com.toedter.calendar.JDateChooser;
-import org.example.domain_layer.Paciente;
-import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Controllers.PacienteController;
-import org.example.presentation_layer.Models.PacienteTableModel;
-import org.example.service_layer.PacienteService;
+import org.example.Domain.Dtos.Paciente.PacienteResponseDto;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Components.LoadingOverlay;
+import org.example.Presentation.Models.PacienteTableModel;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class PacienteForm extends JPanel {
     private JPanel mainPanel;
-    @SuppressWarnings( "unused" )
     private JPanel bannerPanel;
-    @SuppressWarnings( "unused" )
     private JPanel patientPanel;
-    @SuppressWarnings( "unused" )
     private JPanel tablePacientesPanel;
-    @SuppressWarnings( "unused" )
     private JPanel busquedaPacientePanel;
-    @SuppressWarnings( "unused" )
     private JPanel managerPacientePanel;
     private JPanel datePickerPanel;
     private JTextField phoneTextField;
@@ -38,57 +32,58 @@ public class PacienteForm extends JPanel {
     private JTable patientsTable;
 
     private JDateChooser datePicker;
-    private final PacienteTableModel pacienteModel;
-    private final PacienteController pacienteController;
+    private final PacienteTableModel tableModel;
+    private final LoadingOverlay loadingOverlay;
+    private final JFrame parentFrame;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
+    public PacienteForm(JFrame parentFrame) {
+        this.parentFrame = parentFrame;
+        this.tableModel = new PacienteTableModel();
+        this.loadingOverlay = new LoadingOverlay(parentFrame);
 
-    public PacienteForm(PacienteService patientService) {
         initDatePickers();
-        initListeners();
-
-        this.pacienteModel = new PacienteTableModel(patientService.leerTodos());
-        this.pacienteController = new PacienteController(this, patientService, pacienteModel);
-
-        patientsTable.setModel(pacienteModel);
+        patientsTable.setModel(tableModel);
     }
 
-    private void initListeners() {
-        buscarButton.addActionListener(_ -> pacienteController.buscarPaciente());
-        guardarButton.addActionListener(_ -> pacienteController.guardarPaciente());
-        limpiarButton.addActionListener(_ -> pacienteController.limpiarCampos());
-        borrarButton.addActionListener(_ -> pacienteController.borrarPaciente());
-        actualizarButton.addActionListener(_ -> pacienteController.actualizarPaciente());
-        reporteButton.addActionListener(_ -> pacienteController.generarReportePacienteSeleccionado() );
-        patientsTable.getSelectionModel().addListSelectionListener(this::onTableSelection);
-    }
-
-
-    //Selectores de fecha
     private void initDatePickers() {
         datePickerPanel.setLayout(new BorderLayout());
-
         datePicker = new JDateChooser();
         datePicker.setDate(new Date());
         datePickerPanel.add(datePicker, BorderLayout.CENTER);
-
         datePickerPanel.revalidate();
         datePickerPanel.repaint();
     }
 
-    private void onTableSelection(ListSelectionEvent e) {
-        if (e.getValueIsAdjusting()) return;
-        if (pacienteModel == null) return;
-        int row = patientsTable.getSelectedRow();
-        if (row < 0) return;
-        Paciente p = pacienteModel.getPacienteAt(row);
-        if (p == null) return;
-
-        idTextField.setText(String.valueOf(p.getId()));
-        NameTextField.setText(p.getNombre());
-        phoneTextField.setText(p.getTelefono());
-        datePicker.setDate(p.getFechaNacimiento());
+    public void showLoading(boolean visible) {
+        loadingOverlay.show(visible);
     }
 
+    public void clearFields() {
+        idTextField.setText("");
+        NameTextField.setText("");
+        phoneTextField.setText("");
+        datePicker.setDate(new Date());
+        patientsTable.clearSelection();
+    }
+
+    public void populateFields(PacienteResponseDto paciente) {
+        idTextField.setText(String.valueOf(paciente.getId()));
+        NameTextField.setText(paciente.getNombre());
+        phoneTextField.setText(paciente.getTelefono());
+
+        try {
+            if (paciente.getFechaNacimiento() != null) {
+                Date fecha = dateFormat.parse(paciente.getFechaNacimiento());
+                datePicker.setDate(fecha);
+            }
+        } catch (Exception ex) {
+            // Ignore parse errors
+        }
+    }
+
+    // Getters
+    public PacienteTableModel getTableModel() { return tableModel; }
     public JTable getPatientsTable() { return patientsTable; }
     public JTextField getBuscarTextField() { return buscarTextField; }
     public JTextField getIdTextField() { return idTextField; }
@@ -96,15 +91,19 @@ public class PacienteForm extends JPanel {
     public JTextField getTelefonoTextField() { return phoneTextField; }
     public JDateChooser getDatePicker() { return datePicker; }
     public JButton getBuscarButton() { return buscarButton; }
+    public JButton getGuardarButton() { return guardarButton; }
+    public JButton getActualizarButton() { return actualizarButton; }
+    public JButton getBorrarButton() { return borrarButton; }
+    public JButton getLimpiarButton() { return limpiarButton; }
+    public JButton getReporteButton() { return reporteButton; }
     public JPanel getMainPanel() { return mainPanel; }
 
     private void createUIComponents() {
-        buscarButton = new BlueRoundedButton( "Buscar");
-        reporteButton = new BlueRoundedButton( "Reporte");
-        guardarButton = new BlueRoundedButton( "Guardar");
-        limpiarButton = new BlueRoundedButton( "Limpiar");
-        borrarButton = new BlueRoundedButton( "Borrar");
-        actualizarButton = new BlueRoundedButton( "Actualizar");
-
+        buscarButton = new BlueRoundedButton("Buscar");
+        reporteButton = new BlueRoundedButton("Reporte");
+        guardarButton = new BlueRoundedButton("Guardar");
+        limpiarButton = new BlueRoundedButton("Limpiar");
+        borrarButton = new BlueRoundedButton("Borrar");
+        actualizarButton = new BlueRoundedButton("Actualizar");
     }
 }

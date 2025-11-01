@@ -1,15 +1,10 @@
-package org.example.presentation_layer.Views;
+package org.example.Presentation.Views;
 
-import org.example.presentation_layer.Components.CustomButton;
-import org.example.presentation_layer.Controllers.DashboardController;
-import org.example.presentation_layer.Controllers.HistoricoRecetasController;
-import org.example.presentation_layer.Controllers.LoginController;
-import org.example.presentation_layer.Models.UserType;
-import org.example.service_layer.MedicamentoService;
-import org.example.service_layer.PacienteService;
-import org.example.service_layer.RecetaService;
-import org.example.service_layer.UsuarioService;
-import org.example.presentation_layer.Controllers.PrescribirController;
+import org.example.Presentation.Components.CustomButton;
+import org.example.Presentation.Controllers.*;
+import org.example.Services.MedicamentoService;
+import org.example.Services.PacienteService;
+import org.example.Services.UsuarioService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +21,7 @@ public class MenuPrincipalView extends JFrame {
     private JPanel optionsPanel;
     private JPanel contentPanel;
 
+
     private JButton salirButton;
     private JButton medicosButton;
     private JButton farmaceutasButton;
@@ -39,201 +35,237 @@ public class MenuPrincipalView extends JFrame {
     private JButton despachoButton;
     private JButton historicoRecetasButton;
 
+
     private boolean menuVisible = false;
     private static final int MENU_WIDTH = 170;
     private static final int MENU_COLLAPSED_WIDTH = 30;
 
-
-
-
     private final UsuarioService usuarioService;
     private final PacienteService pacienteService;
     private final MedicamentoService medicamentoService;
-    private final RecetaService recetaService;
-    private final int userid;
+    private final int userId;
+    private final LoginController.UserType userType;
+    private final LoginController loginController;
 
-    public MenuPrincipalView(UserType userType,
-                             LoginController controller,
+    public MenuPrincipalView(LoginController.UserType userType,
+                             LoginController loginController,
                              UsuarioService usuarioService,
                              PacienteService pacienteService,
                              MedicamentoService medicamentoService,
-                             RecetaService recetaService, int userId)  {
+                             int userId) {
 
+        this.userType = userType;
+        this.loginController = loginController;
+        this.usuarioService = usuarioService;
+        this.pacienteService = pacienteService;
+        this.medicamentoService = medicamentoService;
+        this.userId = userId;
+
+        initializeUI();
+        configureMenu();
+        wireEvents();
+        initializeView();
+    }
+
+    private void initializeUI() {
         try {
             ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/LogoAPP.png")));
             setIconImage(icon.getImage());
         } catch (Exception e) {
             System.err.printf("Icon could not be loaded: %s%n", e.getMessage());
         }
-        this.usuarioService = usuarioService;
-        this.pacienteService = pacienteService;
-        this.medicamentoService = medicamentoService;
-        this.recetaService = recetaService;
-        this.userid = userId;
+
         setContentPane(mainPanel);
-        setTitle("Login");
-        setSize(800, 400);
+        setTitle("Sistema de Gestión - " + getUserTypeDisplayName());
+        setSize(900, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setUndecorated(true);
         setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 30, 30));
         setLocationRelativeTo(null);
 
-        ButtonEnable(userType,true);
         contentPanel.setLayout(new BorderLayout());
+    }
 
-
-        contentPanel.setLayout(new BorderLayout());
+    private void configureMenu() {
         collapsiblePanel.setPreferredSize(new Dimension(MENU_WIDTH, collapsiblePanel.getHeight()));
         collapsiblePanel.setMinimumSize(new Dimension(MENU_COLLAPSED_WIDTH, 0));
         collapsiblePanel.setMaximumSize(new Dimension(MENU_WIDTH, Integer.MAX_VALUE));
+
+        configureButtonsForUserType();
+
         collapsiblePanel.revalidate();
         collapsiblePanel.repaint();
+    }
 
+    private void configureButtonsForUserType() {
+        // Reset all buttons
+        medicosButton.setEnabled(false);
+        farmaceutasButton.setEnabled(false);
+        pacientesButton.setEnabled(false);
+        medicamentosButton.setEnabled(false);
 
+        switch (userType) {
+            case ADMINISTRADOR -> {
+                medicosButton.setEnabled(true);
+                farmaceutasButton.setEnabled(true);
+                pacientesButton.setEnabled(true);
+                medicamentosButton.setEnabled(true);
+            }
+            case FARMACEUTA -> {
+                // Farmaceutas pueden ver pacientes y medicamentos
+                pacientesButton.setEnabled(true);
+                medicamentosButton.setEnabled(true);
+            }
+            case MEDICO -> {
+                // Médicos pueden ver pacientes y medicamentos
+                pacientesButton.setEnabled(true);
+                medicamentosButton.setEnabled(true);
+            }
+        }
 
+        // Update visibility
+        updateButtonVisibility();
+    }
+
+    private void updateButtonVisibility() {
+        JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton, medicamentosButton};
+        for (JButton btn : buttons) {
+            btn.setVisible(btn.isEnabled());
+        }
+    }
+
+    private void wireEvents() {
         toggleButton.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 toggleMenu();
             }
         });
 
-        // Ensure everything is validated and visible before showing the frame
+        salirButton.addActionListener(e -> handleLogout());
+        medicosButton.addActionListener(e -> showMedicosView());
+        farmaceutasButton.addActionListener(e -> showFarmaceutasView());
+        pacientesButton.addActionListener(e -> showPacientesView());
+        medicamentosButton.addActionListener(e -> showMedicamentosView());
+    }
+
+    private void initializeView() {
+        // Animate menu open
+        toggleMenu();
+        toggleMenu();
+
+        // Show initial view based on user type
+        switch (userType) {
+            case ADMINISTRADOR -> showMedicosView();
+            case FARMACEUTA -> showMedicamentosView();
+            case MEDICO -> showPacientesView();
+            default -> showWelcomeView();
+        }
+
         mainPanel.revalidate();
         mainPanel.repaint();
-        setVisible(true);
-
-
-        salirButton.addActionListener(_ -> {
-            dispose();
-            @SuppressWarnings("unused")
-            LoginView loginView = new LoginView(controller); // Show LoginView again
-        });
-
-        medicosButton.addActionListener(_ -> showMedicosView() );
-        farmaceutasButton.addActionListener(_ -> showFarmaceutasView() );
-        pacientesButton.addActionListener(_ -> showPacientesView() );
-        medicamentosButton.addActionListener(_ -> showMedicamentosView() );
-        dashboardButton.addActionListener(_ -> showDashboardView() );
-        acercadeButton.addActionListener(_ -> showAcercaDeView() );
-        prescribirButton.addActionListener(_ -> showPrescribirView() );
-        despachoButton.addActionListener(_ -> showDespachoview() );
-        historicoRecetasButton.addActionListener(_ ->showHistoricoRecetasView() );
-
-
-        init(userType);
     }
 
-    private void showHistoricoRecetasView() {
+    // View switching methods
+    private void showMedicosView() {
+        MedicoForm medicoForm = new MedicoForm(this);
+        new MedicoController(medicoForm, usuarioService);
+        switchContent(medicoForm.getMainPanel(), "Gestión de Médicos");
+    }
 
-        HistoricoRecetasController historicoRecetasController = new HistoricoRecetasController(pacienteService, recetaService);
-        HistoricoRecetasView historicoRecetasView = new HistoricoRecetasView(historicoRecetasController, pacienteService, recetaService, medicamentoService, usuarioService);
+    private void showFarmaceutasView() {
+        FarmaceutaForm farmaceutaForm = new FarmaceutaForm(this);
+        new FarmaceutaController(farmaceutaForm, usuarioService);
+        switchContent(farmaceutaForm.getMainPanel(), "Gestión de Farmaceutas");
+    }
+
+    private void showPacientesView() {
+        PacienteForm pacienteForm = new PacienteForm(this);
+        new PacienteController(pacienteForm, pacienteService);
+        switchContent(pacienteForm.getMainPanel(), "Gestión de Pacientes");
+    }
+
+    private void showMedicamentosView() {
+        MedicamentoForm medicamentoForm = new MedicamentoForm(this);
+        new MedicamentoController(medicamentoForm, medicamentoService);
+        switchContent(medicamentoForm.getMainPanel(), "Gestión de Medicamentos");
+    }
+
+    private void showWelcomeView() {
+        JPanel welcomePanel = createWelcomePanel();
+        switchContent(welcomePanel, "Bienvenido");
+    }
+
+    private JPanel createWelcomePanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(240, 240, 240));
+
+        JLabel welcomeLabel = new JLabel("Bienvenido al Sistema de Gestión");
+        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+
+        JLabel userTypeLabel = new JLabel("Tipo de usuario: " + getUserTypeDisplayName());
+        userTypeLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(10, 10, 10, 10);
+
+        panel.add(welcomeLabel, gbc);
+        panel.add(userTypeLabel, gbc);
+
+        return panel;
+    }
+
+    private void switchContent(JPanel newContent, String title) {
         contentPanel.removeAll();
-        contentPanel.add(historicoRecetasView.getMainPanel());
+        contentPanel.add(newContent, BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
+        setTitle("Sistema de Gestión - " + title);
     }
 
+    private void handleLogout() {
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "¿Está seguro que desea cerrar sesión?",
+                "Confirmar cierre de sesión",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
 
-    public JPanel getMainPanel() {
-        return mainPanel;
-    }
-
-    private void createUIComponents() {
-        //icons
-        Image DoctorIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Doctor.png"))).getImage();
-        Image FarmaceuticoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Farmaceuta.png"))).getImage();
-        Image PacienteIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Paciente.png"))).getImage();
-        Image MedicamentoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Medicamento.png"))).getImage();
-        Image DashboardIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/DashBoard.png"))).getImage();
-        Image LogoutIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Logout.png"))).getImage();
-        //Image AdminIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Admin.png"))).getImage();
-        Image PrescribirIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Prescripcion.png"))).getImage();
-        Image InfoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Info.png"))).getImage();
-
-
-
-        salirButton = new CustomButton("Salir", new Color(244, 243, 248), Color.BLACK, LogoutIcon);
-        medicosButton = new CustomButton("Medicos", new Color(244, 243, 248), Color.BLACK, DoctorIcon);
-        farmaceutasButton = new CustomButton("Farmaceutas", new Color(244, 243, 248), Color.BLACK, FarmaceuticoIcon);
-        pacientesButton = new CustomButton("Pacientes", new Color(244, 243, 248), Color.BLACK, PacienteIcon);
-        medicamentosButton = new CustomButton("Medicamentos", new Color(244, 243, 248), Color.BLACK, MedicamentoIcon);
-        dashboardButton = new CustomButton("Dashboard", new Color(244, 243, 248), Color.BLACK, DashboardIcon);
-        acercadeButton = new CustomButton("Acerca de", new Color(244, 243, 248), Color.BLACK,InfoIcon);
-        prescribirButton = new CustomButton("Prescribir", new Color(244, 243, 248), Color.BLACK, PrescribirIcon);
-        despachoButton = new CustomButton("Despacho", new Color(244, 243, 248), Color.BLACK, MedicamentoIcon);
-        historicoRecetasButton = new CustomButton("Histórico Recetas", new Color(244, 243, 248), Color.BLACK, InfoIcon);
-
-    }
-
-    public void ButtonEnable(UserType userType, boolean enable) {
-        JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton,historicoRecetasButton ,medicamentosButton, dashboardButton, acercadeButton, prescribirButton, salirButton, despachoButton};
-        switch (userType) {
-            case ADMINISTRADOR:
-                medicosButton.setEnabled(enable);
-                farmaceutasButton.setEnabled(enable);
-                pacientesButton.setEnabled(enable);
-                medicamentosButton.setEnabled(enable);
-                dashboardButton.setEnabled(enable);
-                acercadeButton.setEnabled(enable);
-                prescribirButton.setEnabled(false);
-                despachoButton.setEnabled(false);
-                historicoRecetasButton.setEnabled(enable);
-                break;
-            case FARMACEUTA:
-                medicosButton.setEnabled(false);
-                farmaceutasButton.setEnabled(false);
-                pacientesButton.setEnabled(false);
-                medicamentosButton.setEnabled(false);
-                dashboardButton.setEnabled(enable);
-                acercadeButton.setEnabled(enable);
-                despachoButton.setEnabled(enable);
-                historicoRecetasButton.setEnabled(enable);
-                prescribirButton.setEnabled(false);
-                break;
-            case MEDICO:
-                medicosButton.setEnabled(false);
-                farmaceutasButton.setEnabled(false);
-                pacientesButton.setEnabled(false);
-                medicamentosButton.setEnabled(false);
-                prescribirButton.setEnabled(enable);
-                historicoRecetasButton.setEnabled(enable);
-                dashboardButton.setEnabled(enable);
-                acercadeButton.setEnabled(enable);
-                despachoButton.setEnabled(false);
-
-                break;
-            default:
-                throw new IllegalArgumentException("Tipo de usuario no soportado: " + userType);
-        }
-        for (JButton btn : buttons) {
-            btn.setVisible(btn.isEnabled());
+        if (confirm == JOptionPane.YES_OPTION) {
+            dispose();
+            loginController.logout();
         }
     }
 
-    void toggleMenu() {
+    private void toggleMenu() {
         menuVisible = !menuVisible;
-        int targetWidth = menuVisible ? MENU_WIDTH : 30;
+        int targetWidth = menuVisible ? MENU_WIDTH : MENU_COLLAPSED_WIDTH;
+
         Timer timer = new Timer(10, null);
-        timer.addActionListener(_ -> {
+        timer.addActionListener(e -> {
             int currentWidth = collapsiblePanel.getWidth();
+
             if (currentWidth < targetWidth) { // Expand
                 MenuLabel.setVisible(true);
                 currentWidth += 10;
                 if (currentWidth > targetWidth) currentWidth = targetWidth;
-            } else if (currentWidth > targetWidth) {// Collapse
+            } else if (currentWidth > targetWidth) { // Collapse
                 MenuLabel.setVisible(false);
                 currentWidth -= 10;
                 if (currentWidth < targetWidth) currentWidth = targetWidth;
             }
+
             collapsiblePanel.setPreferredSize(new Dimension(currentWidth, collapsiblePanel.getHeight()));
             collapsiblePanel.revalidate();
             collapsiblePanel.repaint();
 
-
-            JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton,historicoRecetasButton ,medicamentosButton, dashboardButton, despachoButton  ,acercadeButton, prescribirButton, salirButton};
+            // Update button visibility
+            JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton, medicamentosButton, salirButton};
             for (JButton btn : buttons) {
                 if (btn.isEnabled()) {
-                    btn.setVisible(menuVisible || currentWidth > 30);
+                    btn.setVisible(menuVisible || currentWidth > MENU_COLLAPSED_WIDTH);
                 }
             }
 
@@ -244,86 +276,36 @@ public class MenuPrincipalView extends JFrame {
         timer.start();
     }
 
-    public void showMedicosView() {
-        MedicoForm medicoForm = new MedicoForm(usuarioService);
-        contentPanel.removeAll();
-        contentPanel.add(medicoForm.getMainPanel());
-        contentPanel.revalidate();
-        contentPanel.repaint();
+    private String getUserTypeDisplayName() {
+        return switch (userType) {
+            case ADMINISTRADOR -> "Administrador";
+            case FARMACEUTA -> "Farmaceuta";
+            case MEDICO -> "Médico";
+            default -> "Usuario";
+        };
     }
 
-    public void showFarmaceutasView() {
-        FarmaceutaForm farmaceutaForm = new FarmaceutaForm(usuarioService);
-        contentPanel.removeAll();
-        contentPanel.add(farmaceutaForm.getMainPanel());
-        contentPanel.revalidate();
-        contentPanel.repaint();
+    public JPanel getMainPanel() {
+        return mainPanel;
     }
 
-    public void showPacientesView() {
-        PacienteForm pacienteForm = new PacienteForm(pacienteService);
-        contentPanel.removeAll();
-        contentPanel.add(pacienteForm.getMainPanel());
-        contentPanel.revalidate();
-        contentPanel.repaint();
+    private void createUIComponents() {
+        // Load icons
+        Image doctorIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Doctor.png"))).getImage();
+        Image farmaceuticoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Farmaceuta.png"))).getImage();
+        Image pacienteIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Paciente.png"))).getImage();
+        Image medicamentoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Medicamento.png"))).getImage();
+        Image logoutIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Logout.png"))).getImage();
+
+        // Create buttons with icons
+        Color buttonColor = new Color(244, 243, 248);
+        Color textColor = Color.BLACK;
+
+        salirButton = new CustomButton("Salir", buttonColor, textColor, logoutIcon);
+        medicosButton = new CustomButton("Médicos", buttonColor, textColor, doctorIcon);
+        farmaceutasButton = new CustomButton("Farmaceutas", buttonColor, textColor, farmaceuticoIcon);
+        pacientesButton = new CustomButton("Pacientes", buttonColor, textColor, pacienteIcon);
+        medicamentosButton = new CustomButton("Medicamentos", buttonColor, textColor, medicamentoIcon);
     }
-
-    public void showMedicamentosView() {
-        MedicamentoForm medicamentoForm = new MedicamentoForm(medicamentoService);
-        contentPanel.removeAll();
-        contentPanel.add(medicamentoForm.getMainPanel());
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
-    public void showDashboardView() {
-        DashboardController dashboardController = new DashboardController(recetaService);
-        DashboardView dashboardView = new DashboardView(dashboardController, medicamentoService);
-        contentPanel.removeAll();
-        contentPanel.add(dashboardView.getMainPanel());
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
-
-    public void showAcercaDeView() {
-        //AcercaDeView acercaDeView = new AcercaDeView();
-        contentPanel.removeAll();
-        //ContentPanel.add(acercaDeView.getMainPanel());
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
-    public void showDespachoview() {
-        DespachoForm despachoForm = new DespachoForm(pacienteService , recetaService, medicamentoService);
-        contentPanel.removeAll();
-        contentPanel.add(despachoForm.getMainPanel());
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
-    public void showPrescribirView( ) {
-        PrescribirForm prescribirForm = new PrescribirForm(usuarioService, pacienteService, medicamentoService, recetaService, userid);
-        contentPanel.removeAll();
-        contentPanel.add(prescribirForm.getMainPanel());
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
-
-    public void init ( UserType userType) {
-        toggleMenu();
-        toggleMenu();
-        switch (userType){
-            case ADMINISTRADOR -> showMedicosView();
-            case FARMACEUTA -> showDespachoview();
-            case MEDICO -> showPrescribirView();
-            default -> throw new IllegalArgumentException("Tipo de usuario no soportado: " + userType);
-        }
-    }
-
-
-
-
 
 }

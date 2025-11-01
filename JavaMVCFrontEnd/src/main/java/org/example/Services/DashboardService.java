@@ -1,58 +1,68 @@
-package org.example.Service_layer;
+package org.example.Services;
 
-import org.example.Domain.Dtos.medicamento.Medicamento;
-import org.example.Domain.Dtos.receta.Receta;
-import org.example.utilities.ChangeType;
+import org.example.Domain.Dtos.Receta.RecetaResponseDto;
+import org.example.Domain.Dtos.Medicamento.MedicamentoResponseDto;
+import org.example.Domain.Dtos.RequestDto;
+import org.example.Domain.Dtos.ResponseDto;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-public class DashboardService {
+public class DashboardService extends BaseService {
+    private final ExecutorService executor = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
 
-    private final List<IServiceObserver<Object>> observers = new ArrayList<>();
-
-    public DashboardService(RecetaService recetaService, MedicamentoService medicamentoService) {
-        recetaService.addObserver(new RecetaObserver());
-        medicamentoService.addObserver(new MedicamentoObserver());
+    public DashboardService(String host, int port) {
+        super(host, port);
     }
 
-    // Inner observer for Receta
-    private class RecetaObserver implements IServiceObserver<Receta> {
-        @Override
-        public void onDataChanged(ChangeType type, Receta entity) {
-            notifyObservers(type, entity);
-        }
-        @Override
-        public void onDataChanged(List<Receta> entities) {
-            for (Receta entity : entities) {
-                notifyObservers(ChangeType.UPDATED, entity);
-            }
-        }
+    public Future<DashboardDataDto> getDashboardDataAsync(String startDate, String endDate) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Dashboard",
+                    "getData",
+                    gson.toJson(new DashboardRequestDto(startDate, endDate)),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), DashboardDataDto.class);
+        });
     }
 
-    // Inner observer for Medicamento
-    private class MedicamentoObserver implements IServiceObserver<Medicamento> {
-        @Override
-        public void onDataChanged(ChangeType type, Medicamento entity) {
-            notifyObservers(type, entity);
+    // DTO interno para la solicitud
+    private static class DashboardRequestDto {
+        private final String startDate;
+        private final String endDate;
+
+        public DashboardRequestDto(String startDate, String endDate) {
+            this.startDate = startDate;
+            this.endDate = endDate;
         }
-        @Override
-        public void onDataChanged(List<Medicamento> entities) {
-            for (Medicamento entity : entities) {
-                notifyObservers(ChangeType.UPDATED, entity);
-            }
-        }
+
+        public String getStartDate() { return startDate; }
+        public String getEndDate() { return endDate; }
     }
 
-    public void addObserver(IServiceObserver<Object> observer) {
-        if (observer != null && !observers.contains(observer)) {
-            observers.add(observer);
-        }
-    }
+    // DTO para la respuesta del dashboard
+    public static class DashboardDataDto {
+        private int totalRecetas;
+        private int recetasPendientes;
+        private int recetasCompletadas;
+        private int medicamentosActivos;
 
-    private void notifyObservers(ChangeType type, Object entity) {
-        for (IServiceObserver<Object> obs : observers) {
-            obs.onDataChanged(type, entity);
-        }
+        public DashboardDataDto() {}
+
+        public int getTotalRecetas() { return totalRecetas; }
+        public void setTotalRecetas(int totalRecetas) { this.totalRecetas = totalRecetas; }
+
+        public int getRecetasPendientes() { return recetasPendientes; }
+        public void setRecetasPendientes(int recetasPendientes) { this.recetasPendientes = recetasPendientes; }
+
+        public int getRecetasCompletadas() { return recetasCompletadas; }
+        public void setRecetasCompletadas(int recetasCompletadas) { this.recetasCompletadas = recetasCompletadas; }
+
+        public int getMedicamentosActivos() { return medicamentosActivos; }
+        public void setMedicamentosActivos(int medicamentosActivos) { this.medicamentosActivos = medicamentosActivos; }
     }
 }

@@ -1,10 +1,11 @@
-package org.example.presentation_layer.Views;
+// java
+package org.example.Presentation.Views;
 
-import org.example.Domain.Dtos.medicamento.Medicamento;
-import org.example.Domain.Dtos.receta.Receta;
-import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Controllers.DashboardController;
-import org.example.service_layer.MedicamentoService;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Controllers.DashboardController;
+import org.example.Domain.Dtos.Medicamento.MedicamentoResponseDto;
+import org.example.Domain.Dtos.Receta.RecetaResponseDto;
+import org.example.Services.MedicamentoService;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -71,24 +72,30 @@ public class DashboardView extends JPanel {
     }
 
     private void initListeners() {
-        addButton.addActionListener(_ -> {
+        addButton.addActionListener(e -> {
             String nombreSel = (String) selectMedicamentoComboBox.getSelectedItem();
             if (nombreSel == null) return;
-            Medicamento med = medicamentoService.leerTodos()
-                    .stream()
+            List<MedicamentoResponseDto> meds;
+            try {
+                meds = medicamentoService.listMedicamentosAsync().get();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error loading medicamentos: " + ex.getMessage());
+                return;
+            }
+            MedicamentoResponseDto med = meds.stream()
                     .filter(m -> nombreSel.equals(m.getNombre()))
                     .findFirst()
                     .orElse(null);
             if (med == null) return;
-            if (!containsMedicamento(med.getCodigo())) {
-                medicamentosTableModel.addRow(new Object[]{med.getCodigo(), med.getNombre()});
+            if (!containsMedicamento(med.getId())) {
+                medicamentosTableModel.addRow(new Object[]{med.getId(), med.getNombre()});
                 refreshCharts();
             } else {
                 JOptionPane.showMessageDialog(this, "Ya agregado.", "Info", JOptionPane.INFORMATION_MESSAGE);
             }
         });
 
-        deleteSelectedButton.addActionListener(_ -> {
+        deleteSelectedButton.addActionListener(e -> {
             int row = medicamentosTable.getSelectedRow();
             if (row >= 0) {
                 medicamentosTableModel.removeRow(row);
@@ -99,7 +106,7 @@ public class DashboardView extends JPanel {
         addMonthYearSync(startMonthChooser);
         addMonthYearSync(endMonthChooser);
 
-        selectGraphicTypeComboBox.addActionListener(_ -> refreshCharts());
+        selectGraphicTypeComboBox.addActionListener(e -> refreshCharts());
     }
 
     private void addMonthYearSync(JMonthChooser chooser) {
@@ -170,7 +177,7 @@ public class DashboardView extends JPanel {
             fin = tmp;
         }
 
-        List<Receta> recetasEnRango = dashboardController.getRecetasWithinRange(inicio, fin);
+        List<RecetaResponseDto> recetasEnRango = dashboardController.getRecetasWithinRange(inicio, fin);
 
         String tipo = getSelectedChartType();
         medicamentosGraphPanel.removeAll();
@@ -223,8 +230,14 @@ public class DashboardView extends JPanel {
     }
 
     private void initComboBoxes() {
-        selectMedicamentoComboBox.setModel(new DefaultComboBoxModel<>(medicamentoService.leerTodos().stream()
-                .map(Medicamento::getNombre)
+        List<MedicamentoResponseDto> meds;
+        try {
+            meds = medicamentoService.listMedicamentosAsync().get();
+        } catch (Exception ex) {
+            meds = List.of();
+        }
+        selectMedicamentoComboBox.setModel(new DefaultComboBoxModel<>(meds.stream()
+                .map(MedicamentoResponseDto::getNombre)
                 .toArray(String[]::new)));
         selectGraphicTypeComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"Medicamentos", "Recetas"}));
     }

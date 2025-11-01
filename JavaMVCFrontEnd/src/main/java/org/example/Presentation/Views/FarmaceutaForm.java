@@ -1,13 +1,11 @@
-package org.example.presentation_layer.Views;
+package org.example.Presentation.Views;
 
-import org.example.Domain.Dtos.users.Farmaceuta;
-import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Controllers.FarmaceutaController;
-import org.example.presentation_layer.Models.FarmaceutaTableModel;
-import org.example.service_layer.UsuarioService;
+import org.example.Domain.Dtos.Farmaceuta.FarmaceutaResponseDto;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Components.LoadingOverlay;
+import org.example.Presentation.Models.FarmaceutaTableModel;
 
 import javax.swing.*;
-import java.util.List;
 
 public class FarmaceutaForm extends JPanel {
     private JPanel MainPanel;
@@ -27,57 +25,44 @@ public class FarmaceutaForm extends JPanel {
     private JButton borrarButton;
     private JButton actualizarButton;
 
-    private FarmaceutaTableModel farmaceutaModel;
-    private final FarmaceutaController farmaceutaController;
+    private final FarmaceutaTableModel tableModel;
+    private final LoadingOverlay loadingOverlay;
 
-    public FarmaceutaForm(UsuarioService usuarioService) {
-        List<Farmaceuta> farmaceutas = usuarioService.leerPorTipo(Farmaceuta.class)
-                .stream()
-                .filter(Farmaceuta.class::isInstance)
-                .map(Farmaceuta.class::cast)
-                .toList();
-        this.farmaceutaModel = new FarmaceutaTableModel(farmaceutas);
-        this.farmaceutaController = new FarmaceutaController(this, usuarioService, farmaceutaModel);
+    public FarmaceutaForm(JFrame parentFrame) {
+        this.tableModel = new FarmaceutaTableModel();
+        this.loadingOverlay = new LoadingOverlay(parentFrame);
 
-        Farmaceutastable.setModel(farmaceutaModel);
-
-        buscarButton.addActionListener(e -> farmaceutaController.buscarFarmaceuta());
-        guardarButton.addActionListener(e -> farmaceutaController.guardarFarmaceuta());
-        limpiarButton.addActionListener(e -> farmaceutaController.limpiarCampos());
-        borrarButton.addActionListener(e -> farmaceutaController.borrarFarmaceuta());
-        actualizarButton.addActionListener(e -> farmaceutaController.actualizarFarmaceuta());
-        reporteButton.addActionListener(e -> farmaceutaController.generarReporteFarmaceutaSeleccionado());
-        Farmaceutastable.getSelectionModel().addListSelectionListener(this::onTableSelection);
+        Farmaceutastable.setModel(tableModel);
     }
 
-
-
-    private void onTableSelection(javax.swing.event.ListSelectionEvent e) {
-        if (e.getValueIsAdjusting()) return;
-        if (farmaceutaModel == null) return;
-        int row = Farmaceutastable.getSelectedRow();
-        if (row < 0) return;
-        Farmaceuta f = farmaceutaModel.getFarmaceutaAt(row);
-        if (f == null) return;
-
-        IDtextFiel.setText(String.valueOf(f.getId()));
-        NametextField.setText(f.getNombre());
+    public void showLoading(boolean visible) {
+        loadingOverlay.show(visible);
     }
 
+    public void clearFields() {
+        IDtextFiel.setText("");
+        NametextField.setText("");
+        Farmaceutastable.clearSelection();
+    }
 
-    //gets
+    public void populateFields(FarmaceutaResponseDto farmaceuta) {
+        IDtextFiel.setText(String.valueOf(farmaceuta.getId()));
+        NametextField.setText(farmaceuta.getNombre());
+    }
+
+    // Getters
+    public FarmaceutaTableModel getTableModel() { return tableModel; }
     public JPanel getMainPanel() { return MainPanel; }
-    public JTextField getBuscartextField() { return BuscartextField; }
     public JTextField getIDtextFiel() { return IDtextFiel; }
     public JTextField getNametextField() { return NametextField; }
+    public JTextField getBuscartextField() { return BuscartextField; }
     public JTable getFarmaceutatable() { return Farmaceutastable; }
+    public JButton getGuardarButton() { return guardarButton; }
+    public JButton getActualizarButton() { return actualizarButton; }
+    public JButton getBorrarButton() { return borrarButton; }
+    public JButton getLimpiarButton() { return limpiarButton; }
     public JButton getBuscarButton() { return buscarButton; }
     public JButton getReporteButton() { return reporteButton; }
-    public JButton getGuardarButton() { return guardarButton; }
-    public JButton getLimpiarButton() { return limpiarButton; }
-    public JButton getBorrarButton() { return borrarButton; }
-
-
 
     private void createUIComponents() {
         buscarButton = new BlueRoundedButton("Buscar");
@@ -88,5 +73,3 @@ public class FarmaceutaForm extends JPanel {
         actualizarButton = new BlueRoundedButton("Actualizar");
     }
 }
-
-

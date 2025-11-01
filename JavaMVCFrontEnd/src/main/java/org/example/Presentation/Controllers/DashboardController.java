@@ -1,98 +1,119 @@
-package org.example.presentation_layer.Controllers;
+package org.example.Presentation.Controllers;
 
+import org.example.Domain.Dtos.DetalleReceta.DetalleRecetaResponseDto;
+import org.example.Domain.Dtos.Receta.RecetaResponseDto;
 
-import org.example.Domain.Dtos.receta.DetalleReceta;
-import org.example.Domain.Dtos.receta.Receta;
-import org.example.service_layer.RecetaService;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DashboardController {
-    private final RecetaService recetaService;
+    private final List<RecetaResponseDto> recetas;
 
-    public DashboardController(RecetaService recetaService) {
-        this.recetaService = recetaService;
+    public DashboardController(List<RecetaResponseDto> recetas) {
+        this.recetas = recetas != null ? recetas : new ArrayList<>();
     }
 
-    public List<Receta> getRecetasWithinRange(YearMonth inicio, YearMonth fin) {
-        return recetaService.leerTodos().stream()
+    public List<RecetaResponseDto> getRecetasWithinRange(YearMonth inicio, YearMonth fin) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        return recetas.stream()
                 .filter(r -> {
-                    YearMonth ym = YearMonth.from(r.getFecha().toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate());
-                    return !ym.isBefore(inicio) && !ym.isAfter(fin);
+                    try {
+                        if (r.getFechaConfeccion() == null) return false;
+                        LocalDate fecha = LocalDate.parse(r.getFechaConfeccion(), formatter);
+                        YearMonth ym = YearMonth.from(fecha);
+                        return !ym.isBefore(inicio) && !ym.isAfter(fin);
+                    } catch (DateTimeParseException e) {
+                        return false;
+                    }
                 })
                 .collect(Collectors.toList());
     }
 
-    public DefaultCategoryDataset buildLineDataset(List<Receta> recetasEnRango, YearMonth inicio, YearMonth fin, Map<Integer, String> medsSeleccionados) {
+    public DefaultCategoryDataset buildLineDataset(List<RecetaResponseDto> recetasEnRango,
+                                                   YearMonth inicio,
+                                                   YearMonth fin,
+                                                   Map<Integer, String> medsSeleccionados) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        if (medsSeleccionados.isEmpty()) return dataset;
+
         List<YearMonth> meses = new ArrayList<>();
         YearMonth cursor = inicio;
         while (!cursor.isAfter(fin)) {
             meses.add(cursor);
             cursor = cursor.plusMonths(1);
         }
-        if (medsSeleccionados.isEmpty()) return dataset;
+
         for (Map.Entry<Integer, String> entry : medsSeleccionados.entrySet()) {
             int medId = entry.getKey();
             String etiqueta = entry.getValue();
             Map<YearMonth, Integer> cantidades = sumarUnidadesPorMesYMedicamento(recetasEnRango, medId);
+
             for (YearMonth m : meses) {
                 int valor = cantidades.getOrDefault(m, 0);
                 dataset.addValue(valor, etiqueta, formatYearMonth(m));
             }
         }
+
         return dataset;
     }
 
-    private Map<YearMonth, Integer> sumarUnidadesPorMesYMedicamento(List<Receta> recetas, int medicamentoId) {
+    private Map<YearMonth, Integer> sumarUnidadesPorMesYMedicamento(List<RecetaResponseDto> recetas, int medicamentoId) {
         Map<YearMonth, Integer> mapa = new HashMap<>();
-        for (Receta r : recetas) {
-            if (r == null || r.getDetalles() == null) continue;
-            YearMonth ym = YearMonth.from(r.getFecha().toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate());
-            int acumulado = mapa.getOrDefault(ym, 0);
-            int sumaReceta = r.getDetalles().stream()
-                    .filter(d -> d != null
-                            && d.getMedicamento() != null
-                            && d.getMedicamento().getCodigo() == medicamentoId)
-                    .mapToInt(DetalleReceta::getCantidad)
-                    .sum();
-            if (sumaReceta > 0) {
-                mapa.put(ym, acumulado + sumaReceta);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        for (RecetaResponseDto r : recetas) {
+            if (r == null || r.getDetalles() == null || r.getFechaConfeccion() == null) continue;
+
+            try {
+                LocalDate fecha = LocalDate.parse(r.getFechaConfeccion(), formatter);
+                YearMonth ym = YearMonth.from(fecha);
+
+                int acumulado = mapa.getOrDefault(ym, 0);
+                int sumaReceta = r.getDetalles().stream()
+                        .filter(d -> d != null && d.getIdMedicamento() == medicamentoId)
+                        .mapToInt(DetalleRecetaResponseDto::getCantidad)
+                        .sum();
+
+                if (sumaReceta > 0) {
+                    mapa.put(ym, acumulado + sumaReceta);
+                }
+            } catch (DateTimeParseException e) {
+                // Skip invalid dates
             }
         }
+
         return mapa;
     }
 
-    public DefaultPieDataset<String> buildPieDataset(List<Receta> recetasEnRango) {
+    public DefaultPieDataset<String> buildPieDataset(List<RecetaResponseDto> recetasEnRango) {
         DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
-        Map<String, Long> byState = recetasEnRango.stream()
-                .collect(Collectors.groupingBy(Receta::getEstado, Collectors.counting()));
-        if (byState.isEmpty()) {
+
+        if (recetasEnRango.isEmpty()) {
             dataset.setValue("Sin datos", 1);
             return dataset;
         }
-        byState.forEach((estado, cantidad) -> dataset.setValue(
-                estado != null ? estado : "DESCONOCIDO",
-                cantidad
-        ));
+
+        Map<String, Long> byState = recetasEnRango.stream()
+                .collect(Collectors.groupingBy(
+                        r -> r.getEstado() != null ? r.getEstado() : "DESCONOCIDO",
+                        Collectors.counting()
+                ));
+
+        byState.forEach((estado, cantidad) -> dataset.setValue(estado, cantidad));
+
         return dataset;
     }
 
     private String formatYearMonth(YearMonth ym) {
         return String.format("%02d-%d", ym.getMonthValue(), ym.getYear());
     }
-
 }
-

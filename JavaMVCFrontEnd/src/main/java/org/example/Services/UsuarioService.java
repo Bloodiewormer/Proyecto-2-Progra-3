@@ -1,90 +1,135 @@
 package org.example.Services;
 
-//import org.example.data_access_layer.IFileStore;
+import org.example.Domain.Dtos.Farmaceuta.*;
+import org.example.Domain.Dtos.Medico.*;
+import org.example.Domain.Dtos.RequestDto;
+import org.example.Domain.Dtos.ResponseDto;
 
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-/*public class UsuarioService implements IService<Usuario> {
+public class UsuarioService extends BaseService {
+    private final ExecutorService executor = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
 
-    private final IFileStore<Usuario> fileStore;
-    private final List<IServiceObserver<Usuario>> observers ;
-
-    public UsuarioService(IFileStore<Usuario> fileStore) {
-        this.fileStore = fileStore;
-        this.observers = new ArrayList<>();
+    public UsuarioService(String host, int port) {
+        super(host, port);
     }
 
-    @Override
-    public void agregar(Usuario usuario) {
-        List <Usuario> usuarios = fileStore.readAll();
-        //check if id is unique
-        for (Usuario u : usuarios) {
-            if (u.getId() == usuario.getId()) {
-                throw new IllegalArgumentException("ID ya existe");
-            }
-        }
-        usuarios.add(usuario);
-        fileStore.writeAll(usuarios);
-        notifyObservers(ChangeType.CREATED, usuario);
+    // ==================== FARMACEUTA ====================
+
+    public Future<FarmaceutaResponseDto> addFarmaceutaAsync(AddFarmaceutaRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Farmaceuta",
+                    "add",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), FarmaceutaResponseDto.class);
+        });
     }
 
-    @Override
-    public void borrar(int id) {
-        List<Usuario> usuarios = fileStore.readAll();
-        Usuario removed = null;
-        for (int i = 0; i < usuarios.size(); i++) {
-            if (usuarios.get(i).getId() == id) { removed = usuarios.remove(i); break; }
-        }
-        fileStore.writeAll(usuarios);
-        if (removed != null) notifyObservers(ChangeType.DELETED, removed);
+    public Future<FarmaceutaResponseDto> updateFarmaceutaAsync(UpdateFarmaceutaRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Farmaceuta",
+                    "update",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), FarmaceutaResponseDto.class);
+        });
     }
 
-    @Override
-    public void actualizar(Usuario usuario) {
-        List<Usuario> usuarios = fileStore.readAll();
-        for (int i = 0; i < usuarios.size(); i++) {
-            if (usuarios.get(i).getId() == usuario.getId()) {
-                usuarios.set(i, usuario);
-                break;
-            }
-        }
-        fileStore.writeAll(usuarios);
-        notifyObservers(ChangeType.UPDATED, usuario);
+    public Future<Boolean> deleteFarmaceutaAsync(DeleteFarmaceutaRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Farmaceuta",
+                    "delete",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            return response.isSuccess();
+        });
     }
 
-    @Override
-    public List<Usuario> leerTodos() {
-        return fileStore.readAll();
+    public Future<List<FarmaceutaResponseDto>> listFarmaceutasAsync() {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Farmaceuta",
+                    "list",
+                    "",
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            ListFarmaceutaResponseDto listResponse = gson.fromJson(response.getData(), ListFarmaceutaResponseDto.class);
+            return listResponse.getFarmaceutas();
+        });
     }
 
-    @Override
-    public Usuario leerPorId(int id) {
-        return fileStore.readAll()
-                .stream()
-                .filter(u -> u.getId() == id)
-                .findFirst()
-                .orElse(null);
+    // ==================== MEDICO ====================
+
+    public Future<MedicoResponseDto> addMedicoAsync(AddMedicoRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medico",
+                    "add",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), MedicoResponseDto.class);
+        });
     }
 
-    @Override
-    public void addObserver(IServiceObserver<Usuario> listener) {
-        if(listener != null) observers.add(listener);
+    public Future<MedicoResponseDto> updateMedicoAsync(UpdateMedicoRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medico",
+                    "update",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), MedicoResponseDto.class);
+        });
     }
 
-    private void notifyObservers(ChangeType type, Usuario entity) {
-        for (IServiceObserver<Usuario> observer : observers) {
-            observer.onDataChanged(type, entity);
-        }
+    public Future<Boolean> deleteMedicoAsync(DeleteMedicoRequestDto dto) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medico",
+                    "delete",
+                    gson.toJson(dto),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            return response.isSuccess();
+        });
     }
 
-    public List<Usuario> leerPorTipo(Class<?> tipo) {
-        List<Usuario> resultado = new ArrayList<>();
-        for (Usuario u : fileStore.readAll()) {
-            if (tipo.isInstance(u)) {
-                resultado.add(u);
-            }
-        }
-        return resultado;
+    public Future<List<MedicoResponseDto>> listMedicosAsync() {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medico",
+                    "list",
+                    "",
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            ListMedicoResponseDto listResponse = gson.fromJson(response.getData(), ListMedicoResponseDto.class);
+            return listResponse.getMedicos();
+        });
     }
-
-
-}*/
+}

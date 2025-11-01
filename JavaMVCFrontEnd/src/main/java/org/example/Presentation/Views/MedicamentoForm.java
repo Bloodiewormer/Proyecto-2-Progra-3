@@ -1,13 +1,11 @@
-package org.example.presentation_layer.Views;
+package org.example.Presentation.Views;
 
-import org.example.Domain.Dtos.medicamento.Medicamento;
-import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Controllers.MedicamentoController;
-import org.example.presentation_layer.Models.MedicamentoTableModel;
-import org.example.service_layer.MedicamentoService;
+import org.example.Domain.Dtos.Medicamento.MedicamentoResponseDto;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Components.LoadingOverlay;
+import org.example.Presentation.Models.MedicamentoTableModel;
 
 import javax.swing.*;
-import java.util.List;
 
 public class MedicamentoForm extends JPanel {
     private JPanel MainPanel;
@@ -30,26 +28,35 @@ public class MedicamentoForm extends JPanel {
     private JTextField PresentaciontextField;
     private JButton actualizarButton;
 
-    private MedicamentoTableModel medicamentoModel;
-    private MedicamentoController medicamentoController;
+    private final MedicamentoTableModel tableModel;
+    private final LoadingOverlay loadingOverlay;
 
+    public MedicamentoForm(JFrame parentFrame) {
+        this.tableModel = new MedicamentoTableModel();
+        this.loadingOverlay = new LoadingOverlay(parentFrame);
 
-    public MedicamentoForm(MedicamentoService medicamentoService) {
-        List<Medicamento> medicamentos = medicamentoService.leerTodos();
-        this.medicamentoModel = new MedicamentoTableModel(medicamentos);
-        this.medicamentoController = new MedicamentoController(this, medicamentoService, medicamentoModel);
-
-        Medicamentotable.setModel(medicamentoModel);
-
-        buscarButton.addActionListener(e -> medicamentoController.buscarMedicamento());
-        guardarButton.addActionListener(e -> medicamentoController.agregarMedicamento());
-        limpiarButton.addActionListener(e -> medicamentoController.limpiarCampos());
-        borrarButton.addActionListener(e -> medicamentoController.borrarMedicamento());
-        actualizarButton.addActionListener(e -> medicamentoController.actualizarMedicamento());
-        reporteButton.addActionListener(e -> medicamentoController.generarReporteMedicamentoSeleccionado());
-        Medicamentotable.getSelectionModel().addListSelectionListener(this::onTableSelection);
+        Medicamentotable.setModel(tableModel);
     }
 
+    public void showLoading(boolean visible) {
+        loadingOverlay.show(visible);
+    }
+
+    public void clearFields() {
+        CodigotextField.setText("");
+        NametextField.setText("");
+        PresentaciontextField.setText("");
+        Medicamentotable.clearSelection();
+    }
+
+    public void populateFields(MedicamentoResponseDto medicamento) {
+        CodigotextField.setText(String.valueOf(medicamento.getId()));
+        NametextField.setText(medicamento.getNombre());
+        PresentaciontextField.setText(medicamento.getPresentacion());
+    }
+
+    // Getters
+    public MedicamentoTableModel getTableModel() { return tableModel; }
     public JPanel getMainPanel() { return MainPanel; }
     public JTable getMedicamentotable() { return Medicamentotable; }
     public JTextField getBuscartextField() { return BuscartextField; }
@@ -63,9 +70,6 @@ public class MedicamentoForm extends JPanel {
     public JButton getBorrarButton() { return borrarButton; }
     public JButton getActualizarButton() { return actualizarButton; }
 
-
-
-
     private void createUIComponents() {
         buscarButton = new BlueRoundedButton("Buscar");
         reporteButton = new BlueRoundedButton("Reporte");
@@ -74,19 +78,4 @@ public class MedicamentoForm extends JPanel {
         borrarButton = new BlueRoundedButton("Borrar");
         actualizarButton = new BlueRoundedButton("Actualizar");
     }
-
-    private void onTableSelection(javax.swing.event.ListSelectionEvent e) {
-        if (e.getValueIsAdjusting()) return;
-        if (medicamentoModel == null) return;
-        int row = Medicamentotable.getSelectedRow();
-        if (row < 0) return;
-        Medicamento m = medicamentoModel.getMedicamentoAt(row);
-        if (m == null) return;
-
-        CodigotextField.setText(String.valueOf(m.getCodigo()));
-        NametextField.setText(m.getNombre());
-        PresentaciontextField.setText(m.getPresentacion());
-    }
-
-
 }

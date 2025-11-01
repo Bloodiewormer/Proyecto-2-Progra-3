@@ -1,41 +1,45 @@
-package org.example.presentation_layer.Controllers;
+package org.example.Presentation.Controllers;
 
-import org.example.Domain.Dtos.receta.Receta;
-import org.example.service_layer.RecetaService;
-import org.example.service_layer.MedicamentoService;
-import org.example.utilities.EstadoReceta;
+import org.example.Domain.Dtos.Receta.RecetaResponseDto;
+import org.example.Domain.Dtos.Receta.UpdateRecetaRequestDto;
+import org.example.Utilities.EstadoReceta;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DespachoController {
-    private final RecetaService recetaService;
-    private final MedicamentoService medicamentoService;
+    private final List<RecetaResponseDto> recetas;
 
-    public DespachoController(RecetaService recetaService, MedicamentoService medicamentoService) {
-        this.recetaService = recetaService;
-        this.medicamentoService = medicamentoService;
+    public DespachoController(List<RecetaResponseDto> recetas) {
+        this.recetas = recetas != null ? recetas : List.of();
     }
 
-    public List<Receta> obtenerRecetas() {
-        return recetaService.leerTodos();
+    public List<RecetaResponseDto> obtenerRecetas() {
+        return recetas;
     }
 
     public void actualizarEstadoReceta(int recetaId, EstadoReceta nuevoEstado) {
-        Receta receta = recetaService.leerPorId(recetaId);
+        // Esta operación debería hacerse a través de un servicio
+        // Por ahora solo actualizamos localmente
+        RecetaResponseDto receta = recetas.stream()
+                .filter(r -> r.getId() == recetaId)
+                .findFirst()
+                .orElse(null);
+
         if (receta != null) {
-            receta.setEstado(nuevoEstado);
-            recetaService.actualizar(receta);
+            receta.setEstado(nuevoEstado.name());
         }
     }
 
-    public List<Receta> obtenerRecetasPorEstado(EstadoReceta estado) {
-        return recetaService.leerTodos()
-                .stream()
-                .filter(r -> r.getEstadoEnum() == estado)
-                .toList();
+    public List<RecetaResponseDto> obtenerRecetasPorEstado(EstadoReceta estado) {
+        return recetas.stream()
+                .filter(r -> estado.name().equals(r.getEstado()))
+                .collect(Collectors.toList());
     }
 
-    public List<Receta> obtenerRecetasPorPaciente(int idPaciente) {
-        return recetaService.buscarPorPacienteId(idPaciente);
+    public List<RecetaResponseDto> obtenerRecetasPorPaciente(int idPaciente) {
+        return recetas.stream()
+                .filter(r -> r.getIdPaciente() == idPaciente)
+                .collect(Collectors.toList());
     }
 }

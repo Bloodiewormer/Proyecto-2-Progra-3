@@ -1,91 +1,74 @@
-package org.example.presentation_layer.Views;
+// java
+package org.example.Presentation.Views;
 
-import org.example.presentation_layer.Components.BlueRoundedButton;
-import org.example.presentation_layer.Components.CustomPasswordField;
-import org.example.presentation_layer.Components.CustomTextField;
-import org.example.presentation_layer.Controllers.CambioClaveController;
-import org.example.presentation_layer.Controllers.LoginController;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Components.CustomTextField;
+import org.example.Presentation.Components.CustomPasswordField;
+
+import org.example.Presentation.Components.LoadingOverlay;
+import org.example.Presentation.Controllers.CambioClaveController;
+import org.example.Services.UsuarioService;
 
 import javax.swing.*;
-import java.awt.geom.RoundRectangle2D;
+import java.awt.*;
 
-public class CambioClaveView extends JFrame{
+public class CambioClaveView extends JPanel {
+    @SuppressWarnings("unused")
     private JPanel mainPanel;
-    private JTextField idTextField;
-    private JPasswordField passwordField;
-    private JButton acceptButton;
     @SuppressWarnings("unused")
     private JPanel textPasswordChangePanel;
     @SuppressWarnings("unused")
     private JLabel changePasswordLabel;
-    private JPasswordField confirmPasswordField;
+    private JTextField idTextField = new CustomTextField();
+    private JPasswordField passwordField = new JPasswordField();
+    private JPasswordField confirmPasswordField = new JPasswordField();
+    private JButton acceptButton = new BlueRoundedButton("Aceptar");
+    private final LoadingOverlay overlay;
 
-    private final CambioClaveController cambioClaveController;
+    private CambioClaveController controller;
 
-
-    public CambioClaveView( LoginController controller) {
-        this.cambioClaveController = new CambioClaveController(controller);
-        initializeFrame();
-        initializeEvents();
+    public CambioClaveView(JFrame parent, UsuarioService usuarioService) {
+        this.overlay = new LoadingOverlay(parent);
+        buildUI();
+        // FIX: match controller constructor
+        this.controller = new CambioClaveController(this, usuarioService);
     }
 
-    private void initializeFrame() {
-        setUndecorated(true);
-        setContentPane(mainPanel);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        pack();
-        setLocationRelativeTo(null);
-        setSize(300, 150);
-        setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 30, 30));
-        setVisible(true);
+    private void buildUI() {
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(6, 6, 6, 6);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.EAST;
+        add(new JLabel("ID usuario:"), gbc);
+        gbc.gridy++;
+        add(new JLabel("Nueva contraseña:"), gbc);
+        gbc.gridy++;
+        add(new JLabel("Confirmar contraseña:"), gbc);
+
+        gbc.gridx = 1; gbc.gridy = 0; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1;
+        add(idTextField, gbc);
+        gbc.gridy++;
+        add(passwordField, gbc);
+        gbc.gridy++;
+        add(confirmPasswordField, gbc);
+
+        gbc.gridx = 0; gbc.gridy++; gbc.gridwidth = 2; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
+        add(acceptButton, gbc);
     }
 
-    private void initializeEvents() {
-        acceptButton.addActionListener(_ -> handleAccept());
+    // FIX: getters required by controller and for previous code
+    public JButton getAcceptButton() { return acceptButton; }
+    public JTextField getIdTextField() { return idTextField; }
+    public JPasswordField getPasswordField() { return passwordField; }
+    public JPasswordField getConfirmPasswordField() { return confirmPasswordField; }
+
+    public void showLoading(boolean visible) { overlay.show(visible); }
+
+    public void clearFields() {
+        idTextField.setText("");
+        passwordField.setText("");
+        confirmPasswordField.setText("");
     }
-
-    private void handleAccept() {
-        String idText = idTextField.getText();
-        String newPassword = new String(passwordField.getPassword());
-        String confirmPassword = new String(confirmPasswordField.getPassword());
-
-        if (idText.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor, complete todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        int id;
-        try {
-            id = Integer.parseInt(idText);
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "El ID de usuario debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (!newPassword.equals(confirmPassword)) {
-            JOptionPane.showMessageDialog(this, "Las contraseñas no coinciden.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (!cambioClaveController.isValidUserId(idText) || !cambioClaveController.userExists(id)) {
-            JOptionPane.showMessageDialog(this, "El ID de usuario no es válido o no existe.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (!cambioClaveController.isValidPassword(newPassword)) {
-            JOptionPane.showMessageDialog(this, "La nueva contraseña no cumple con los requisitos de seguridad.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (cambioClaveController.changePassword(id, newPassword)) {
-            JOptionPane.showMessageDialog(this, "Contraseña cambiada con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-            dispose();
-        } else {
-            JOptionPane.showMessageDialog(this, "Error al cambiar la contraseña.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-
-
-    public JPanel getMainPanel() {
-        return mainPanel;
-    }
-
     private void createUIComponents() {
         idTextField = new CustomTextField();
         acceptButton = new BlueRoundedButton("Aceptar");

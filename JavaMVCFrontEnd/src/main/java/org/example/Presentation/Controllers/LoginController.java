@@ -1,81 +1,203 @@
-package org.example.presentation_layer.Controllers;
+package org.example.Presentation.Controllers;
 
+import org.example.Domain.Dtos.Auth.UserResponseDto;
+import org.example.Presentation.Observable;
+import org.example.Presentation.Views.LoginView;
+import org.example.Presentation.Views.MenuPrincipalView;
+import org.example.Services.AuthService;
+import org.example.Services.MedicamentoService;
+import org.example.Services.PacienteService;
+import org.example.Services.UsuarioService;
+import org.example.Utilities.ChangeType;
 
-import org.example.data_access_layer.*;
-import org.example.domain_layer.*;
-import org.example.presentation_layer.Models.UserType;
-import org.example.presentation_layer.Views.CambioClaveView;
-import org.example.presentation_layer.Views.LoginView;
-import org.example.presentation_layer.Views.MenuPrincipalView;
-import org.example.service_layer.MedicamentoService;
-import org.example.service_layer.PacienteService;
-import org.example.service_layer.RecetaService;
-import org.example.service_layer.UsuarioService;
+import javax.swing.*;
 
-import java.io.File;
+public class LoginController extends Observable {
 
-@SuppressWarnings("ClassCanBeRecord")
-public class LoginController {
+    private final LoginView loginView;
+    private final AuthService authService;
+    private UserResponseDto currentUser;
 
-    private final UsuarioService usuarioService;
+    // Server configuration
+    private static final String SERVER_HOST = "localhost";
+    private static final int SERVER_PORT = 7000;
 
-    public LoginController(UsuarioService usuarioService) {
-        this.usuarioService = usuarioService;
+    public LoginController(LoginView loginView, AuthService authService) {
+        this.loginView = loginView;
+        this.authService = authService;
+
+        // Add the view as an observer
+        addObserver(loginView);
+
+        // Wire up event listeners
+        wireEvents();
     }
 
-    public boolean login(int id, String password) {
-        Usuario usuario = usuarioService.leerPorId(id);
-        return usuario != null && usuario.getPassword().equals(password);
+    private void wireEvents() {
+        loginView.addLoginListener(e -> handleLogin());
     }
 
-    public boolean changePassword(int id, String newPassword) {
-        Usuario usuario = usuarioService.leerPorId(id);
-        if (usuario == null) return false;
-        usuario.changePassword(newPassword);
-        usuarioService.actualizar(usuario);
-        return true;
+    private void handleLogin() {
+        String username = loginView.getUsername();
+        String password = loginView.getPassword();
+
+        // Validate input
+        if (!validateInput(username, password)) {
+            return;
+        }
+
+        loginView.showLoading(true);
+
+        SwingWorker<UserResponseDto, Void> worker = new SwingWorker<>() {
+            @Override
+            protected UserResponseDto doInBackground() throws Exception {
+                return authService.login(username, password).get();
+            }
+
+            @Override
+            protected void done() {
+                loginView.showLoading(false);
+                try {
+                    UserResponseDto user = get();
+                    if (user != null) {
+                        currentUser = user;
+                        onLoginSuccess(user);
+                    } else {
+                        showError("Credenciales inválidas. Por favor, verifique su usuario y contraseña.");
+                    }
+                } catch (Exception ex) {
+                    handleError("Error al intentar iniciar sesión", ex);
+                }
+            }
+        };
+        worker.execute();
     }
 
-    public UserType getUserType(int id) {
-        Usuario usuario = usuarioService.leerPorId(id);
-        return switch (usuario) {
-            case Administrador _ -> UserType.ADMINISTRADOR;
-            case Farmaceuta _ -> UserType.FARMACEUTA;
-            case Medico _ -> UserType.MEDICO;
-            case null, default -> UserType.NULL;
+    private void onLoginSuccess(UserResponseDto user) {
+        // Notify observers
+        notifyObservers(ChangeType.UPDATED, user);
+
+        // Hide login view
+        loginView.setVisible(false);
+
+        // Determine user type and open main view
+        UserType userType = determineUserType(user.getRole());
+        openMainView(userType, user);
+    }
+
+    private UserType determineUserType(String role) {
+        if (role == null) return UserType.NULL;
+
+        return switch (role.toUpperCase()) {
+            case "ADMIN", "ADMINISTRADOR" -> UserType.ADMINISTRADOR;
+            case "FARMACEUTA" -> UserType.FARMACEUTA;
+            case "MEDICO", "DOCTOR" -> UserType.MEDICO;
+            default -> UserType.NULL;
         };
     }
 
-    public void onLoginSuccess(UserType userType, LoginView loginView, int userId) {
-        loginView.setVisible(false);
-        File usuariosFile = new File("usuarios.xml");
-        File PacientesFile = new File("pacientes.xml");
-        File MedicamentosFile = new File("medicamentos.xml");
-        File RecetasFile = new File("recetas.xml");
+    private void openMainView(UserType userType, UserResponseDto user) {
+        // Initialize services
+        UsuarioService usuarioService = new UsuarioService(SERVER_HOST, SERVER_PORT);
+        PacienteService pacienteService = new PacienteService(SERVER_HOST, SERVER_PORT);
+        MedicamentoService medicamentoService = new MedicamentoService(SERVER_HOST, SERVER_PORT);
 
-        IFileStore<Usuario> fileStore = new UsuarioFileStore(usuariosFile);
-        IFileStore<Paciente> fileStorePacientes = new PacienteFileStore(PacientesFile);
-        IFileStore<Medicamento> fileStoreMedicamentos = new MedicamentoFileStore( MedicamentosFile);
-        IFileStore <Receta> fileStoreRecetas = new RecetaFileStore(RecetasFile);
-
-        UsuarioService usuarioService = new UsuarioService(fileStore);
-        PacienteService pacienteService = new PacienteService(fileStorePacientes);
-        MedicamentoService medicamentoService = new MedicamentoService(fileStoreMedicamentos);
-        RecetaService recetaService = new RecetaService(fileStoreRecetas);
-
-        MenuPrincipalView menu = new MenuPrincipalView(userType, this, usuarioService, pacienteService, medicamentoService,recetaService ,userId);
-        menu.setVisible(true);
+        // Create and show main view
+        MenuPrincipalView mainView = new MenuPrincipalView(
+                userType,
+                this,
+                usuarioService,
+                pacienteService,
+                medicamentoService,
+                user.getId().intValue()
+        );
+        mainView.setVisible(true);
     }
 
     public void showPasswordChangeView() {
-
-        new CambioClaveView(this);
-
-
-
+        // TODO: Implement password change view if needed
+        JOptionPane.showMessageDialog(
+                loginView,
+                "Funcionalidad de cambio de contraseña próximamente",
+                "Información",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     public void exitApplication() {
-        System.exit(0);
+        int confirm = JOptionPane.showConfirmDialog(
+                loginView,
+                "¿Está seguro que desea salir?",
+                "Confirmar salida",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            System.exit(0);
+        }
+    }
+
+    public void logout() {
+        currentUser = null;
+        loginView.clearFields();
+        loginView.setVisible(true);
+    }
+
+    public UserResponseDto getCurrentUser() {
+        return currentUser;
+    }
+
+    // Validation
+    private boolean validateInput(String username, String password) {
+        if (username == null || username.trim().isEmpty()) {
+            showWarning("Por favor, ingrese su usuario o email");
+            return false;
+        }
+
+        if (password == null || password.isEmpty()) {
+            showWarning("Por favor, ingrese su contraseña");
+            return false;
+        }
+
+        if (password.length() < 4) {
+            showWarning("La contraseña debe tener al menos 4 caracteres");
+            return false;
+        }
+
+        return true;
+    }
+
+    // UI Helper Methods
+    private void showError(String message) {
+        JOptionPane.showMessageDialog(
+                loginView,
+                message,
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+        );
+    }
+
+    private void showWarning(String message) {
+        JOptionPane.showMessageDialog(
+                loginView,
+                message,
+                "Advertencia",
+                JOptionPane.WARNING_MESSAGE
+        );
+    }
+
+    private void handleError(String message, Exception ex) {
+        ex.printStackTrace();
+        String errorDetails = ex.getMessage() != null ? ex.getMessage() : "Error desconocido";
+        showError(message + "\nDetalles: " + errorDetails);
+    }
+
+    // Enum for user types
+    public enum UserType {
+        ADMINISTRADOR,
+        FARMACEUTA,
+        MEDICO,
+        NULL
     }
 }

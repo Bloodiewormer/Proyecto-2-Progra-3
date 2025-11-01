@@ -1,132 +1,289 @@
-package org.example.presentation_layer.Controllers;
+package org.example.Presentation.Controllers;
 
-import org.example.Domain.Dtos.users.Medico;
-import org.example.Domain.Dtos.users.Usuario;
-import org.example.presentation_layer.Models.MedicoTableModel;
-import org.example.presentation_layer.Views.MedicoForm;
-import org.example.service_layer.UsuarioService;
+import org.example.Domain.Dtos.Medico.*;
+import org.example.Presentation.Observable;
+import org.example.Presentation.Views.MedicoForm;
+import org.example.Services.UsuarioService;
+import org.example.Utilities.ChangeType;
 
 import javax.swing.*;
-import java.util.ArrayList;
+import javax.swing.event.ListSelectionEvent;
 import java.util.List;
 
-public class MedicoController {
-    private final MedicoForm view;
-    private final MedicoTableModel tableModel;
+public class MedicoController extends Observable {
+    private final MedicoForm medicoView;
     private final UsuarioService usuarioService;
 
-    public MedicoController(MedicoForm view, UsuarioService usuarioService, MedicoTableModel tableModel) {
-        this.view = view;
+    public MedicoController(MedicoForm medicoView, UsuarioService usuarioService) {
+        this.medicoView = medicoView;
         this.usuarioService = usuarioService;
-        this.tableModel = tableModel;
-        cargarMedicos();
+
+        addObserver(medicoView.getTableModel());
+        loadMedicosAsync();
+        addListeners();
     }
 
-    public void guardarMedico() {
-        try {
-            int id = Integer.parseInt(view.getIDtextField().getText().trim());
-            validarId(id); // Validate before adding
-            String nombre = view.getNametextField().getText().trim();
-            String especialidad = view.getEspecialidadtextField().getText().trim();
-            Medico m = new Medico(id, "", nombre, especialidad);
-            usuarioService.agregar(m);
-            cargarMedicos();
-            limpiarCampos();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(view, "ID inválido", "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(view, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
+    private void loadMedicosAsync() {
+        showLoading(true);
 
-    public void limpiarCampos() {
-        view.getIDtextField().setText("");
-        view.getEspecialidadtextField().setText("");
-        view.getNametextField().setText("");
-    }
-
-    public void actualizarMedico() {
-        try {
-            int id = Integer.parseInt(view.getIDtextField().getText().trim());
-            String nombre = view.getNametextField().getText().trim();
-            String especialidad = view.getEspecialidadtextField().getText().trim();
-            Usuario existing = usuarioService.leerPorId(id);
-            if (!(existing instanceof Medico)) {
-                throw new IllegalArgumentException("Medico not found.");
+        SwingWorker<List<MedicoResponseDto>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<MedicoResponseDto> doInBackground() throws Exception {
+                return usuarioService.listMedicosAsync().get();
             }
-            String password = existing.getPassword();
-            Medico m = new Medico(id,password, nombre, especialidad);
-            usuarioService.actualizar(m);
-            cargarMedicos();
-            limpiarCampos();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(view, "ID inválido", "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(view, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
 
-    public void borrarMedico() {
-        int row = view.getMedicostable().getSelectedRow();
-        if (row >= 0) {
-            int id = (int) tableModel.getValueAt(row, 0);
-            usuarioService.borrar(id);
-            cargarMedicos();
-        }
-    }
-
-    public void buscarMedico() {
-        String filtro = view.getBuscartextField().getText().toLowerCase().trim();
-        List<Medico> filtrados = new ArrayList<>();
-        for (Usuario u : usuarioService.leerTodos()) {
-            if (u instanceof Medico) {
-                Medico m = (Medico) u;
-                if (m.getNombre() != null && m.getNombre().toLowerCase().contains(filtro)) {
-                    filtrados.add(m);
+            @Override
+            protected void done() {
+                try {
+                    List<MedicoResponseDto> medicos = get();
+                    medicoView.getTableModel().setMedicos(medicos);
+                } catch (Exception e) {
+                    handleError("Error al cargar médicos", e);
+                } finally {
+                    showLoading(false);
                 }
             }
-        }
-        tableModel.setMedicos(filtrados);
+        };
+        worker.execute();
     }
 
-    private void cargarMedicos() {
-        List<Medico> medicos = new ArrayList<>();
-        for (Usuario u : usuarioService.leerTodos()) {
-            if (u instanceof Medico) {
-                medicos.add((Medico) u);
+    private void addListeners() {
+        medicoView.getGuardarButton().addActionListener(e -> handleAddMedico());
+        medicoView.getActualizarButton().addActionListener(e -> handleUpdateMedico());
+        medicoView.getBorrarButton().addActionListener(e -> handleDeleteMedico());
+        medicoView.getLimpiarButton().addActionListener(e -> handleClearFields());
+        medicoView.getBuscarButton().addActionListener(e -> handleSearch());
+        medicoView.getReporteButton().addActionListener(e -> handleReport());
+        medicoView.getMedicostable().getSelectionModel().addListSelectionListener(this::handleRowSelection);
+    }
+
+    // ---------------------------
+    // Action Handlers
+    // ---------------------------
+    private void handleAddMedico() {
+        if (!validateFields()) return;
+
+        try {
+            String nombre = medicoView.getNametextField().getText().trim();
+            String especialidad = medicoView.getEspecialidadtextField().getText().trim();
+
+            AddMedicoRequestDto dto = new AddMedicoRequestDto(nombre, "default123", especialidad);
+
+            showLoading(true);
+            executeAsync(
+                    () -> usuarioService.addMedicoAsync(dto).get(),
+                    medico -> {
+                        if (medico != null) {
+                            notifyObservers(ChangeType.CREATED, medico);
+                            medicoView.clearFields();
+                            showSuccess("Médico agregado exitosamente");
+                        }
+                    },
+                    "Error al agregar médico"
+            );
+        } catch (Exception ex) {
+            handleError("Error en los datos del médico", ex);
+        }
+    }
+
+    private void handleUpdateMedico() {
+        int selectedRow = medicoView.getMedicostable().getSelectedRow();
+        if (selectedRow < 0) {
+            showWarning("Seleccione un médico de la tabla");
+            return;
+        }
+
+        if (!validateFields()) return;
+
+        try {
+            String idText = medicoView.getIDtextField().getText().trim();
+            String nombre = medicoView.getNametextField().getText().trim();
+            String especialidad = medicoView.getEspecialidadtextField().getText().trim();
+
+            int id = Integer.parseInt(idText);
+            UpdateMedicoRequestDto dto = new UpdateMedicoRequestDto(id, nombre, null, especialidad);
+
+            showLoading(true);
+            executeAsync(
+                    () -> usuarioService.updateMedicoAsync(dto).get(),
+                    medico -> {
+                        if (medico != null) {
+                            notifyObservers(ChangeType.UPDATED, medico);
+                            medicoView.clearFields();
+                            showSuccess("Médico actualizado exitosamente");
+                        }
+                    },
+                    "Error al actualizar médico"
+            );
+        } catch (NumberFormatException ex) {
+            showError("ID debe ser un número válido");
+        }
+    }
+
+    private void handleDeleteMedico() {
+        int selectedRow = medicoView.getMedicostable().getSelectedRow();
+        if (selectedRow < 0) {
+            showWarning("Seleccione un médico de la tabla");
+            return;
+        }
+
+        MedicoResponseDto selectedMedico = medicoView.getTableModel().getMedicoAt(selectedRow);
+
+        int confirm = JOptionPane.showConfirmDialog(
+                medicoView,
+                "¿Está seguro de eliminar al médico " + selectedMedico.getNombre() + "?",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            DeleteMedicoRequestDto dto = new DeleteMedicoRequestDto(selectedMedico.getId());
+
+            showLoading(true);
+            executeAsync(
+                    () -> usuarioService.deleteMedicoAsync(dto).get(),
+                    success -> {
+                        if (success) {
+                            notifyObservers(ChangeType.DELETED, selectedMedico.getId());
+                            medicoView.clearFields();
+                            showSuccess("Médico eliminado exitosamente");
+                        }
+                    },
+                    "Error al eliminar médico"
+            );
+        }
+    }
+
+    private void handleClearFields() {
+        medicoView.clearFields();
+    }
+
+    private void handleSearch() {
+        String filtro = medicoView.getBuscartextField().getText().toLowerCase().trim();
+
+        if (filtro.isEmpty()) {
+            loadMedicosAsync();
+            return;
+        }
+
+        List<MedicoResponseDto> allMedicos = medicoView.getTableModel().getMedicos();
+        List<MedicoResponseDto> filtrados = allMedicos.stream()
+                .filter(m -> m.getNombre().toLowerCase().contains(filtro) ||
+                        m.getEspecialidad().toLowerCase().contains(filtro) ||
+                        String.valueOf(m.getId()).contains(filtro))
+                .toList();
+
+        medicoView.getTableModel().setMedicos(filtrados);
+    }
+
+    private void handleReport() {
+        int selectedRow = medicoView.getMedicostable().getSelectedRow();
+        if (selectedRow < 0) {
+            showWarning("Seleccione un médico de la tabla");
+            return;
+        }
+
+        MedicoResponseDto medico = medicoView.getTableModel().getMedicoAt(selectedRow);
+        String reporte = String.format(
+                "=== REPORTE DE MÉDICO ===\n\n" +
+                        "ID: %d\n" +
+                        "Nombre: %s\n" +
+                        "Especialidad: %s\n",
+                medico.getId(),
+                medico.getNombre(),
+                medico.getEspecialidad()
+        );
+
+        JOptionPane.showMessageDialog(
+                medicoView,
+                reporte,
+                "Reporte de Médico",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    private void handleRowSelection(ListSelectionEvent e) {
+        if (!e.getValueIsAdjusting()) {
+            int row = medicoView.getMedicostable().getSelectedRow();
+            if (row >= 0) {
+                MedicoResponseDto medico = medicoView.getTableModel().getMedicoAt(row);
+                medicoView.populateFields(medico);
             }
         }
-        tableModel.setMedicos(medicos);
-
     }
 
-    private void validarId(int id) {
-        for (Usuario u : usuarioService.leerTodos()) {
-            if (u.getId() == id) {
-                throw new IllegalArgumentException("ID ya existe. Por favor, ingrese un ID único.");
-            }
+    // ---------------------------
+    // Validation & Utility Methods
+    // ---------------------------
+    private boolean validateFields() {
+        String nombre = medicoView.getNametextField().getText().trim();
+        String especialidad = medicoView.getEspecialidadtextField().getText().trim();
+
+        if (nombre.isEmpty()) {
+            showWarning("El nombre es requerido");
+            return false;
         }
-    }
 
-    public void generarReporteMedicoSeleccionado() {
-        int row = view.getMedicostable().getSelectedRow();
-        if (row >= 0) {
-            int id = (int) tableModel.getValueAt(row, 0);
-            Usuario u = usuarioService.leerPorId(id);
-            if (u != null) {
-                String reporte = "Reporte de Usuario\n\n" +
-                        "ID: " + u.getId() + "\n" +
-                        "Nombre: " + u.getNombre() + "\n" +
-                        "Tipo: " + u.getClass().getSimpleName() + "\n";
-
-                JOptionPane.showMessageDialog(view, reporte, "Reporte de Usuario", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(view, "No se encontró el usuario seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            JOptionPane.showMessageDialog(view, "Por favor, seleccione un usuario de la tabla.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+        if (especialidad.isEmpty()) {
+            showWarning("La especialidad es requerida");
+            return false;
         }
+
+        return true;
     }
 
+    private <T> void executeAsync(AsyncTask<T> task, ResultHandler<T> onSuccess, String errorMessage) {
+        SwingWorker<T, Void> worker = new SwingWorker<>() {
+            @Override
+            protected T doInBackground() throws Exception {
+                return task.execute();
+            }
 
+            @Override
+            protected void done() {
+                try {
+                    T result = get();
+                    onSuccess.handle(result);
+                } catch (Exception ex) {
+                    handleError(errorMessage, ex);
+                } finally {
+                    showLoading(false);
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    private void showLoading(boolean visible) {
+        medicoView.showLoading(visible);
+    }
+
+    private void showSuccess(String message) {
+        JOptionPane.showMessageDialog(medicoView, message, "Éxito", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void showError(String message) {
+        JOptionPane.showMessageDialog(medicoView, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void showWarning(String message) {
+        JOptionPane.showMessageDialog(medicoView, message, "Advertencia", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private void handleError(String message, Exception ex) {
+        ex.printStackTrace();
+        showError(message + ": " + ex.getMessage());
+    }
+
+    // Functional interfaces for cleaner async code
+    @FunctionalInterface
+    private interface AsyncTask<T> {
+        T execute() throws Exception;
+    }
+
+    @FunctionalInterface
+    private interface ResultHandler<T> {
+        void handle(T result);
+    }
 }

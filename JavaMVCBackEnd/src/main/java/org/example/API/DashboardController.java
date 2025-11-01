@@ -1,7 +1,7 @@
 package org.example.API;
 // package org.example.API.Controllers;
 
-import org.example.Domain.Dtos.DetalleReceta.DetalleRecetaResponseDto;
+import org.example.Domain.dtos.DetalleReceta.DetalleRecetaResponseDto;
 import org.example.Domain.Dtos.Receta.RecetaResponseDto;
 import org.springframework.web.bind.annotation.*;
 
