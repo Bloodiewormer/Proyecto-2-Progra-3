@@ -1,6 +1,5 @@
-package org.example.API;
+package org.example.API.Controllers;
 
-import org.example.Domain.dtos.Paciente.*;
 import org.example.Services.PacienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

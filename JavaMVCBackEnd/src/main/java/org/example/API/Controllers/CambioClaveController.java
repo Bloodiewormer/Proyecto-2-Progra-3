@@ -1,4 +1,4 @@
-package org.example.API;
+package org.example.API.Controllers;
 
 public class CambioClaveController {
 }
