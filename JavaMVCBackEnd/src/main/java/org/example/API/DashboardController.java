@@ -1,10 +1,13 @@
 package org.example.API;
-// package org.example.API.Controllers;
 
-import org.example.Domain.dtos.DetalleReceta.DetalleRecetaResponseDto;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.example.Domain.dtos.RequestDto;
+import org.example.Domain.dtos.ResponseDto;
 import org.example.Domain.dtos.Receta.RecetaResponseDto;
-import org.springframework.web.bind.annotation.*;
+import org.example.Domain.dtos.DetalleReceta.DetalleRecetaResponseDto;
 
+import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -12,37 +15,72 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Controlador del BACKEND que provee datos procesados
- * al FrontEnd (DashboardController de Presentation).
- *
- * En lugar de devolver datasets (gráficos),
- * devuelve estructuras de datos JSON (Map/List)
- * para que el FrontEnd pueda construir los gráficos.
- */
-@RestController
-@RequestMapping("/api/dashboard")
 public class DashboardController {
 
-    // ⚙️ En un entorno real esto vendría de un servicio o base de datos
     private final List<RecetaResponseDto> recetas;
-
-    public DashboardController() {
-        this.recetas = new ArrayList<>();
-    }
+    private final Gson gson = new Gson();
 
     public DashboardController(List<RecetaResponseDto> recetas) {
         this.recetas = recetas != null ? recetas : new ArrayList<>();
     }
 
-    // ===========================================================
-    // 1️⃣ Obtener recetas dentro de un rango de fechas (por mes)
-    // ===========================================================
-    @GetMapping("/recetas")
-    public List<RecetaResponseDto> getRecetasWithinRange(
-            @RequestParam String inicio,
-            @RequestParam String fin) {
+    public ResponseDto route(RequestDto request) {
+        try {
+            switch (request.getRequest()) {
+                case "recetas":
+                    return handleRecetas(request);
+                case "line":
+                    return handleLine(request);
+                case "pie":
+                    return handlePie(request);
+                default:
+                    return new ResponseDto(false, "Unknown request: " + request.getRequest(), null);
+            }
+        } catch (Exception e) {
+            return new ResponseDto(false, e.getMessage(), null);
+        }
+    }
 
+    // Handler para obtener recetas en rango
+    private ResponseDto handleRecetas(RequestDto request) {
+        Map<String, String> params = gson.fromJson(request.getData(), Map.class);
+        String inicio = params.get("inicio");
+        String fin = params.get("fin");
+
+        List<RecetaResponseDto> result = getRecetasWithinRange(inicio, fin);
+        return new ResponseDto(true, "Recetas obtenidas", gson.toJson(result));
+    }
+
+    // Handler para datos de línea
+    private ResponseDto handleLine(RequestDto request) {
+        Type mapType = new TypeToken<Map<String, Object>>(){}.getType();
+        Map<String, Object> params = gson.fromJson(request.getData(), mapType);
+        String inicio = (String) params.get("inicio");
+        String fin = (String) params.get("fin");
+        Map<String, String> medsSeleccionados = (Map<String, String>) params.get("medsSeleccionados");
+
+        Map<Integer, String> meds = new LinkedHashMap<>();
+        for (Map.Entry<String, String> entry : medsSeleccionados.entrySet()) {
+            meds.put(Integer.parseInt(entry.getKey()), entry.getValue());
+        }
+
+        Map<String, Map<String, Integer>> result = getLineData(inicio, fin, meds);
+        return new ResponseDto(true, "Datos de línea", gson.toJson(result));
+    }
+
+    // Handler para datos de pastel
+    private ResponseDto handlePie(RequestDto request) {
+        Map<String, String> params = gson.fromJson(request.getData(), Map.class);
+        String inicio = params.get("inicio");
+        String fin = params.get("fin");
+
+        Map<String, Long> result = getPieData(inicio, fin);
+        return new ResponseDto(true, "Datos de pastel", gson.toJson(result));
+    }
+
+    // --- Métodos auxiliares ---
+
+    private List<RecetaResponseDto> getRecetasWithinRange(String inicio, String fin) {
         YearMonth ymInicio = YearMonth.parse(inicio);
         YearMonth ymFin = YearMonth.parse(fin);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -61,15 +99,7 @@ public class DashboardController {
                 .collect(Collectors.toList());
     }
 
-    // ===========================================================
-    // 2️⃣ Datos para gráfico de líneas (unidades por mes/medicamento)
-    // ===========================================================
-    @PostMapping("/line")
-    public Map<String, Map<String, Integer>> getLineData(
-            @RequestParam String inicio,
-            @RequestParam String fin,
-            @RequestBody Map<Integer, String> medsSeleccionados) {
-
+    private Map<String, Map<String, Integer>> getLineData(String inicio, String fin, Map<Integer, String> medsSeleccionados) {
         YearMonth ymInicio = YearMonth.parse(inicio);
         YearMonth ymFin = YearMonth.parse(fin);
 
@@ -83,7 +113,6 @@ public class DashboardController {
 
             Map<YearMonth, Integer> cantidades = sumarUnidadesPorMesYMedicamento(recetasEnRango, medId);
 
-            // Convertimos YearMonth -> String (para serializar bien a JSON)
             Map<String, Integer> dataFormateada = new LinkedHashMap<>();
             YearMonth cursor = ymInicio;
             while (!cursor.isAfter(ymFin)) {
@@ -98,14 +127,7 @@ public class DashboardController {
         return resultado;
     }
 
-    // ===========================================================
-    // 3️⃣ Datos para gráfico de pastel (estado de recetas)
-    // ===========================================================
-    @GetMapping("/pie")
-    public Map<String, Long> getPieData(
-            @RequestParam String inicio,
-            @RequestParam String fin) {
-
+    private Map<String, Long> getPieData(String inicio, String fin) {
         List<RecetaResponseDto> recetasEnRango = getRecetasWithinRange(inicio, fin);
 
         if (recetasEnRango.isEmpty()) {
@@ -119,12 +141,7 @@ public class DashboardController {
                 ));
     }
 
-    // ===========================================================
-    // Métodos auxiliares (idénticos al FrontEnd original)
-    // ===========================================================
-    private Map<YearMonth, Integer> sumarUnidadesPorMesYMedicamento(
-            List<RecetaResponseDto> recetas, int medicamentoId) {
-
+    private Map<YearMonth, Integer> sumarUnidadesPorMesYMedicamento(List<RecetaResponseDto> recetas, int medicamentoId) {
         Map<YearMonth, Integer> mapa = new HashMap<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -156,5 +173,3 @@ public class DashboardController {
         return String.format("%02d-%d", ym.getMonthValue(), ym.getYear());
     }
 }
-
-// Revisar

@@ -1,69 +1,83 @@
 package org.example.API;
-// package org.example.API.Controllers;
 
-import org.example.Application.Services.RecetaService;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.example.Domain.dtos.RequestDto;
+import org.example.Domain.dtos.ResponseDto;
 import org.example.Domain.dtos.Receta.RecetaResponseDto;
 import org.example.Domain.dtos.Receta.UpdateRecetaRequestDto;
 import org.example.Utilities.EstadoReceta;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@RestController
-@RequestMapping("/api/despacho")
-@CrossOrigin(origins = "*") // Permite que el FrontEnd acceda desde cualquier origen
 public class DespachoController {
 
-    private final RecetaService recetaService;
+    private final List<RecetaResponseDto> recetas;
+    private final Gson gson = new Gson();
 
-    public DespachoController(RecetaService recetaService) {
-        this.recetaService = recetaService;
+    public DespachoController(List<RecetaResponseDto> recetas) {
+        this.recetas = recetas != null ? recetas : new ArrayList<>();
     }
 
-    /**
-     * Obtener todas las recetas
-     */
-    @GetMapping("/recetas")
-    public ResponseEntity<List<RecetaResponseDto>> obtenerRecetas() {
-        List<RecetaResponseDto> recetas = recetaService.obtenerTodas();
-        return ResponseEntity.ok(recetas);
+    public ResponseDto route(RequestDto request) {
+        try {
+            switch (request.getRequest()) {
+                case "todas":
+                    return handleObtenerRecetas();
+                case "porEstado":
+                    return handleObtenerRecetasPorEstado(request);
+                case "porPaciente":
+                    return handleObtenerRecetasPorPaciente(request);
+                case "actualizarEstado":
+                    return handleActualizarEstadoReceta(request);
+                default:
+                    return new ResponseDto(false, "Unknown request: " + request.getRequest(), null);
+            }
+        } catch (Exception e) {
+            return new ResponseDto(false, e.getMessage(), null);
+        }
     }
 
-    /**
-     * Obtener recetas filtradas por estado
-     */
-    @GetMapping("/recetas/estado/{estado}")
-    public ResponseEntity<List<RecetaResponseDto>> obtenerRecetasPorEstado(@PathVariable EstadoReceta estado) {
-        List<RecetaResponseDto> recetas = recetaService.obtenerPorEstado(estado.name());
-        return ResponseEntity.ok(recetas);
+    private ResponseDto handleObtenerRecetas() {
+        return new ResponseDto(true, "Recetas obtenidas", gson.toJson(recetas));
     }
 
-    /**
-     * Obtener recetas por paciente
-     */
-    @GetMapping("/recetas/paciente/{idPaciente}")
-    public ResponseEntity<List<RecetaResponseDto>> obtenerRecetasPorPaciente(@PathVariable int idPaciente) {
-        List<RecetaResponseDto> recetas = recetaService.obtenerPorPaciente(idPaciente);
-        return ResponseEntity.ok(recetas);
+    private ResponseDto handleObtenerRecetasPorEstado(RequestDto request) {
+        Map<String, String> params = gson.fromJson(request.getData(), Map.class);
+        String estado = params.get("estado");
+        List<RecetaResponseDto> filtradas = recetas.stream()
+                .filter(r -> estado.equals(r.getEstado()))
+                .collect(Collectors.toList());
+        return new ResponseDto(true, "Recetas filtradas por estado", gson.toJson(filtradas));
     }
 
-    /**
-     * Actualizar el estado de una receta
-     */
-    @PutMapping("/recetas/{id}/estado")
-    public ResponseEntity<String> actualizarEstadoReceta(
-            @PathVariable int id,
-            @RequestBody UpdateRecetaRequestDto requestDto) {
+    private ResponseDto handleObtenerRecetasPorPaciente(RequestDto request) {
+        Map<String, Object> params = gson.fromJson(request.getData(), Map.class);
+        int idPaciente = ((Number) params.get("idPaciente")).intValue();
+        List<RecetaResponseDto> filtradas = recetas.stream()
+                .filter(r -> r.getIdPaciente() == idPaciente)
+                .collect(Collectors.toList());
+        return new ResponseDto(true, "Recetas filtradas por paciente", gson.toJson(filtradas));
+    }
 
-        boolean actualizado = recetaService.actualizarEstado(id, requestDto.getNuevoEstado());
+    private ResponseDto handleActualizarEstadoReceta(RequestDto request) {
+        Type type = new TypeToken<Map<String, Object>>(){}.getType();
+        Map<String, Object> params = gson.fromJson(request.getData(), type);
+        int recetaId = ((Number) params.get("recetaId")).intValue();
+        String nuevoEstado = (String) params.get("nuevoEstado");
 
-        if (actualizado) {
-            return ResponseEntity.ok("Estado actualizado correctamente.");
+        RecetaResponseDto receta = recetas.stream()
+                .filter(r -> r.getId() == recetaId)
+                .findFirst()
+                .orElse(null);
+
+        if (receta != null) {
+            receta.setEstado(nuevoEstado);
+            return new ResponseDto(true, "Estado actualizado correctamente.", null);
         } else {
-            return ResponseEntity.badRequest().body("No se pudo actualizar la receta.");
+            return new ResponseDto(false, "No se encontró la receta.", null);
         }
     }
 }
-
-// Revisar

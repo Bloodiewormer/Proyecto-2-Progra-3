@@ -1,76 +1,83 @@
 package org.example.API;
-// package org.example.API.Controllers;
 
-import org.example.Application.Services.FarmaceutaService;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.example.Domain.dtos.RequestDto;
+import org.example.Domain.dtos.ResponseDto;
 import org.example.Domain.dtos.Farmaceuta.AddFarmaceutaRequestDto;
 import org.example.Domain.dtos.Farmaceuta.DeleteFarmaceutaRequestDto;
 import org.example.Domain.dtos.Farmaceuta.FarmaceutaResponseDto;
 import org.example.Domain.dtos.Farmaceuta.UpdateFarmaceutaRequestDto;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@RestController
-@RequestMapping("/api/farmaceutas")
-@CrossOrigin(origins = "*") // permite que el FrontEnd Swing acceda al servidor
 public class FarmaceutaController {
 
-    private final FarmaceutaService farmaceutaService;
+    private final List<FarmaceutaResponseDto> farmaceutas;
+    private final Gson gson = new Gson();
 
-    public FarmaceutaController(FarmaceutaService farmaceutaService) {
-        this.farmaceutaService = farmaceutaService;
+    public FarmaceutaController(List<FarmaceutaResponseDto> farmaceutas) {
+        this.farmaceutas = farmaceutas != null ? farmaceutas : new ArrayList<>();
     }
 
-    /**
-     * Obtener todos los farmaceutas
-     */
-    @GetMapping
-    public ResponseEntity<List<FarmaceutaResponseDto>> listarFarmaceutas() {
-        List<FarmaceutaResponseDto> farmaceutas = farmaceutaService.obtenerTodos();
-        return ResponseEntity.ok(farmaceutas);
+    public ResponseDto route(RequestDto request) {
+        try {
+            switch (request.getRequest()) {
+                case "listar":
+                    return handleListar();
+                case "agregar":
+                    return handleAgregar(request);
+                case "actualizar":
+                    return handleActualizar(request);
+                case "eliminar":
+                    return handleEliminar(request);
+                case "buscarPorNombre":
+                    return handleBuscarPorNombre(request);
+                default:
+                    return new ResponseDto(false, "Unknown request: " + request.getRequest(), null);
+            }
+        } catch (Exception e) {
+            return new ResponseDto(false, e.getMessage(), null);
+        }
     }
 
-    /**
-     * Agregar un nuevo farmaceuta
-     */
-    @PostMapping
-    public ResponseEntity<FarmaceutaResponseDto> agregarFarmaceuta(@RequestBody AddFarmaceutaRequestDto request) {
-        FarmaceutaResponseDto nuevo = farmaceutaService.agregar(request);
-        return ResponseEntity.ok(nuevo);
+    private ResponseDto handleListar() {
+        return new ResponseDto(true, "Farmaceutas obtenidos", gson.toJson(farmaceutas));
     }
 
-    /**
-     * Actualizar un farmaceuta existente
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<FarmaceutaResponseDto> actualizarFarmaceuta(
-            @PathVariable int id,
-            @RequestBody UpdateFarmaceutaRequestDto request
-    ) {
-        request.setId(id);
-        FarmaceutaResponseDto actualizado = farmaceutaService.actualizar(request);
-        return ResponseEntity.ok(actualizado);
+    private ResponseDto handleAgregar(RequestDto request) {
+        AddFarmaceutaRequestDto dto = gson.fromJson(request.getData(), AddFarmaceutaRequestDto.class);
+        FarmaceutaResponseDto nuevo = new FarmaceutaResponseDto(dto.getId(), dto.getNombre());
+        farmaceutas.add(nuevo);
+        return new ResponseDto(true, "Farmaceuta agregado", gson.toJson(nuevo));
     }
 
-    /**
-     * Eliminar un farmaceuta
-     */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> eliminarFarmaceuta(@PathVariable int id) {
-        DeleteFarmaceutaRequestDto dto = new DeleteFarmaceutaRequestDto(id);
-        boolean eliminado = farmaceutaService.eliminar(dto);
-        return ResponseEntity.ok(eliminado);
+    private ResponseDto handleActualizar(RequestDto request) {
+        UpdateFarmaceutaRequestDto dto = gson.fromJson(request.getData(), UpdateFarmaceutaRequestDto.class);
+        for (FarmaceutaResponseDto f : farmaceutas) {
+            if (f.getId() == dto.getId()) {
+                f.setNombre(dto.getNombre());
+                return new ResponseDto(true, "Farmaceuta actualizado", gson.toJson(f));
+            }
+        }
+        return new ResponseDto(false, "No se encontró el farmaceuta", null);
     }
 
-    /**
-     * Buscar farmaceutas por nombre (opcional)
-     */
-    @GetMapping("/buscar")
-    public ResponseEntity<List<FarmaceutaResponseDto>> buscarPorNombre(@RequestParam String nombre) {
-        List<FarmaceutaResponseDto> resultado = farmaceutaService.buscarPorNombre(nombre);
-        return ResponseEntity.ok(resultado);
+    private ResponseDto handleEliminar(RequestDto request) {
+        DeleteFarmaceutaRequestDto dto = gson.fromJson(request.getData(), DeleteFarmaceutaRequestDto.class);
+        boolean eliminado = farmaceutas.removeIf(f -> f.getId() == dto.getId());
+        return new ResponseDto(eliminado, eliminado ? "Farmaceuta eliminado" : "No se encontró el farmaceuta", null);
+    }
+
+    private ResponseDto handleBuscarPorNombre(RequestDto request) {
+        Type mapType = new TypeToken<Map<String, String>>(){}.getType();
+        Map<String, String> params = gson.fromJson(request.getData(), mapType);
+        String nombre = params.get("nombre").toLowerCase();
+        List<FarmaceutaResponseDto> filtrados = farmaceutas.stream()
+                .filter(f -> f.getNombre().toLowerCase().contains(nombre))
+                .collect(Collectors.toList());
+        return new ResponseDto(true, "Farmaceutas filtrados", gson.toJson(filtrados));
     }
 }
-
-// Revisar
