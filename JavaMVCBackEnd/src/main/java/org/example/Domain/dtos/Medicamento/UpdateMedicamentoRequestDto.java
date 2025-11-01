@@ -1,15 +1,25 @@
-package org.example.Domain.Dtos.Medicamento;
+package org.example.Domain.dtos.Medicamento;
 
-public class AddMedicamentoRequestDto {
+public class UpdateMedicamentoRequestDto {
+    private int id;
     private String nombre;
     private String presentacion;
 
-    public AddMedicamentoRequestDto() {
+    public UpdateMedicamentoRequestDto() {
     }
 
-    public AddMedicamentoRequestDto(String nombre, String presentacion) {
+    public UpdateMedicamentoRequestDto(int id, String nombre, String presentacion) {
+        this.id = id;
         this.nombre = nombre;
         this.presentacion = presentacion;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getNombre() {

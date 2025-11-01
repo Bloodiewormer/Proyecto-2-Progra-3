@@ -1,4 +1,4 @@
-package org.example.Domain.Dtos.Medicamento;
+package org.example.Domain.dtos.Medicamento;
 
 public class MedicamentoResponseDto {
     private int id;

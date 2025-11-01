@@ -2,10 +2,10 @@ package org.example.API;
 // package org.example.API.Controllers;
 
 import org.example.Application.Services.FarmaceutaService;
-import org.example.Domain.Dtos.Farmaceuta.AddFarmaceutaRequestDto;
-import org.example.Domain.Dtos.Farmaceuta.DeleteFarmaceutaRequestDto;
-import org.example.Domain.Dtos.Farmaceuta.FarmaceutaResponseDto;
-import org.example.Domain.Dtos.Farmaceuta.UpdateFarmaceutaRequestDto;
+import org.example.Domain.dtos.Farmaceuta.AddFarmaceutaRequestDto;
+import org.example.Domain.dtos.Farmaceuta.DeleteFarmaceutaRequestDto;
+import org.example.Domain.dtos.Farmaceuta.FarmaceutaResponseDto;
+import org.example.Domain.dtos.Farmaceuta.UpdateFarmaceutaRequestDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

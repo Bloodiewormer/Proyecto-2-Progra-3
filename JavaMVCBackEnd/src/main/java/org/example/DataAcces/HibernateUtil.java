@@ -1,6 +1,6 @@
 package org.example.DataAcces;
 
-import org.example.Domain.Dtos.models.*;
+import org.example.Domain.models.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import java.io.IOException;

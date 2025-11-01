@@ -1,10 +1,10 @@
 package org.example.API;
 // package org.example.API.Controllers;
 
-import org.example.Domain.Dtos.Receta.AddRecetaRequestDto;
-import org.example.Domain.Dtos.Receta.UpdateRecetaRequestDto;
-import org.example.Domain.Dtos.Receta.DeleteRecetaRequestDto;
-import org.example.Domain.Dtos.Receta.RecetaResponseDto;
+import org.example.Domain.dtos.Receta.AddRecetaRequestDto;
+import org.example.Domain.dtos.Receta.UpdateRecetaRequestDto;
+import org.example.Domain.dtos.Receta.DeleteRecetaRequestDto;
+import org.example.Domain.dtos.Receta.RecetaResponseDto;
 import org.example.Services.Interfaces.IRecetaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

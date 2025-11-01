@@ -1,4 +1,4 @@
-package org.example.Domain.Dtos.models;
+package org.example.Domain.models;
 
 import jakarta.persistence.*;
 

@@ -1,10 +1,10 @@
 package org.example.API;
 // package org.example.API.Controllers;
 
-import org.example.Domain.Dtos.Medico.AddMedicoRequestDto;
-import org.example.Domain.Dtos.Medico.UpdateMedicoRequestDto;
-import org.example.Domain.Dtos.Medico.DeleteMedicoRequestDto;
-import org.example.Domain.Dtos.Medico.MedicoResponseDto;
+import org.example.Domain.dtos.Medico.AddMedicoRequestDto;
+import org.example.Domain.dtos.Medico.UpdateMedicoRequestDto;
+import org.example.Domain.dtos.Medico.DeleteMedicoRequestDto;
+import org.example.Domain.dtos.Medico.MedicoResponseDto;
 import org.example.Services.MedicoService;
 // import org.springframework.beans.factory.annotation.Autowired;
 // import org.springframework.http.ResponseEntity;

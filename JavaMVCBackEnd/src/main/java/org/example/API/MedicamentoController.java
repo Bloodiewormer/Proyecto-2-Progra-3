@@ -2,7 +2,7 @@ package org.example.API;
 // package org.example.API.Controllers;
 
 import org.example.Application.Services.MedicamentoService;
-import org.example.Domain.Dtos.Medicamento.*;
+import org.example.Domain.dtos.Medicamento.*;
 // import org.springframework.http.ResponseEntity;
 // import org.springframework.web.bind.annotation.*;
 

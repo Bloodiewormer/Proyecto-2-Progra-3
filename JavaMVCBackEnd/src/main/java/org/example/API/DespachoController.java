@@ -2,8 +2,8 @@ package org.example.API;
 // package org.example.API.Controllers;
 
 import org.example.Application.Services.RecetaService;
-import org.example.Domain.Dtos.Receta.RecetaResponseDto;
-import org.example.Domain.Dtos.Receta.UpdateRecetaRequestDto;
+import org.example.Domain.dtos.Receta.RecetaResponseDto;
+import org.example.Domain.dtos.Receta.UpdateRecetaRequestDto;
 import org.example.Utilities.EstadoReceta;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

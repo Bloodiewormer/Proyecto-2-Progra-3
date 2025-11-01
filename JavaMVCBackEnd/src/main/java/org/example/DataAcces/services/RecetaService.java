@@ -1,6 +1,6 @@
 package org.example.DataAcces.services;
 
-import org.example.Domain.Dtos.models.*;
+import org.example.Domain.models.*;
 import org.example.Utilities.EstadoReceta;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
