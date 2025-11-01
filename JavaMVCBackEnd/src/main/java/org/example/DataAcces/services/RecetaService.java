@@ -61,7 +61,7 @@ public class RecetaService {
      */
     public Receta getById(Long id) {
         try (Session session = sessionFactory.openSession()) {
-            Receta receta = session.get(Receta.class, id);
+            Receta receta = session.find(Receta.class, id);
             if (receta != null) {
                 // Inicializar colecciones lazy
                 Hibernate.initialize(receta.getDetalles());
@@ -180,7 +180,7 @@ public class RecetaService {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
-            Receta receta = session.get(Receta.class, id);
+            Receta receta = session.find(Receta.class, id);
             if (receta != null) {
                 receta.setEstado(nuevoEstado);
                 session.merge(receta);
@@ -204,8 +204,8 @@ public class RecetaService {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
-            Receta receta = session.get(Receta.class, recetaId);
-            Medicamento medicamento = session.get(Medicamento.class, medicamentoId);
+            Receta receta = session.find(Receta.class, recetaId);
+            Medicamento medicamento = session.find(Medicamento.class, medicamentoId);
 
             if (receta != null && medicamento != null) {
                 DetalleReceta detalle = new DetalleReceta(medicamento, cantidad, indicaciones, dias);
@@ -232,7 +232,7 @@ public class RecetaService {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
-            Receta receta = session.get(Receta.class, id);
+            Receta receta = session.find(Receta.class, id);
             if (receta != null) {
                 session.remove(receta);
                 tx.commit();

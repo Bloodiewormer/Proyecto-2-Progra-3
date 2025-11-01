@@ -87,7 +87,7 @@ public class MedicamentoService {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
-            Medicamento medicamento = session.get(Medicamento.class, id);
+            Medicamento medicamento = session.find(Medicamento.class, id);
             if (medicamento != null) {
                 medicamento.setNombre(nombre);
                 medicamento.setPresentacion(presentacion);
@@ -112,7 +112,7 @@ public class MedicamentoService {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
-            Medicamento medicamento = session.get(Medicamento.class, id);
+            Medicamento medicamento = session.find(Medicamento.class, id);
             if (medicamento != null) {
                 session.remove(medicamento);
                 tx.commit();

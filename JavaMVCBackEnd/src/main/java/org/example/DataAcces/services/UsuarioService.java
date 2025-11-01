@@ -79,7 +79,7 @@ public class UsuarioService {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
-            Medico medico = session.get(Medico.class, id);
+            Medico medico = session.find(Medico.class, id);
             if (medico != null) {
                 medico.setNombre(nombre);
                 if (clave != null && !clave.isEmpty()) {
@@ -107,7 +107,7 @@ public class UsuarioService {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
-            Medico medico = session.get(Medico.class, id);
+            Medico medico = session.find(Medico.class, id);
             if (medico != null) {
                 session.remove(medico);
                 tx.commit();
@@ -158,7 +158,7 @@ public class UsuarioService {
      */
     public Farmaceuta getFarmaceutaById(Long id) {
         try (Session session = sessionFactory.openSession()) {
-            return session.get(Farmaceuta.class, id);
+            return session.find(Farmaceuta.class, id);
         } catch (Exception e) {
             System.err.println("[UsuarioService] Error obteniendo farmaceuta: " + e.getMessage());
             throw e;
@@ -185,7 +185,7 @@ public class UsuarioService {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
-            Farmaceuta farmaceuta = session.get(Farmaceuta.class, id);
+            Farmaceuta farmaceuta = session.find(Farmaceuta.class, id);
             if (farmaceuta != null) {
                 farmaceuta.setNombre(nombre);
                 if (clave != null && !clave.isEmpty()) {
@@ -212,7 +212,7 @@ public class UsuarioService {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
-            Farmaceuta farmaceuta = session.get(Farmaceuta.class, id);
+            Farmaceuta farmaceuta = session.find(Farmaceuta.class, id);
             if (farmaceuta != null) {
                 session.remove(farmaceuta);
                 tx.commit();

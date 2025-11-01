@@ -20,9 +20,12 @@ public class SocketServer {
 
     // Controladores API del BackEnd
     private final AuthController authController;
-    private final DashboardController dashboardController;
-    private final DespachoController despachoController;
-    private final FarmaceutaController farmaceutaController;
+    private final MedicamentoController medicamentoController;
+    private final PacienteController pacienteController;
+    private final MedicoController medicoController;
+    private final RecetaController recetaController;
+    private final PrescribirController prescribirController;
+    private final HistoricoRecetasController historicoRecetasController;
 
     private MessageBroadcaster messageBroadcaster;
     private boolean running;
@@ -30,14 +33,20 @@ public class SocketServer {
 
     public SocketServer(int port,
                         AuthController authController,
-                        DashboardController dashboardController,
-                        DespachoController despachoController,
-                        FarmaceutaController farmaceutaController) {
+                        MedicamentoController medicamentoController,
+                        PacienteController pacienteController,
+                        MedicoController medicoController,
+                        RecetaController recetaController,
+                        PrescribirController prescribirController,
+                        HistoricoRecetasController historicoRecetasController) {
         this.port = port;
         this.authController = authController;
-        this.dashboardController = dashboardController;
-        this.despachoController = despachoController;
-        this.farmaceutaController = farmaceutaController;
+        this.medicamentoController = medicamentoController;
+        this.pacienteController = pacienteController;
+        this.medicoController = medicoController;
+        this.recetaController = recetaController;
+        this.prescribirController = prescribirController;
+        this.historicoRecetasController = historicoRecetasController;
     }
 
     /**
@@ -59,9 +68,12 @@ public class SocketServer {
                     ClientHandler handler = new ClientHandler(
                             clientSocket,
                             authController,
-                            dashboardController,
-                            despachoController,
-                            farmaceutaController,
+                            medicamentoController,
+                            pacienteController,
+                            medicoController,
+                            recetaController,
+                            prescribirController,
+                            historicoRecetasController,
                             this
                     );
 
@@ -97,7 +109,6 @@ public class SocketServer {
         synchronized (clients) {
             for (ClientHandler client : clients) {
                 try {
-                    // Notificar al cliente que el servidor se está deteniendo
                     client.sendMessage("[Servidor] El servidor se ha detenido.");
                 } catch (Exception ignore) {}
             }

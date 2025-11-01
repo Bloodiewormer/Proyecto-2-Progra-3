@@ -105,7 +105,7 @@ public class PacienteService {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
-            Paciente paciente = session.get(Paciente.class, id);
+            Paciente paciente = session.find(Paciente.class, id);
             if (paciente != null) {
                 paciente.setNombre(nombre);
                 paciente.setTelefono(telefono);
@@ -131,7 +131,7 @@ public class PacienteService {
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
-            Paciente paciente = session.get(Paciente.class, id);
+            Paciente paciente = session.find(Paciente.class, id);
             if (paciente != null) {
                 session.remove(paciente);
                 tx.commit();

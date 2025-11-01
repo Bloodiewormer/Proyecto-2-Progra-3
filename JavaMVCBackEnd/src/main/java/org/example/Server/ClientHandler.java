@@ -16,9 +16,12 @@ public class ClientHandler implements Runnable {
 
     private final Socket clientSocket;
     private final AuthController authController;
-    private final DashboardController dashboardController;
-    private final DespachoController despachoController;
-    private final FarmaceutaController farmaceutaController;
+    private final MedicamentoController medicamentoController;
+    private final PacienteController pacienteController;
+    private final MedicoController medicoController;
+    private final RecetaController recetaController;
+    private final PrescribirController prescribirController;
+    private final HistoricoRecetasController historicoRecetasController;
     private final SocketServer server;
     private final Gson gson = new Gson();
     private PrintWriter out;
@@ -26,15 +29,21 @@ public class ClientHandler implements Runnable {
 
     public ClientHandler(Socket clientSocket,
                          AuthController authController,
-                         DashboardController dashboardController,
-                         DespachoController despachoController,
-                         FarmaceutaController farmaceutaController,
+                         MedicamentoController medicamentoController,
+                         PacienteController pacienteController,
+                         MedicoController medicoController,
+                         RecetaController recetaController,
+                         PrescribirController prescribirController,
+                         HistoricoRecetasController historicoRecetasController,
                          SocketServer server) {
         this.clientSocket = clientSocket;
         this.authController = authController;
-        this.dashboardController = dashboardController;
-        this.despachoController = despachoController;
-        this.farmaceutaController = farmaceutaController;
+        this.medicamentoController = medicamentoController;
+        this.pacienteController = pacienteController;
+        this.medicoController = medicoController;
+        this.recetaController = recetaController;
+        this.prescribirController = prescribirController;
+        this.historicoRecetasController = historicoRecetasController;
         this.server = server;
     }
 
@@ -54,9 +63,6 @@ public class ClientHandler implements Runnable {
                     RequestDto request = gson.fromJson(inputJson, RequestDto.class);
                     ResponseDto response = handleRequest(request);
 
-                    // Simulación de procesamiento (opcional, puedes removerlo en producción)
-                    Thread.sleep(100);
-
                     String responseJson = gson.toJson(response);
                     out.println(responseJson);
                     System.out.println("[ClientHandler] Enviado (" + Thread.currentThread().getName() + "): " + responseJson);
@@ -72,9 +78,6 @@ public class ClientHandler implements Runnable {
 
         } catch (IOException e) {
             System.err.println("[ClientHandler] Cliente desconectado: " + Thread.currentThread().getName());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.err.println("[ClientHandler] Thread interrumpido: " + Thread.currentThread().getName());
         } finally {
             cleanup();
         }
@@ -95,16 +98,34 @@ public class ClientHandler implements Runnable {
                     response = authController.route(request);
                     break;
 
-                case "Dashboard":
-                    response = dashboardController.route(request);
+                case "Medicamento":
+                case "Medicamentos":
+                    response = medicamentoController.route(request);
                     break;
 
-                case "Despacho":
-                    response = despachoController.route(request);
+                case "Paciente":
+                case "Pacientes":
+                    response = pacienteController.route(request);
                     break;
 
-                case "Farmaceuta":
-                    response = farmaceutaController.route(request);
+                case "Medico":
+                case "Medicos":
+                    response = medicoController.route(request);
+                    break;
+
+                case "Receta":
+                case "Recetas":
+                    response = recetaController.route(request);
+                    break;
+
+                case "Prescribir":
+                case "Prescripcion":
+                    response = prescribirController.route(request);
+                    break;
+
+                case "HistoricoRecetas":
+                case "Historico":
+                    response = historicoRecetasController.route(request);
                     break;
 
                 default:

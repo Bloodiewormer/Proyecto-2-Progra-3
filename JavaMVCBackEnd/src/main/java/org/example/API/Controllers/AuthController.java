@@ -8,9 +8,6 @@ import org.example.Domain.dtos.Auth.LoginRequestDto;
 import org.example.Domain.dtos.Auth.RegisterRequestDto;
 import org.example.Domain.dtos.Auth.UserResponseDto;
 import org.example.Domain.models.Usuario;
-import org.example.Domain.models.Medico;
-import org.example.Domain.models.Farmaceuta;
-import org.example.Domain.models.Administrador;
 
 /**
  * Controlador de autenticación que maneja login, registro y logout
@@ -110,7 +107,6 @@ public class AuthController {
             }
 
             // Por defecto, registrar como médico
-            // Puedes cambiar esto según tu lógica de negocio
             String especialidad = regDto.getRole() != null ? regDto.getRole() : "General";
 
             Usuario usuario = usuarioService.createMedico(
@@ -162,9 +158,8 @@ public class AuthController {
      */
     public UserResponseDto getUserByUsername(String username) {
         try {
-            // Primero intentar login con credenciales vacías solo para obtener el usuario
             // En un sistema real, deberías tener un método específico para esto
-            Usuario usuario = usuarioService.getMedicoById(1L); // Esto es temporal
+            Usuario usuario = usuarioService.getMedicoById(1L); // Temporal
 
             if (usuario == null) {
                 return null;
