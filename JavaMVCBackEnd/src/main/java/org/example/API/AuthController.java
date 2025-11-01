@@ -5,7 +5,7 @@ import org.example.Domain.dtos.RequestDto;
 import org.example.Domain.dtos.ResponseDto;
 import org.example.Domain.dtos.auth.LoginRequestDto;
 import org.example.Domain.dtos.auth.UserResponseDto;
-import org.example.Domain.models.Usuario;
+import org.example.Domain.Dtos.models.Usuario;
 
 public class AuthController {
     private final UsuarioService usuarioService;

@@ -1,4 +1,4 @@
-package org.example.Domain.models;
+package org.example.Domain.Dtos.models;
 import jakarta.persistence.*;
 
 @Entity
