@@ -1,4 +1,4 @@
-package org.example.API;
+package org.example.API.Controllers;
 
 import com.google.gson.Gson;
 import org.example.DataAcces.services.UsuarioService;

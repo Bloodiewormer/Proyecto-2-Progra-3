@@ -1,4 +1,4 @@
-package org.example.API;
+package org.example.API.Controllers;
 // package org.example.API.Controllers;
 
 import org.example.Domain.dtos.Medico.AddMedicoRequestDto;
