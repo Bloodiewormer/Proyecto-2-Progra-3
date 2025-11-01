@@ -1,4 +1,4 @@
-CREATE TABLE farmaceuta (
-                            id BIGINT PRIMARY KEY,
-                            FOREIGN KEY (id) REFERENCES usuario(id) ON DELETE CASCADE
+CREATE TABLE farmaceutas (
+                             id BIGINT PRIMARY KEY,
+                             FOREIGN KEY (id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
