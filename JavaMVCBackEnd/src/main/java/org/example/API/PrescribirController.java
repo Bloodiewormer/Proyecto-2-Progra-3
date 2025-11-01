@@ -1,8 +1,8 @@
 package org.example.API;
 // package org.example.API.Controllers;
 
-import org.example.Domain.Dtos.Receta.AddRecetaRequestDto;
-import org.example.Domain.Dtos.Receta.RecetaResponseDto;
+import org.example.Domain.dtos.Receta.AddRecetaRequestDto;
+import org.example.Domain.dtos.Receta.RecetaResponseDto;
 import org.example.Services.Interfaces.IRecetaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
