@@ -187,6 +187,7 @@ public class AuthController {
 
     /**
      * Maneja el cambio de contraseña
+     * Permite establecer contraseña sin validar la anterior (para primer uso)
      */
     private ResponseDto handleChangePassword(RequestDto request) {
         try {
@@ -198,9 +199,12 @@ public class AuthController {
                 return new ResponseDto(false, "Usuario no encontrado", null);
             }
 
-            // Verificar contraseña actual
-            if (!PasswordUtils.verifyPassword(dto.getCurrentPassword(), usuario.getSalt(), usuario.getClave())) {
-                return new ResponseDto(false, "Contraseña actual incorrecta", null);
+            // Si hay contraseña actual, validarla (para usuarios que ya establecieron su clave)
+            // Si está vacía, permitir cambio (primer uso o reset por admin)
+            if (dto.getCurrentPassword() != null && !dto.getCurrentPassword().isEmpty()) {
+                if (!PasswordUtils.verifyPassword(dto.getCurrentPassword(), usuario.getSalt(), usuario.getClave())) {
+                    return new ResponseDto(false, "Contraseña actual incorrecta", null);
+                }
             }
 
             // Generar nuevo salt y hash
@@ -210,9 +214,18 @@ public class AuthController {
             // Actualizar usuario
             usuarioService.updatePassword(usuario.getId(), newHash, newSalt);
 
+            // Marcar usuario como activo (puede iniciar sesión ahora)
+            if (!usuario.getIsActive()) {
+                usuario.setIsActive(true);
+                // Guardar cambio de is_active
+            }
+
+            System.out.println("[AuthController] Contraseña establecida para usuario: " + usuario.getNombre());
             return new ResponseDto(true, "Contraseña actualizada exitosamente", null);
+
         } catch (Exception e) {
             System.err.println("[AuthController] Error en handleChangePassword: " + e.getMessage());
+            e.printStackTrace();
             return new ResponseDto(false, "Error cambiando contraseña: " + e.getMessage(), null);
         }
     }

@@ -316,14 +316,35 @@ public class UsuarioService {
             if (usuario != null) {
                 usuario.setClave(newHash);
                 usuario.setSalt(newSalt);
+                usuario.setIsActive(true);
                 session.merge(usuario);
             }
 
             tx.commit();
-            System.out.println("[UsuarioService] Contraseña actualizada para usuario ID: " + userId);
+            System.out.println("[UsuarioService] Contraseña actualizada y usuario activado: " + userId);
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             System.err.println("[UsuarioService] Error actualizando contraseña: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public void activateUser(Long userId) {
+        Transaction tx = null;
+        try (Session session = sessionFactory.openSession()) {
+            tx = session.beginTransaction();
+
+            Usuario usuario = session.find(Usuario.class, userId);
+            if (usuario != null) {
+                usuario.setIsActive(true);
+                session.merge(usuario);
+            }
+
+            tx.commit();
+            System.out.println("[UsuarioService] Usuario activado: " + userId);
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            System.err.println("[UsuarioService] Error activando usuario: " + e.getMessage());
             throw e;
         }
     }

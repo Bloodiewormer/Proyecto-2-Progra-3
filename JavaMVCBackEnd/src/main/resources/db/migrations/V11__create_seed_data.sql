@@ -1,23 +1,24 @@
 -- Insertar Administrador
+-- Usuario admin con contraseña conocida "admin123"
 INSERT INTO usuarios (nombre, clave, salt, is_active) VALUES
     ('admin', 'FtlHkbLLlDy7K+cBxzGfEo4fLEe7z8Kq3tJYvRqZE8Q=', 'nXZ7xH2KvL8pQ9mN3wR5tY', TRUE);
 INSERT INTO administradores (id) VALUES (1);
 
--- Insertar Médicos
+-- Médicos con contraseña por defecto "temp123" - INACTIVOS hasta que establezcan su clave
 INSERT INTO usuarios (nombre, clave, salt, is_active) VALUES
-                                                          ('dr_garcia', 'hash123', 'salt123', FALSE),
-                                                          ('dra_martinez', 'hash456', 'salt456', FALSE),
-                                                          ('dr_lopez', 'hash789', 'salt789', FALSE);
+                                                          ('dr_garcia', 'DEFAULT_HASH_1', 'DEFAULT_SALT_1', FALSE),
+                                                          ('dra_martinez', 'DEFAULT_HASH_2', 'DEFAULT_SALT_2', FALSE),
+                                                          ('dr_lopez', 'DEFAULT_HASH_3', 'DEFAULT_SALT_3', FALSE);
 
 INSERT INTO medicos (id, especialidad) VALUES
                                            (2, 'Cardiología'),
                                            (3, 'Pediatría'),
                                            (4, 'Medicina General');
 
--- Insertar Farmacéuticos
+-- Farmacéuticos con contraseña por defecto "temp123" - INACTIVOS
 INSERT INTO usuarios (nombre, clave, salt, is_active) VALUES
-                                                          ('farm_rodriguez', 'hash111', 'salt111', FALSE),
-                                                          ('farm_hernandez', 'hash222', 'salt222', FALSE);
+                                                          ('farm_rodriguez', 'DEFAULT_HASH_4', 'DEFAULT_SALT_4', FALSE),
+                                                          ('farm_hernandez', 'DEFAULT_HASH_5', 'DEFAULT_SALT_5', FALSE);
 
 INSERT INTO farmaceutas (id) VALUES (5), (6);
 
