@@ -4,7 +4,6 @@ import org.example.Presentation.Components.CustomButton;
 import org.example.Presentation.Controllers.*;
 import org.example.Presentation.Models.UserType;
 import org.example.Services.*;
-import org.example.Services.MedicamentoService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -64,6 +63,9 @@ public class MenuPrincipalView extends JFrame {
     private DashboardController dashboardController;
     private DashboardService dashboardService;
 
+    private HistoricoRecetasView historicoRecetasView;
+    private HistoricoRecetasController historicoRecetasController;
+
     public MenuPrincipalView(UserType userType,
                              LoginController loginController,
                              UsuarioService usuarioService,
@@ -84,6 +86,8 @@ public class MenuPrincipalView extends JFrame {
         configureMenu();
         initializeMedicoView();
         initializePacienteView();
+        initializeFarmaceutaView();
+        initializeHistoricoRecetasView(); // --- Inicializa la vista y el controlador de histórico
         initializeFarmaceutaView();
         initializeMedicamentoView();
         initializeDashboardView();
@@ -179,10 +183,18 @@ public class MenuPrincipalView extends JFrame {
         pacienteController = new PacienteController(pacienteForm, pacienteService);
     }
 
-    // --- NUEVO: Inicializa la vista y el controlador de farmaceutas
     private void initializeFarmaceutaView() {
         farmaceutaForm = new FarmaceutaForm(this);
         farmaceutaController = new FarmaceutaController(farmaceutaForm, usuarioService);
+    }
+
+    private void initializeHistoricoRecetasView() {
+        historicoRecetasView = new HistoricoRecetasView(this);
+        historicoRecetasController = new HistoricoRecetasController(
+                historicoRecetasView,
+                new RecetaService("localhost", 7000),
+                new PacienteService("localhost", 7000)
+        );
     }
 
     private void initializeMedicamentoView() {
@@ -208,14 +220,14 @@ public class MenuPrincipalView extends JFrame {
 
         salirButton.addActionListener(e -> handleLogout());
         medicosButton.addActionListener(e -> showMedicoView());
-        farmaceutasButton.addActionListener(e ->showFarmaceutaView() );
+        farmaceutasButton.addActionListener(e -> showFarmaceutaView());
         pacientesButton.addActionListener(e -> showPacienteView());
         medicamentosButton.addActionListener(e -> showMedicamentoView());
         dashboardButton.addActionListener(e -> showDashboardView());
         acercadeButton.addActionListener(e -> showAcercaDeView());
         prescribirButton.addActionListener(e -> showPlaceholderView("Prescribir"));
         despachoButton.addActionListener(e -> showPlaceholderView("Despacho"));
-        historicoRecetasButton.addActionListener(e -> showPlaceholderView("Histórico de Recetas"));
+        historicoRecetasButton.addActionListener(e -> showHistoricoRecetasView());
     }
 
     private void initializeView() {
@@ -275,7 +287,7 @@ public class MenuPrincipalView extends JFrame {
         switchContent(medicoForm, "Médicos");
     }
 
-    private  void showPacienteView() {
+    private void showPacienteView() {
         switchContent(pacienteForm, "Pacientes");
     }
 
@@ -283,6 +295,10 @@ public class MenuPrincipalView extends JFrame {
 
     private void showFarmaceutaView() {
         switchContent(farmaceutaForm, "Farmaceutas");
+    }
+
+    private void showHistoricoRecetasView() {
+        switchContent(historicoRecetasView, "Histórico de Recetas");
     }
 
     private void showDashboardView() {
