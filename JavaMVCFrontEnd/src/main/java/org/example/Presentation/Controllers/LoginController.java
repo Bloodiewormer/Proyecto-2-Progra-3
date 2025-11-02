@@ -1,6 +1,7 @@
 package org.example.Presentation.Controllers;
 
 import org.example.Domain.Dtos.Auth.UserResponseDto;
+import org.example.Presentation.Models.UserType;
 import org.example.Presentation.Observable;
 import org.example.Presentation.Views.CambioClaveView;
 import org.example.Presentation.Views.LoginView;
@@ -37,11 +38,27 @@ public class LoginController extends Observable {
     }
 
     private void handleLogin() {
-        String username = loginView.getUsername();
+        String userIdText = loginView.getUsername(); // Campo ahora espera ID
         String password = loginView.getPassword();
 
-        // Validate input
-        if (!validateInput(username, password)) {
+        //  Parsear como Long
+        Long userId;
+        try {
+            userId = Long.parseLong(userIdText.trim());
+        } catch (NumberFormatException ex) {
+            showError("ID de usuario inválido. Debe ser un número.");
+            return;
+        }
+
+        //  Validar que sea positivo
+        if (userId <= 0) {
+            showError("El ID de usuario debe ser mayor a 0.");
+            return;
+        }
+
+        // Validar contraseña
+        if (password == null || password.trim().isEmpty()) {
+            showError("La contraseña es requerida.");
             return;
         }
 
@@ -50,7 +67,7 @@ public class LoginController extends Observable {
         SwingWorker<UserResponseDto, Void> worker = new SwingWorker<>() {
             @Override
             protected UserResponseDto doInBackground() throws Exception {
-                return authService.login(username, password).get();
+                return authService.login(userId, password).get(); // ✅ Pasa Long
             }
 
             @Override
@@ -62,7 +79,8 @@ public class LoginController extends Observable {
                         currentUser = user;
                         onLoginSuccess(user);
                     } else {
-                        showError("Credenciales inválidas. Por favor, verifique su usuario y contraseña.");
+                        showError("Credenciales inválidas o usuario inactivo.\n" +
+                                "Verifique su ID de usuario y contraseña.");
                     }
                 } catch (Exception ex) {
                     handleError("Error al intentar iniciar sesión", ex);
@@ -116,9 +134,7 @@ public class LoginController extends Observable {
     public void showPasswordChangeView() {
         AuthService passwordAuthService = new AuthService(SERVER_HOST, SERVER_PORT);
 
-        // ✅ Crear CambioClaveView directamente (ya es un JFrame)
         new CambioClaveView(passwordAuthService);
-        // No necesitas setVisible(true) porque lo hace en initializeFrame()
     }
 
     public void exitApplication() {
@@ -146,19 +162,14 @@ public class LoginController extends Observable {
     }
 
     // Validation
-    private boolean validateInput(String username, String password) {
-        if (username == null || username.trim().isEmpty()) {
-            showWarning("Por favor, ingrese su usuario o email");
+    private boolean validateInput(String userId, String password) {
+        if (userId == null || userId.trim().isEmpty()) {
+            showError("El ID de usuario es requerido.");
             return false;
         }
 
-        if (password == null || password.isEmpty()) {
-            showWarning("Por favor, ingrese su contraseña");
-            return false;
-        }
-
-        if (password.length() < 4) {
-            showWarning("La contraseña debe tener al menos 4 caracteres");
+        if (password == null || password.trim().isEmpty()) {
+            showError("La contraseña es requerida.");
             return false;
         }
 
@@ -167,12 +178,7 @@ public class LoginController extends Observable {
 
     // UI Helper Methods
     private void showError(String message) {
-        JOptionPane.showMessageDialog(
-                loginView,
-                message,
-                "Error",
-                JOptionPane.ERROR_MESSAGE
-        );
+        JOptionPane.showMessageDialog(loginView, message, "Error de Login", JOptionPane.ERROR_MESSAGE);
     }
 
     private void showWarning(String message) {
@@ -185,16 +191,9 @@ public class LoginController extends Observable {
     }
 
     private void handleError(String message, Exception ex) {
+        System.err.println(message + ": " + ex.getMessage());
         ex.printStackTrace();
-        String errorDetails = ex.getMessage() != null ? ex.getMessage() : "Error desconocido";
-        showError(message + "\nDetalles: " + errorDetails);
+        showError(message + "\n" + ex.getMessage());
     }
 
-    // Enum for user types
-    public enum UserType {
-        ADMINISTRADOR,
-        FARMACEUTA,
-        MEDICO,
-        NULL
-    }
 }

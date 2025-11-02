@@ -1,24 +1,23 @@
--- Insertar Administrador
--- Usuario admin con contraseña conocida "admin123"
+-- Insertar Administrador con contraseña "admin123"
 INSERT INTO usuarios (nombre, clave, salt, is_active) VALUES
-    ('admin', 'FtlHkbLLlDy7K+cBxzGfEo4fLEe7z8Kq3tJYvRqZE8Q=', 'nXZ7xH2KvL8pQ9mN3wR5tY', TRUE);
+    ('admin', 'rgVhILV6MKsP28aSGtKuqZcDZoM7GRi3x1eXAT3FKs8=', 'Fne4U+QrrD23aduClBS53Q==', TRUE);
 INSERT INTO administradores (id) VALUES (1);
 
--- Médicos con contraseña por defecto "temp123" - INACTIVOS hasta que establezcan su clave
+-- Médicos con contraseña "temp123" - INACTIVOS hasta que establezcan su clave
 INSERT INTO usuarios (nombre, clave, salt, is_active) VALUES
-                                                          ('dr_garcia', 'DEFAULT_HASH_1', 'DEFAULT_SALT_1', FALSE),
-                                                          ('dra_martinez', 'DEFAULT_HASH_2', 'DEFAULT_SALT_2', FALSE),
-                                                          ('dr_lopez', 'DEFAULT_HASH_3', 'DEFAULT_SALT_3', FALSE);
+                                                          ('dr_garcia', 'ZBWvQ90ublwHsiMYKMIiHREljWNlhLMR1Bj7kdQp4EY=', 'JZbblpx+WzYaB6evilynSQ==', FALSE),
+                                                          ('dra_martinez', 'P+eQ9iwnfpQj4n6PBGSG0M+CL2Tu+hUbVIMTt/L5cg8=', 'R7hNiKTid/FPBk7+Xb6xUQ==', FALSE),
+                                                          ('dr_lopez', 'iDm92vFP/Pb0atQ8CWFUH3vBGpH91JfcA/3m2FvlM8Q=', 't8MxD8IXqsVoP5kqIX6f4g==', FALSE);
 
 INSERT INTO medicos (id, especialidad) VALUES
                                            (2, 'Cardiología'),
                                            (3, 'Pediatría'),
                                            (4, 'Medicina General');
 
--- Farmacéuticos con contraseña por defecto "temp123" - INACTIVOS
+-- ✅ CORREGIDO - Farmacéuticos con contraseña "temp123" - INACTIVOS
 INSERT INTO usuarios (nombre, clave, salt, is_active) VALUES
-                                                          ('farm_rodriguez', 'DEFAULT_HASH_4', 'DEFAULT_SALT_4', FALSE),
-                                                          ('farm_hernandez', 'DEFAULT_HASH_5', 'DEFAULT_SALT_5', FALSE);
+                                                          ('farm_rodriguez', 'gNQHbWcx2uYuK5e9RC2cFPsznfHpVRXMCyCI85ZLCi8=', 'WO3TKd64+K+UXD9VMC4WYg==', FALSE),
+                                                          ('farm_hernandez', 'WxguEGdPZqDH34gXwAnzxgQGCgUTkzpq+s2BiUV/x20=', 'Xeh12nX+mAZgDNLljUaoCg==', FALSE);
 
 INSERT INTO farmaceutas (id) VALUES (5), (6);
 

@@ -2,6 +2,7 @@ package org.example.Presentation.Views;
 
 import org.example.Presentation.Components.CustomButton;
 import org.example.Presentation.Controllers.LoginController;
+import org.example.Presentation.Models.UserType;
 import org.example.Services.MedicamentoService;
 import org.example.Services.PacienteService;
 import org.example.Services.UsuarioService;
@@ -34,7 +35,7 @@ public class MenuPrincipalView extends JFrame {
     private JButton despachoButton;
     private JButton historicoRecetasButton;
 
-    private boolean menuVisible = true; // ✅ Iniciar visible
+    private boolean menuVisible = true;
     private static final int MENU_WIDTH = 170;
     private static final int MENU_COLLAPSED_WIDTH = 30;
 
@@ -42,10 +43,10 @@ public class MenuPrincipalView extends JFrame {
     private final PacienteService pacienteService;
     private final MedicamentoService medicamentoService;
     private final int userId;
-    private final LoginController.UserType userType;
+    private final UserType userType;
     private final LoginController loginController;
 
-    public MenuPrincipalView(LoginController.UserType userType,
+    public MenuPrincipalView(UserType userType,
                              LoginController loginController,
                              UsuarioService usuarioService,
                              PacienteService pacienteService,
