@@ -38,8 +38,11 @@ public class DashboardController {
             List<DashboardService.RecetaDataDto> recetasData = future.get();
 
             if (recetasData == null) {
+                System.out.println("[DashboardController] No se obtuvieron datos del backend");
                 return new ArrayList<>();
             }
+
+            System.out.println("[DashboardController] Recetas obtenidas del backend: " + recetasData.size());
 
             // Convertir RecetaDataDto a RecetaResponseDto
             List<RecetaResponseDto> recetas = new ArrayList<>();
@@ -47,7 +50,9 @@ public class DashboardController {
                 RecetaResponseDto receta = new RecetaResponseDto();
                 receta.setId(data.getId().intValue()); // Long -> int
                 receta.setEstado(data.getEstado());
-                // Agregar más campos si RecetaResponseDto los tiene
+
+                System.out.println("  - Receta ID: " + data.getId() + ", Estado: " + data.getEstado());
+
                 recetas.add(receta);
             }
 
@@ -62,7 +67,6 @@ public class DashboardController {
 
     /**
      * Construye el dataset para el gráfico de líneas (medicamentos por mes)
-     * (Compatibilidad con DashboardView existente - FIRMA CON 4 PARÁMETROS)
      */
     public DefaultCategoryDataset buildLineDataset(
             List<RecetaResponseDto> recetasEnRango,
@@ -96,14 +100,21 @@ public class DashboardController {
             String endDate = fin.atEndOfMonth().format(DATE_FORMATTER);
             List<Long> medicamentoIds = new ArrayList<>(medicamentosLong.keySet());
 
+            System.out.println("[DashboardController] Solicitando medicamentos por mes...");
+            System.out.println("  Rango: " + startDate + " a " + endDate);
+            System.out.println("  Medicamentos: " + medicamentoIds);
+
             Future<Map<String, Map<String, Integer>>> future =
                     dashboardService.getMedicamentosPorMesAsync(startDate, endDate, medicamentoIds);
 
             Map<String, Map<String, Integer>> unidadesPorMes = future.get();
 
             if (unidadesPorMes == null) {
+                System.out.println("[DashboardController] No se obtuvieron unidades por mes");
                 return dataset;
             }
+
+            System.out.println("[DashboardController] Unidades por mes recibidas: " + unidadesPorMes);
 
             // Construir dataset
             for (Map.Entry<Long, String> entry : medicamentosLong.entrySet()) {
@@ -119,6 +130,7 @@ public class DashboardController {
                     String mesStr = mes.format(YEAR_MONTH_FORMATTER);
                     int valor = cantidades.getOrDefault(mesStr, 0);
                     dataset.addValue(valor, etiqueta, formatYearMonth(mes));
+                    System.out.println("  Dataset: " + etiqueta + " - " + formatYearMonth(mes) + " = " + valor);
                 }
             }
 
@@ -132,12 +144,15 @@ public class DashboardController {
 
     /**
      * Construye el dataset para el gráfico de pastel (recetas por estado)
-     * (Compatibilidad con DashboardView existente - RECIBE LISTA DE RECETAS)
      */
     public DefaultPieDataset<String> buildPieDataset(List<RecetaResponseDto> recetasEnRango) {
         DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
 
+        System.out.println("[DashboardController] buildPieDataset - Recetas recibidas: " +
+                (recetasEnRango == null ? "null" : recetasEnRango.size()));
+
         if (recetasEnRango == null || recetasEnRango.isEmpty()) {
+            System.out.println("[DashboardController] Lista de recetas vacía o nula");
             dataset.setValue("Sin datos", 1);
             return dataset;
         }
@@ -147,15 +162,20 @@ public class DashboardController {
             Map<String, Integer> distribucion = new HashMap<>();
             for (RecetaResponseDto receta : recetasEnRango) {
                 String estado = receta.getEstado();
+                System.out.println("  Procesando receta ID: " + receta.getId() + ", Estado: '" + estado + "'");
+
                 if (estado != null && !estado.trim().isEmpty()) {
                     distribucion.put(estado, distribucion.getOrDefault(estado, 0) + 1);
+                } else {
+                    System.out.println("  WARNING: Estado nulo o vacío para receta ID: " + receta.getId());
                 }
             }
 
-            System.out.println("[DashboardController] Distribución de estados encontrada: " + distribucion);
+            System.out.println("[DashboardController] Distribución de estados: " + distribucion);
 
             // Si no hay distribución, mostrar "Sin datos"
             if (distribucion.isEmpty()) {
+                System.out.println("[DashboardController] Distribución vacía - mostrando 'Sin datos'");
                 dataset.setValue("Sin datos", 1);
                 return dataset;
             }
@@ -168,13 +188,12 @@ public class DashboardController {
             traduccionEstados.put("LISTA", "Lista");
             traduccionEstados.put("ENTREGADA", "Entregada");
 
-
-
             for (Map.Entry<String, Integer> entry : distribucion.entrySet()) {
                 String estado = entry.getKey();
                 Integer cantidad = entry.getValue();
                 String estadoTraducido = traduccionEstados.getOrDefault(estado, estado);
                 dataset.setValue(estadoTraducido, cantidad);
+                System.out.println("  Agregando al dataset: " + estadoTraducido + " = " + cantidad);
             }
 
         } catch (Exception e) {

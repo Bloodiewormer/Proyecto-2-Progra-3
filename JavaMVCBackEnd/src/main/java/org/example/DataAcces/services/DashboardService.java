@@ -82,6 +82,10 @@ public class DashboardService {
             LocalDate inicio = LocalDate.parse(startDate, DATE_FORMATTER);
             LocalDate fin = LocalDate.parse(endDate, DATE_FORMATTER);
 
+            System.out.println("[DashboardService] Buscando recetas...");
+            System.out.println("  Fecha inicio: " + inicio.atStartOfDay());
+            System.out.println("  Fecha fin: " + fin.atTime(23, 59, 59));
+
             List<Receta> recetas = session.createQuery(
                             "SELECT DISTINCT r FROM Receta r " +
                                     "LEFT JOIN FETCH r.detalles d " +
@@ -93,6 +97,11 @@ public class DashboardService {
                     .getResultList();
 
             System.out.println("[DashboardService] Recetas obtenidas: " + recetas.size());
+
+            // Log de cada receta encontrada
+            for (Receta r : recetas) {
+                System.out.println("  - ID: " + r.getId() + ", Fecha: " + r.getFechaConfeccion() + ", Estado: " + r.getEstado());
+            }
 
             return recetas.stream()
                     .map(this::convertToRecetaData)
@@ -117,6 +126,11 @@ public class DashboardService {
             LocalDate inicio = LocalDate.parse(startDate, DATE_FORMATTER);
             LocalDate fin = LocalDate.parse(endDate, DATE_FORMATTER);
 
+            System.out.println("[DashboardService] Buscando medicamentos por mes...");
+            System.out.println("  Fecha inicio: " + inicio.atStartOfDay());
+            System.out.println("  Fecha fin: " + fin.atTime(23, 59, 59));
+            System.out.println("  Medicamentos solicitados: " + medicamentoIds);
+
             // Obtener todas las recetas con sus detalles
             List<Receta> recetas = session.createQuery(
                             "SELECT DISTINCT r FROM Receta r " +
@@ -127,6 +141,8 @@ public class DashboardService {
                     .setParameter("start", inicio.atStartOfDay())
                     .setParameter("end", fin.atTime(23, 59, 59))
                     .getResultList();
+
+            System.out.println("[DashboardService] Recetas encontradas para medicamentos: " + recetas.size());
 
             Map<String, Map<String, Integer>> resultado = new HashMap<>();
 
@@ -140,23 +156,29 @@ public class DashboardService {
                 YearMonth ym = YearMonth.from(receta.getFechaConfeccion().toLocalDate());
                 String yearMonth = ym.format(YEAR_MONTH_FORMATTER);
 
+                System.out.println("  Procesando receta ID: " + receta.getId() + ", Fecha: " + receta.getFechaConfeccion() + ", Mes: " + yearMonth);
+
                 if (receta.getDetalles() != null) {
+                    System.out.println("    Detalles: " + receta.getDetalles().size());
                     for (DetalleReceta detalle : receta.getDetalles()) {
                         if (detalle.getMedicamento() != null) {
                             Long medId = detalle.getMedicamento().getId();
                             String medIdStr = String.valueOf(medId);
 
+                            System.out.println("      Medicamento ID: " + medId + ", Cantidad: " + detalle.getCantidad());
+
                             if (resultado.containsKey(medIdStr)) {
                                 Map<String, Integer> porMes = resultado.get(medIdStr);
                                 int cantidadActual = porMes.getOrDefault(yearMonth, 0);
                                 porMes.put(yearMonth, cantidadActual + detalle.getCantidad());
+                                System.out.println("        Acumulado en " + yearMonth + ": " + (cantidadActual + detalle.getCantidad()));
                             }
                         }
                     }
                 }
             }
 
-            System.out.println("[DashboardService] Unidades por mes calculadas para " + medicamentoIds.size() + " medicamentos");
+            System.out.println("[DashboardService] Unidades por mes calculadas: " + resultado);
             return resultado;
 
         } catch (Exception e) {

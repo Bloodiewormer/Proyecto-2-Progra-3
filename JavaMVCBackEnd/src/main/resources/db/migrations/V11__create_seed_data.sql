@@ -45,21 +45,21 @@ INSERT INTO medicamentos (nombre, presentacion, stock, precio, is_active) VALUES
 -- Insertar Recetas de ejemplo
 INSERT INTO recetas (codigo, id_paciente, id_medico, fecha_confeccion, fecha_retiro, estado) VALUES
                                                                                                  ('RX-2025-001', 1, 2, '2025-01-15 10:30:00', '2025-02-14 23:59:59', 'CONFECCIONADA'),
-                                                                                                 ('RX-2025-002', 2, 3, '2025-01-16 14:20:00', '2025-02-15 23:59:59', 'CONFECCIONADA'),
-                                                                                                 ('RX-2025-003', 3, 4, '2025-01-17 09:15:00', '2025-02-16 23:59:59', 'PROCESO'),
-                                                                                                 ('RX-2025-004', 4, 2, '2025-01-18 11:45:00', '2025-02-17 23:59:59', 'LISTA'),
-                                                                                                 ('RX-2025-005', 5, 3, '2025-01-19 16:00:00', '2025-02-18 23:59:59', 'ENTREGADA');
+                                                                                                 ('RX-2025-002', 2, 3, '2025-02-16 14:20:00', '2025-02-15 23:59:59', 'CONFECCIONADA'),
+                                                                                                 ('RX-2025-003', 3, 4, '2025-03-17 09:15:00', '2025-02-16 23:59:59', 'PROCESO'),
+                                                                                                 ('RX-2025-004', 4, 2, '2025-04-18 11:45:00', '2025-02-17 23:59:59', 'LISTA'),
+                                                                                                 ('RX-2025-005', 5, 3, '2025-05-19 16:00:00', '2025-02-18 23:59:59', 'ENTREGADA');
 
 -- Insertar Detalles de Recetas
 INSERT INTO detalle_recetas (id_receta, id_medicamento, cantidad, indicaciones, dias) VALUES
-                                                                                          (1, 1, 1, 'Tomar 1 tableta cada 8 horas', 10),
-                                                                                          (1, 3, 1, 'Tomar 5ml cada 12 horas', 7),
-                                                                                          (2, 2, 1, 'Tomar 1 cápsula cada 8 horas con alimentos', 5),
-                                                                                          (2, 5, 1, 'Tomar 1 tableta cada 24 horas', 10),
+                                                                                          (1, 1, 10, 'Tomar 1 tableta cada 8 horas', 10),
+                                                                                          (1, 3, 5, 'Tomar 5ml cada 12 horas', 7),
+                                                                                          (2, 2, 31, 'Tomar 1 cápsula cada 8 horas con alimentos', 5),
+                                                                                          (2, 5, 14, 'Tomar 1 tableta cada 24 horas', 10),
                                                                                           (3, 4, 1, 'Tomar 1 cápsula en ayunas', 14),
-                                                                                          (3, 7, 1, 'Tomar 1 tableta con el desayuno', 30),
-                                                                                          (4, 6, 1, 'Aplicar 2 inhalaciones cada 6 horas si hay dificultad respiratoria', 30),
-                                                                                          (5, 8, 1, 'Tomar 1 tableta antes de dormir', 30);
+                                                                                          (3, 7, 100, 'Tomar 1 tableta con el desayuno', 30),
+                                                                                          (4, 6, 51, 'Aplicar 2 inhalaciones cada 6 horas si hay dificultad respiratoria', 30),
+                                                                                          (5, 8, 71, 'Tomar 1 tableta antes de dormir', 30);
 
 -- Insertar Despacho de ejemplo
 INSERT INTO despachos (id_receta, id_farmaceuta, fecha_despacho, observaciones) VALUES

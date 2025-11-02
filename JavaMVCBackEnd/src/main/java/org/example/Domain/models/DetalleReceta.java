@@ -11,11 +11,11 @@ public class DetalleReceta {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receta_id", nullable = false)
+    @JoinColumn(name = "id_receta", nullable = false)
     private Receta receta;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "medicamento_id", nullable = false)
+    @JoinColumn(name = "id_medicamento", nullable = false)
     private Medicamento medicamento;
 
     private int cantidad;
