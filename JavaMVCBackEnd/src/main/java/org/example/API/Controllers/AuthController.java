@@ -61,15 +61,19 @@ public class AuthController {
 
             LoginRequestDto loginDto = gson.fromJson(request.getData(), LoginRequestDto.class);
 
-            if (loginDto.getUsernameOrEmail() == null || loginDto.getPassword() == null) {
-                return new ResponseDto(false, "Usuario y contraseña son requeridos", null);
+            if (loginDto.getPassword() == null) {
+                return new ResponseDto(false, "ID de usuario y contraseña son requeridos", null);
             }
 
-            // Intentar login
-            Usuario usuario = usuarioService.login(loginDto.getUsernameOrEmail(), loginDto.getPassword());
+            if (loginDto.getUserId() <= 0) {
+                return new ResponseDto(false, "ID de usuario inválido. Debe ser mayor a 0.", null);
+            }
+
+            // Intentar login por ID
+            Usuario usuario = usuarioService.login(loginDto.getUserId(), loginDto.getPassword());
 
             if (usuario == null) {
-                return new ResponseDto(false, "Credenciales inválidas", null);
+                return new ResponseDto(false, "Credenciales inválidas o usuario inactivo", null);
             }
 
             // Obtener tipo de usuario
@@ -85,7 +89,9 @@ public class AuthController {
                     usuario.getUpdatedAt() != null ? usuario.getUpdatedAt().toString() : ""
             );
 
-            System.out.println("[AuthController] Login exitoso para: " + usuario.getNombre() + " (" + tipoUsuario + ")");
+            System.out.println("[AuthController] Login exitoso - ID: " + loginDto.getUserId() +
+                    ", Nombre: " + usuario.getNombre() +
+                    ", Tipo: " + tipoUsuario);
             return new ResponseDto(true, "Login exitoso", gson.toJson(userDto));
 
         } catch (Exception e) {

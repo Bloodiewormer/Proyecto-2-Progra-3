@@ -17,9 +17,9 @@ public class AuthService extends BaseService {
         super(host, port);
     }
 
-    public Future<UserResponseDto> login(String usernameOrEmail, String password) {
+    public Future<UserResponseDto> login(int userId, String password) {
         return executor.submit(() -> {
-            LoginRequestDto loginDto = new LoginRequestDto(usernameOrEmail, password);
+            LoginRequestDto loginDto = new LoginRequestDto(userId, password);
             RequestDto request = new RequestDto(
                     "Auth",
                     "login",
@@ -36,9 +36,9 @@ public class AuthService extends BaseService {
         });
     }
 
-    public Future<UserResponseDto> register(String username, String email, String password, String role) {
+    public Future<UserResponseDto> register(String nombre, String email, String password, String role) {
         return executor.submit(() -> {
-            RegisterRequestDto registerDto = new RegisterRequestDto(username, email, password, role);
+            RegisterRequestDto registerDto = new RegisterRequestDto(nombre, email, password, role);
             RequestDto request = new RequestDto(
                     "Auth",
                     "register",
@@ -57,7 +57,6 @@ public class AuthService extends BaseService {
 
     public Future<Boolean> changePassword(int userId, String currentPassword, String newPassword) {
         return executor.submit(() -> {
-            // Implementar según tu backend
             RequestDto request = new RequestDto(
                     "Auth",
                     "changePassword",
@@ -82,8 +81,16 @@ public class AuthService extends BaseService {
             this.newPassword = newPassword;
         }
 
-        public int getUserId() { return userId; }
-        public String getCurrentPassword() { return currentPassword; }
-        public String getNewPassword() { return newPassword; }
+        public int getUserId() {
+            return userId;
+        }
+
+        public String getCurrentPassword() {
+            return currentPassword;
+        }
+
+        public String getNewPassword() {
+            return newPassword;
+        }
     }
 }

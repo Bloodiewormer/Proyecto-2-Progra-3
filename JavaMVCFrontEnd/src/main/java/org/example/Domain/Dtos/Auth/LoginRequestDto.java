@@ -1,22 +1,22 @@
 package org.example.Domain.Dtos.Auth;
 
 public class LoginRequestDto {
-    private String usernameOrEmail;
+    private int userId;
     private String password;
 
     public LoginRequestDto() {}
 
-    public LoginRequestDto(String usernameOrEmail, String password) {
-        this.usernameOrEmail = usernameOrEmail;
+    public LoginRequestDto(int userId, String password) {
+        this.userId = userId;
         this.password = password;
     }
 
-    public String getUsernameOrEmail() {
-        return usernameOrEmail;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setUsernameOrEmail(String usernameOrEmail) {
-        this.usernameOrEmail = usernameOrEmail;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getPassword() {

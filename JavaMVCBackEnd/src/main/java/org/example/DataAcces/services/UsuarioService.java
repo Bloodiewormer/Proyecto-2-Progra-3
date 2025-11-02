@@ -243,26 +243,33 @@ public class UsuarioService {
     /**
      * Realiza login de un usuario
      */
-    public Usuario login(String nombre, String clave) {
+    public Usuario login(int userId, String clave) {
         try (Session session = sessionFactory.openSession()) {
-            // Buscar usuario solo por nombre
-            Query<Usuario> query = session.createQuery(
-                    "FROM Usuario WHERE nombre = :nombre",
-                    Usuario.class
-            );
-            query.setParameter("nombre", nombre);
-            Usuario usuario = query.uniqueResult();
+            // Convertir int a Long para JPA
+            Usuario usuario = session.find(Usuario.class, (long) userId);
 
-            // Verificar la contraseña con salt
-            if (usuario != null && PasswordUtils.verifyPassword(clave, usuario.getSalt(), usuario.getClave())) {
-                System.out.println("[UsuarioService] Login exitoso: " + nombre);
+            if (usuario == null) {
+                System.out.println("[UsuarioService] Usuario no encontrado con ID: " + userId);
+                return null;
+            }
+
+            // Verificar que el usuario esté activo
+            if (!usuario.getIsActive()) {
+                System.out.println("[UsuarioService] Usuario inactivo con ID: " + userId);
+                return null;
+            }
+
+            // Verificar contraseña con salt
+            if (PasswordUtils.verifyPassword(clave, usuario.getSalt(), usuario.getClave())) {
+                System.out.println("[UsuarioService] Login exitoso - ID: " + userId +
+                        ", Nombre: " + usuario.getNombre());
                 return usuario;
             }
 
-            System.out.println("[UsuarioService] Login fallido: " + nombre);
+            System.out.println("[UsuarioService] Contraseña incorrecta para ID: " + userId);
             return null;
         } catch (Exception e) {
-            System.err.println("[UsuarioService] Error en login: " + e.getMessage());
+            System.err.println("[UsuarioService] Error en login para ID " + userId + ": " + e.getMessage());
             throw e;
         }
     }

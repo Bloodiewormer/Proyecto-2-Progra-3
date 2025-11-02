@@ -38,27 +38,33 @@ public class LoginController extends Observable {
     }
 
     private void handleLogin() {
-        String userIdText = loginView.getUsername(); // Campo ahora espera ID
+        String userIdText = loginView.getUsername(); // ✅ Campo que contiene el ID
         String password = loginView.getPassword();
 
-        //  Parsear como Long
-        Long userId;
-        try {
-            userId = Long.parseLong(userIdText.trim());
-        } catch (NumberFormatException ex) {
-            showError("ID de usuario inválido. Debe ser un número.");
+        // Validar que el ID no esté vacío
+        if (userIdText == null || userIdText.trim().isEmpty()) {
+            showError("El ID de usuario es requerido.");
             return;
         }
 
-        //  Validar que sea positivo
-        if (userId <= 0) {
-            showError("El ID de usuario debe ser mayor a 0.");
-            return;
-        }
-
-        // Validar contraseña
+        // Validar que la contraseña no esté vacía
         if (password == null || password.trim().isEmpty()) {
             showError("La contraseña es requerida.");
+            return;
+        }
+
+        // Parsear el ID de usuario como int
+        int userId;
+        try {
+            userId = Integer.parseInt(userIdText.trim());
+        } catch (NumberFormatException ex) {
+            showError("ID de usuario inválido.\nDebe ser un número entero positivo.");
+            return;
+        }
+
+        // Validar que el ID sea positivo
+        if (userId <= 0) {
+            showError("El ID de usuario debe ser mayor a 0.");
             return;
         }
 
@@ -67,7 +73,7 @@ public class LoginController extends Observable {
         SwingWorker<UserResponseDto, Void> worker = new SwingWorker<>() {
             @Override
             protected UserResponseDto doInBackground() throws Exception {
-                return authService.login(userId, password).get(); // ✅ Pasa Long
+                return authService.login(userId, password).get();
             }
 
             @Override
@@ -79,8 +85,11 @@ public class LoginController extends Observable {
                         currentUser = user;
                         onLoginSuccess(user);
                     } else {
-                        showError("Credenciales inválidas o usuario inactivo.\n" +
-                                "Verifique su ID de usuario y contraseña.");
+                        showError("Credenciales inválidas o usuario inactivo.\n\n" +
+                                "Verifique:\n" +
+                                "• ID de usuario correcto\n" +
+                                "• Contraseña correcta\n" +
+                                "• Usuario activo en el sistema");
                     }
                 } catch (Exception ex) {
                     handleError("Error al intentar iniciar sesión", ex);
@@ -89,6 +98,7 @@ public class LoginController extends Observable {
         };
         worker.execute();
     }
+
 
     private void onLoginSuccess(UserResponseDto user) {
         // Notify observers
@@ -101,6 +111,7 @@ public class LoginController extends Observable {
         UserType userType = determineUserType(user.getRole());
         openMainView(userType, user);
     }
+
 
     private UserType determineUserType(String role) {
         if (role == null) return UserType.NULL;
@@ -130,6 +141,7 @@ public class LoginController extends Observable {
         );
         mainView.setVisible(true);
     }
+
 
     public void showPasswordChangeView() {
         AuthService passwordAuthService = new AuthService(SERVER_HOST, SERVER_PORT);
