@@ -2,7 +2,6 @@ package org.example.Presentation.Views;
 
 import org.example.Presentation.Components.CustomButton;
 import org.example.Presentation.Controllers.FarmaceutaController;
-import org.example.Presentation.Controllers.HistoricoRecetasController;
 import org.example.Presentation.Controllers.LoginController;
 import org.example.Presentation.Controllers.MedicoController;
 import org.example.Presentation.Controllers.PacienteController;
@@ -10,6 +9,10 @@ import org.example.Presentation.Models.UserType;
 import org.example.Services.MedicamentoService;
 import org.example.Services.PacienteService;
 import org.example.Services.UsuarioService;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Controllers.MedicoController;
+import org.example.Presentation.Controllers.MedicamentoController;
+import org.example.Services.MedicamentoService;
 import org.example.Services.RecetaService;
 
 import javax.swing.*;
@@ -51,11 +54,16 @@ public class MenuPrincipalView extends JFrame {
     private final UserType userType;
     private final LoginController loginController;
 
+
     private MedicoForm medicoForm;
     private MedicoController medicoController;
 
+    private MedicamentoForm medicamentoForm;
+    private MedicamentoController medicamentoController;
+
     private PacienteController pacienteController;
     private PacienteForm pacienteForm;
+
 
     private FarmaceutaForm farmaceutaForm;
     private FarmaceutaController farmaceutaController;
@@ -84,6 +92,8 @@ public class MenuPrincipalView extends JFrame {
         initializePacienteView();
         initializeFarmaceutaView();
         initializeHistoricoRecetasView(); // --- Inicializa la vista y el controlador de histórico
+        initializeFarmaceutaView();
+        initializeMedicamentoView();
         wireEvents();
         initializeView();
     }
@@ -165,6 +175,7 @@ public class MenuPrincipalView extends JFrame {
         }
     }
 
+
     private void initializeMedicoView() {
         medicoForm = new MedicoForm(this);
         medicoController = new MedicoController(medicoForm, usuarioService);
@@ -190,6 +201,15 @@ public class MenuPrincipalView extends JFrame {
         );
     }
 
+    private void initializeMedicamentoView() {
+        medicamentoForm = new MedicamentoForm(this);
+        medicamentoController = new MedicamentoController(medicamentoForm, medicamentoService);
+    }
+
+    private void showMedicamentoView() {
+        switchContent(medicamentoForm, "Medicamentos");
+    }
+
     private void wireEvents() {
         toggleButton.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
@@ -201,12 +221,11 @@ public class MenuPrincipalView extends JFrame {
         medicosButton.addActionListener(e -> showMedicoView());
         farmaceutasButton.addActionListener(e -> showFarmaceutaView());
         pacientesButton.addActionListener(e -> showPacienteView());
-        medicamentosButton.addActionListener(e -> showPlaceholderView("Medicamentos"));
+        medicamentosButton.addActionListener(e -> showMedicamentoView());
         dashboardButton.addActionListener(e -> showPlaceholderView("Dashboard"));
         acercadeButton.addActionListener(e -> showAcercaDeView());
         prescribirButton.addActionListener(e -> showPlaceholderView("Prescribir"));
         despachoButton.addActionListener(e -> showPlaceholderView("Despacho"));
-        // --- CAMBIO: muestra la vista real de histórico
         historicoRecetasButton.addActionListener(e -> showHistoricoRecetasView());
     }
 
@@ -262,6 +281,7 @@ public class MenuPrincipalView extends JFrame {
         switchContent(panel, viewName);
     }
 
+
     private void showMedicoView() {
         switchContent(medicoForm, "Médicos");
     }
@@ -269,6 +289,8 @@ public class MenuPrincipalView extends JFrame {
     private void showPacienteView() {
         switchContent(pacienteForm, "Pacientes");
     }
+
+
 
     private void showFarmaceutaView() {
         switchContent(farmaceutaForm, "Farmaceutas");
@@ -336,9 +358,11 @@ public class MenuPrincipalView extends JFrame {
             int currentWidth = collapsiblePanel.getWidth();
 
             if (currentWidth < targetWidth) { // Expand
+                MenuLabel.setVisible(true);
                 currentWidth += 10;
                 if (currentWidth > targetWidth) currentWidth = targetWidth;
             } else if (currentWidth > targetWidth) { // Collapse
+                MenuLabel.setVisible(false);
                 currentWidth -= 10;
                 if (currentWidth < targetWidth) currentWidth = targetWidth;
             }
@@ -417,7 +441,4 @@ public class MenuPrincipalView extends JFrame {
         acercadeButton = new CustomButton("Acerca de", buttonColor, textColor, infoIcon);
     }
 }
-
-
-
 

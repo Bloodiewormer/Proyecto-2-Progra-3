@@ -32,7 +32,6 @@ public class FarmaceutaForm extends JPanel {
     public FarmaceutaForm(JFrame parentFrame) {
         this.tableModel = new FarmaceutaTableModel();
         this.loadingOverlay = new LoadingOverlay(parentFrame);
-
         Farmaceutastable.setModel(tableModel);
 
         // Solución: agregar el MainPanel al propio FarmaceutaForm
