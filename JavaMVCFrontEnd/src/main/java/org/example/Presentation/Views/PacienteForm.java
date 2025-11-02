@@ -44,6 +44,8 @@ public class PacienteForm extends JPanel {
 
         initDatePickers();
         patientsTable.setModel(tableModel);
+        setLayout(new BorderLayout());
+        add(mainPanel, BorderLayout.CENTER);
     }
 
     private void initDatePickers() {

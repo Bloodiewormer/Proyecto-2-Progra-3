@@ -3,6 +3,7 @@ package org.example.Presentation.Views;
 import org.example.Presentation.Components.CustomButton;
 import org.example.Presentation.Controllers.LoginController;
 import org.example.Presentation.Controllers.MedicoController;
+import org.example.Presentation.Controllers.PacienteController;
 import org.example.Presentation.Models.UserType;
 import org.example.Services.MedicamentoService;
 import org.example.Services.PacienteService;
@@ -47,9 +48,12 @@ public class MenuPrincipalView extends JFrame {
     private final UserType userType;
     private final LoginController loginController;
 
-    // --- NUEVO: Vista y controlador de médicos
+
     private MedicoForm medicoForm;
     private MedicoController medicoController;
+
+    private PacienteController pacienteController;
+    private PacienteForm pacienteForm;
 
     public MenuPrincipalView(UserType userType,
                              LoginController loginController,
@@ -67,10 +71,14 @@ public class MenuPrincipalView extends JFrame {
 
         initializeUI();
         configureMenu();
-        initializeMedicoView(); // --- Inicializa la vista de médicos
+        initializeMedicoView();
+        initializePacienteView();
+
         wireEvents();
         initializeView();
     }
+
+
 
     private void initializeUI() {
         try {
@@ -149,10 +157,15 @@ public class MenuPrincipalView extends JFrame {
         }
     }
 
-    // --- NUEVO: Inicializa la vista y el controlador de médicos
+
     private void initializeMedicoView() {
         medicoForm = new MedicoForm(this);
         medicoController = new MedicoController(medicoForm, usuarioService);
+    }
+
+    private void initializePacienteView() {
+        pacienteForm = new PacienteForm(this);
+        pacienteController = new PacienteController(pacienteForm, pacienteService);
     }
 
     private void wireEvents() {
@@ -163,9 +176,9 @@ public class MenuPrincipalView extends JFrame {
         });
 
         salirButton.addActionListener(e -> handleLogout());
-        medicosButton.addActionListener(e -> showMedicoView()); // --- Cambiado
+        medicosButton.addActionListener(e -> showMedicoView());
         farmaceutasButton.addActionListener(e -> showPlaceholderView("Farmaceutas"));
-        pacientesButton.addActionListener(e -> showPlaceholderView("Pacientes"));
+        pacientesButton.addActionListener(e -> showPacienteView());
         medicamentosButton.addActionListener(e -> showPlaceholderView("Medicamentos"));
         dashboardButton.addActionListener(e -> showPlaceholderView("Dashboard"));
         acercadeButton.addActionListener(e -> showAcercaDeView());
@@ -226,10 +239,15 @@ public class MenuPrincipalView extends JFrame {
         switchContent(panel, viewName);
     }
 
-    // --- NUEVO: Método para mostrar la vista real de médicos
+
     private void showMedicoView() {
         switchContent(medicoForm, "Médicos");
     }
+
+    private  void showPacienteView() {
+        switchContent(pacienteForm, "Pacientes");
+    }
+
 
     private void showAcercaDeView() {
         JPanel panel = new JPanel(new GridBagLayout());

@@ -37,13 +37,13 @@ public class CambioClaveView extends JFrame {
     }
 
     private void initializeFrame() {
-        setUndecorated(true); // ✅ Sin bordes (como Proyecto 1)
+        setUndecorated(true);
         setContentPane(mainPanel);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         pack();
         setLocationRelativeTo(null);
-        setSize(300, 150); // ✅ Tamaño original
-        setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 30, 30)); // ✅ Bordes redondeados
+        setSize(300, 150);
+        setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 30, 30));
         setVisible(true);
     }
 
@@ -87,9 +87,9 @@ public class CambioClaveView extends JFrame {
     }
 
     private void createUIComponents() {
-        idTextField = new CustomTextField();
+        idTextField = new CustomTextField("ID de Usuario");
         acceptButton = new BlueRoundedButton("Aceptar");
-        passwordField = new CustomPasswordField();
-        confirmPasswordField = new CustomPasswordField();
+        passwordField = new CustomPasswordField("Nueva Contraseña");
+        confirmPasswordField = new CustomPasswordField("Confirmar Contraseña");
     }
 }

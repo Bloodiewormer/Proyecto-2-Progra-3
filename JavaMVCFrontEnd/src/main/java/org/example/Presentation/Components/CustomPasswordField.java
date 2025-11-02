@@ -5,26 +5,57 @@ import java.awt.*;
 import java.util.Objects;
 
 public class CustomPasswordField extends JPasswordField {
-    private final Image icon; // Declare the icon field
+    private final Image icon;
+    private final String placeholder;
+    private boolean showingPlaceholder;
 
     public CustomPasswordField() {
-        setBorder(BorderFactory.createEmptyBorder(5, 32, 5, 5)); // Padding for icon
+        this("");
+    }
+
+    public CustomPasswordField(String placeholder) {
+        this.placeholder = placeholder;
+        this.showingPlaceholder = true;
+
+        setBorder(BorderFactory.createEmptyBorder(5, 32, 5, 5));
         setOpaque(false);
-        // Load the icon from resources
         icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/lock.png"))).getImage();
 
-        setForeground(Color.BLACK);
+        setForeground(Color.GRAY);
+        setText(placeholder);
+        setEchoChar((char) 0);
+
+        addFocusListener(new java.awt.event.FocusListener() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (showingPlaceholder) {
+                    setText("");
+                    setForeground(Color.BLACK);
+                    setEchoChar('●');
+                    showingPlaceholder = false;
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (getText().isEmpty()) {
+                    setEchoChar((char) 0);
+                    setText(placeholder);
+                    setForeground(Color.GRAY);
+                    showingPlaceholder = true;
+                }
+            }
+        });
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setColor(Color.WHITE); // White background
+        g2.setColor(Color.WHITE);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         int radius = 5;
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
 
-        // Draw the icon on the left inside the field
         if (icon != null) {
             int iconSize = 25;
             int iconY = (getHeight() - iconSize) / 2;
@@ -34,4 +65,3 @@ public class CustomPasswordField extends JPasswordField {
         g2.dispose();
     }
 }
-
