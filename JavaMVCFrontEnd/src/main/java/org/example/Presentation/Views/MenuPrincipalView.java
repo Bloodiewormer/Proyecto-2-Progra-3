@@ -1,7 +1,7 @@
 package org.example.Presentation.Views;
 
 import org.example.Presentation.Components.CustomButton;
-import org.example.Presentation.Controllers.*;
+import org.example.Presentation.Controllers.LoginController;
 import org.example.Services.MedicamentoService;
 import org.example.Services.PacienteService;
 import org.example.Services.UsuarioService;
@@ -21,7 +21,6 @@ public class MenuPrincipalView extends JFrame {
     private JPanel optionsPanel;
     private JPanel contentPanel;
 
-
     private JButton salirButton;
     private JButton medicosButton;
     private JButton farmaceutasButton;
@@ -35,8 +34,7 @@ public class MenuPrincipalView extends JFrame {
     private JButton despachoButton;
     private JButton historicoRecetasButton;
 
-
-    private boolean menuVisible = false;
+    private boolean menuVisible = true; // ✅ Iniciar visible
     private static final int MENU_WIDTH = 170;
     private static final int MENU_COLLAPSED_WIDTH = 30;
 
@@ -98,11 +96,9 @@ public class MenuPrincipalView extends JFrame {
     }
 
     private void configureButtonsForUserType() {
-        // Reset all buttons
-        medicosButton.setEnabled(false);
-        farmaceutasButton.setEnabled(false);
-        pacientesButton.setEnabled(false);
-        medicamentosButton.setEnabled(false);
+        JButton[] allButtons = {medicosButton, farmaceutasButton, pacientesButton,
+                medicamentosButton, dashboardButton, acercadeButton,
+                prescribirButton, despachoButton, historicoRecetasButton};
 
         switch (userType) {
             case ADMINISTRADOR -> {
@@ -110,26 +106,38 @@ public class MenuPrincipalView extends JFrame {
                 farmaceutasButton.setEnabled(true);
                 pacientesButton.setEnabled(true);
                 medicamentosButton.setEnabled(true);
+                dashboardButton.setEnabled(true);
+                acercadeButton.setEnabled(true);
+                historicoRecetasButton.setEnabled(true);
+                prescribirButton.setEnabled(false);
+                despachoButton.setEnabled(false);
             }
             case FARMACEUTA -> {
-                // Farmaceutas pueden ver pacientes y medicamentos
-                pacientesButton.setEnabled(true);
-                medicamentosButton.setEnabled(true);
+                medicosButton.setEnabled(false);
+                farmaceutasButton.setEnabled(false);
+                pacientesButton.setEnabled(false);
+                medicamentosButton.setEnabled(false);
+                dashboardButton.setEnabled(true);
+                acercadeButton.setEnabled(true);
+                despachoButton.setEnabled(true);
+                historicoRecetasButton.setEnabled(true);
+                prescribirButton.setEnabled(false);
             }
             case MEDICO -> {
-                // Médicos pueden ver pacientes y medicamentos
-                pacientesButton.setEnabled(true);
-                medicamentosButton.setEnabled(true);
+                medicosButton.setEnabled(false);
+                farmaceutasButton.setEnabled(false);
+                pacientesButton.setEnabled(false);
+                medicamentosButton.setEnabled(false);
+                prescribirButton.setEnabled(true);
+                historicoRecetasButton.setEnabled(true);
+                dashboardButton.setEnabled(true);
+                acercadeButton.setEnabled(true);
+                despachoButton.setEnabled(false);
             }
         }
 
-        // Update visibility
-        updateButtonVisibility();
-    }
-
-    private void updateButtonVisibility() {
-        JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton, medicamentosButton};
-        for (JButton btn : buttons) {
+        // Ocultar botones deshabilitados
+        for (JButton btn : allButtons) {
             btn.setVisible(btn.isEnabled());
         }
     }
@@ -142,78 +150,92 @@ public class MenuPrincipalView extends JFrame {
         });
 
         salirButton.addActionListener(e -> handleLogout());
-        medicosButton.addActionListener(e -> showMedicosView());
-        farmaceutasButton.addActionListener(e -> showFarmaceutasView());
-        pacientesButton.addActionListener(e -> showPacientesView());
-        medicamentosButton.addActionListener(e -> showMedicamentosView());
+        medicosButton.addActionListener(e -> showPlaceholderView("Médicos"));
+        farmaceutasButton.addActionListener(e -> showPlaceholderView("Farmaceutas"));
+        pacientesButton.addActionListener(e -> showPlaceholderView("Pacientes"));
+        medicamentosButton.addActionListener(e -> showPlaceholderView("Medicamentos"));
+        dashboardButton.addActionListener(e -> showPlaceholderView("Dashboard"));
+        acercadeButton.addActionListener(e -> showAcercaDeView());
+        prescribirButton.addActionListener(e -> showPlaceholderView("Prescribir"));
+        despachoButton.addActionListener(e -> showPlaceholderView("Despacho"));
+        historicoRecetasButton.addActionListener(e -> showPlaceholderView("Histórico de Recetas"));
     }
 
     private void initializeView() {
-        // Animate menu open
-        toggleMenu();
-        toggleMenu();
-
-        // Show initial view based on user type
+        // Mostrar vista inicial según tipo de usuario
         switch (userType) {
-            case ADMINISTRADOR -> showMedicosView();
-            case FARMACEUTA -> showMedicamentosView();
-            case MEDICO -> showPacientesView();
-            default -> showWelcomeView();
+            case ADMINISTRADOR -> showWelcomeView();
+            case FARMACEUTA -> showPlaceholderView("Despacho");
+            case MEDICO -> showPlaceholderView("Prescribir");
         }
 
-        mainPanel.revalidate();
-        mainPanel.repaint();
-    }
-
-    // View switching methods
-    private void showMedicosView() {
-        MedicoForm medicoForm = new MedicoForm(this);
-        new MedicoController(medicoForm, usuarioService);
-        switchContent(medicoForm.getMainPanel(), "Gestión de Médicos");
-    }
-
-    private void showFarmaceutasView() {
-        FarmaceutaForm farmaceutaForm = new FarmaceutaForm(this);
-        new FarmaceutaController(farmaceutaForm, usuarioService);
-        switchContent(farmaceutaForm.getMainPanel(), "Gestión de Farmaceutas");
-    }
-
-    private void showPacientesView() {
-        PacienteForm pacienteForm = new PacienteForm(this);
-        new PacienteController(pacienteForm, pacienteService);
-        switchContent(pacienteForm.getMainPanel(), "Gestión de Pacientes");
-    }
-
-    private void showMedicamentosView() {
-        MedicamentoForm medicamentoForm = new MedicamentoForm(this);
-        new MedicamentoController(medicamentoForm, medicamentoService);
-        switchContent(medicamentoForm.getMainPanel(), "Gestión de Medicamentos");
+        setVisible(true);
     }
 
     private void showWelcomeView() {
         JPanel welcomePanel = createWelcomePanel();
-        switchContent(welcomePanel, "Bienvenido");
+        switchContent(welcomePanel, getUserTypeDisplayName());
     }
 
     private JPanel createWelcomePanel() {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(240, 240, 240));
-
-        JLabel welcomeLabel = new JLabel("Bienvenido al Sistema de Gestión");
-        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-
-        JLabel userTypeLabel = new JLabel("Tipo de usuario: " + getUserTypeDisplayName());
-        userTypeLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        panel.setBackground(new Color(245, 245, 248));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         gbc.insets = new Insets(10, 10, 10, 10);
 
+        JLabel welcomeLabel = new JLabel("Bienvenido al Sistema de Gestión");
+        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        welcomeLabel.setForeground(new Color(0, 102, 204));
+
+        JLabel userTypeLabel = new JLabel("Usuario: " + getUserTypeDisplayName());
+        userTypeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        userTypeLabel.setForeground(Color.DARK_GRAY);
+
         panel.add(welcomeLabel, gbc);
+        gbc.gridy++;
         panel.add(userTypeLabel, gbc);
 
         return panel;
+    }
+
+    private void showPlaceholderView(String viewName) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(245, 245, 248));
+
+        JLabel label = new JLabel("Vista de " + viewName + " - En desarrollo");
+        label.setFont(new Font("Arial", Font.BOLD, 20));
+        label.setForeground(new Color(0, 102, 204));
+
+        panel.add(label);
+        switchContent(panel, viewName);
+    }
+
+    private void showAcercaDeView() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(245, 245, 248));
+
+        String info = """
+                <html><center>
+                <h2>Sistema de Gestión Médica</h2>
+                <p><b>Versión:</b> 2.0</p>
+                <p><b>Universidad Nacional de Costa Rica</b></p>
+                <p>EIF206 - Programación 3</p>
+                <br>
+                <p>Miembros del Grupo:</p>
+                <p>- David González Córdoba</p>
+                <p>- Dany Montero Romero</p>
+                <p>- Emmanuel Núñez Jiménez</p>
+                </center></html>
+                """;
+
+        JLabel label = new JLabel(info);
+        label.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        panel.add(label);
+        switchContent(panel, "Acerca de");
     }
 
     private void switchContent(JPanel newContent, String title) {
@@ -262,7 +284,9 @@ public class MenuPrincipalView extends JFrame {
             collapsiblePanel.repaint();
 
             // Update button visibility
-            JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton, medicamentosButton, salirButton};
+            JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton,
+                    medicamentosButton, dashboardButton, acercadeButton,
+                    prescribirButton, despachoButton, historicoRecetasButton, salirButton};
             for (JButton btn : buttons) {
                 if (btn.isEnabled()) {
                     btn.setVisible(menuVisible || currentWidth > MENU_COLLAPSED_WIDTH);
@@ -270,7 +294,7 @@ public class MenuPrincipalView extends JFrame {
             }
 
             if (currentWidth == targetWidth) {
-                timer.stop();
+                ((Timer)e.getSource()).stop();
             }
         });
         timer.start();
@@ -290,10 +314,7 @@ public class MenuPrincipalView extends JFrame {
     }
 
     private void createUIComponents() {
-        Color buttonColor = new Color(244, 243, 248);
-        Color textColor = Color.BLACK;
-
-        // ✅ Helper para cargar iconos de forma segura
+        // Helper para cargar iconos de forma segura
         java.util.function.Function<String, Image> loadIcon = (path) -> {
             try {
                 var resource = getClass().getResource(path);
@@ -306,19 +327,20 @@ public class MenuPrincipalView extends JFrame {
             return null;
         };
 
-        // Cargar iconos (null si no existen)
+        // Cargar iconos
         Image doctorIcon = loadIcon.apply("/Doctor.png");
         Image farmaceuticoIcon = loadIcon.apply("/Farmaceuta.png");
         Image pacienteIcon = loadIcon.apply("/Paciente.png");
         Image medicamentoIcon = loadIcon.apply("/Medicamento.png");
         Image logoutIcon = loadIcon.apply("/Logout.png");
-        Image dashboardIcon = loadIcon.apply("/Dashboard.png");
-        Image prescribirIcon = loadIcon.apply("/Prescribir.png");
-        Image despachoIcon = loadIcon.apply("/Despacho.png");
-        Image historicoIcon = loadIcon.apply("/Historico.png");
+        Image dashboardIcon = loadIcon.apply("/DashBoard.png");
+        Image prescribirIcon = loadIcon.apply("/Prescripcion.png");
         Image infoIcon = loadIcon.apply("/Info.png");
 
-        // Crear botones (funciona con o sin iconos)
+        Color buttonColor = new Color(244, 243, 248);
+        Color textColor = Color.BLACK;
+
+        // Crear botones
         salirButton = new CustomButton("Salir", buttonColor, textColor, logoutIcon);
         medicosButton = new CustomButton("Médicos", buttonColor, textColor, doctorIcon);
         farmaceutasButton = new CustomButton("Farmaceutas", buttonColor, textColor, farmaceuticoIcon);
@@ -326,9 +348,8 @@ public class MenuPrincipalView extends JFrame {
         medicamentosButton = new CustomButton("Medicamentos", buttonColor, textColor, medicamentoIcon);
         dashboardButton = new CustomButton("Dashboard", buttonColor, textColor, dashboardIcon);
         prescribirButton = new CustomButton("Prescribir", buttonColor, textColor, prescribirIcon);
-        despachoButton = new CustomButton("Despacho", buttonColor, textColor, despachoIcon);
-        historicoRecetasButton = new CustomButton("Histórico", buttonColor, textColor, historicoIcon);
+        despachoButton = new CustomButton("Despacho", buttonColor, textColor, medicamentoIcon);
+        historicoRecetasButton = new CustomButton("Histórico", buttonColor, textColor, infoIcon);
         acercadeButton = new CustomButton("Acerca de", buttonColor, textColor, infoIcon);
     }
-
 }
