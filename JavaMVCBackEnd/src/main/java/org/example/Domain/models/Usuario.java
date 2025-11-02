@@ -17,6 +17,12 @@ public abstract class Usuario {
     @Column(nullable = false)
     protected String clave;
 
+    @Column(nullable = false)
+    protected String salt;
+
+    @Column(name = "is_active")
+    protected Boolean isActive = false;
+
     @Column(name = "created_at", updatable = false)
     protected LocalDateTime createdAt;
 
@@ -37,10 +43,19 @@ public abstract class Usuario {
     // Getters y Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
+
     public String getClave() { return clave; }
     public void setClave(String clave) { this.clave = clave; }
+
+    public String getSalt() { return salt; }
+    public void setSalt(String salt) { this.salt = salt; }
+
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

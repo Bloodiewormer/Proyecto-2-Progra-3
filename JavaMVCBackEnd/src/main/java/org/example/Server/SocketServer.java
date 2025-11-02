@@ -1,9 +1,6 @@
 package org.example.Server;
 
-import org.example.API.Controllers.DashboardController;
-import org.example.API.Controllers.HistoricoRecetasController;
-import org.example.API.Controllers.PrescribirController;
-import org.example.API.Controllers.RecetaController;
+import org.example.API.Controllers.*;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -22,23 +19,34 @@ public class SocketServer {
     private final Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
 
     // Controladores API del BackEnd
-    private final DashboardController dashboardController;
-    private final HistoricoRecetasController historicoRecetasController;
-    private final PrescribirController prescribirController;
+    private final AuthController authController;
+    private final MedicamentoController medicamentoController;
+    private final PacienteController pacienteController;
+    private final MedicoController medicoController;
     private final RecetaController recetaController;
+    private final PrescribirController prescribirController;
+    private final HistoricoRecetasController historicoRecetasController;
 
+    private MessageBroadcaster messageBroadcaster;
     private boolean running;
+    private ServerSocket serverSocket;
 
     public SocketServer(int port,
-                        DashboardController dashboardController,
-                        HistoricoRecetasController historicoRecetasController,
+                        AuthController authController,
+                        MedicamentoController medicamentoController,
+                        PacienteController pacienteController,
+                        MedicoController medicoController,
+                        RecetaController recetaController,
                         PrescribirController prescribirController,
-                        RecetaController recetaController) {
+                        HistoricoRecetasController historicoRecetasController) {
         this.port = port;
-        this.dashboardController = dashboardController;
-        this.historicoRecetasController = historicoRecetasController;
-        this.prescribirController = prescribirController;
+        this.authController = authController;
+        this.medicamentoController = medicamentoController;
+        this.pacienteController = pacienteController;
+        this.medicoController = medicoController;
         this.recetaController = recetaController;
+        this.prescribirController = prescribirController;
+        this.historicoRecetasController = historicoRecetasController;
     }
 
     /**
@@ -48,28 +56,47 @@ public class SocketServer {
         running = true;
         System.out.println("[SocketServer] Iniciando servidor en el puerto " + port + "...");
 
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+        try {
+            serverSocket = new ServerSocket(port);
             System.out.println("[SocketServer] Servidor escuchando en el puerto " + port);
 
             while (running) {
-                Socket clientSocket = serverSocket.accept();
-                System.out.println("[SocketServer] Nuevo cliente conectado desde: " + clientSocket.getInetAddress());
+                try {
+                    Socket clientSocket = serverSocket.accept();
+                    System.out.println("[SocketServer] Nuevo cliente conectado desde: " + clientSocket.getInetAddress());
 
-                ClientHandler handler = new ClientHandler(
-                        clientSocket,
-                        dashboardController,
-                        historicoRecetasController,
-                        prescribirController,
-                        recetaController,
-                        this
-                );
+                    ClientHandler handler = new ClientHandler(
+                            clientSocket,
+                            authController,
+                            medicamentoController,
+                            pacienteController,
+                            medicoController,
+                            recetaController,
+                            prescribirController,
+                            historicoRecetasController,
+                            this
+                    );
 
-                clients.add(handler);
-                new Thread(handler).start();
+                    clients.add(handler);
+                    new Thread(handler, "ClientHandler-" + clients.size()).start();
+
+                } catch (IOException e) {
+                    if (running) {
+                        System.err.println("[SocketServer] Error aceptando cliente: " + e.getMessage());
+                    }
+                }
             }
 
         } catch (IOException e) {
             System.err.println("[SocketServer] Error en el servidor: " + e.getMessage());
+        } finally {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                try {
+                    serverSocket.close();
+                } catch (IOException e) {
+                    System.err.println("[SocketServer] Error cerrando ServerSocket: " + e.getMessage());
+                }
+            }
         }
     }
 
@@ -78,6 +105,7 @@ public class SocketServer {
      */
     public void stop() {
         running = false;
+
         synchronized (clients) {
             for (ClientHandler client : clients) {
                 try {
@@ -86,6 +114,15 @@ public class SocketServer {
             }
             clients.clear();
         }
+
+        if (serverSocket != null && !serverSocket.isClosed()) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                System.err.println("[SocketServer] Error cerrando servidor: " + e.getMessage());
+            }
+        }
+
         System.out.println("[SocketServer] Servidor detenido.");
     }
 
@@ -93,12 +130,29 @@ public class SocketServer {
      * Envía un mensaje a todos los clientes conectados.
      */
     public void broadcast(Object message) {
-        synchronized (clients) {
-            for (ClientHandler client : clients) {
-                client.sendMessage(message);
+        if (messageBroadcaster != null) {
+            messageBroadcaster.broadcastToAll(message);
+        } else {
+            // Fallback: enviar directamente a los clientes conectados
+            synchronized (clients) {
+                for (ClientHandler client : clients) {
+                    try {
+                        client.sendMessage(message);
+                    } catch (Exception e) {
+                        System.err.println("[SocketServer] Error enviando mensaje: " + e.getMessage());
+                    }
+                }
             }
         }
         System.out.println("[SocketServer] Broadcast enviado a todos los clientes.");
+    }
+
+    /**
+     * Registra el MessageBroadcaster para notificaciones push
+     */
+    public void setMessageBroadcaster(MessageBroadcaster broadcaster) {
+        this.messageBroadcaster = broadcaster;
+        System.out.println("[SocketServer] MessageBroadcaster registrado");
     }
 
     /**
@@ -113,5 +167,3 @@ public class SocketServer {
         return clients.size();
     }
 }
-
-// Revisar

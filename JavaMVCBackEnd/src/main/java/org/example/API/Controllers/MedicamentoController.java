@@ -1,59 +1,131 @@
 package org.example.API.Controllers;
-// package org.example.API.Controllers;
 
-import org.example.Application.Services.MedicamentoService;
+import com.google.gson.Gson;
+import org.example.DataAcces.services.MedicamentoService;
+import org.example.Domain.dtos.RequestDto;
+import org.example.Domain.dtos.ResponseDto;
 import org.example.Domain.dtos.Medicamento.*;
-// import org.springframework.http.ResponseEntity;
-// import org.springframework.web.bind.annotation.*;
+import org.example.Domain.models.Medicamento;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@RestController
-@RequestMapping("/api/medicamentos")
-@CrossOrigin(origins = "*") // Permite conexión desde tu FrontEnd
 public class MedicamentoController {
-
     private final MedicamentoService medicamentoService;
+    private final Gson gson = new Gson();
 
     public MedicamentoController(MedicamentoService medicamentoService) {
         this.medicamentoService = medicamentoService;
     }
 
-    /**
-     * Obtener todos los medicamentos
-     */
-    @GetMapping
-    public ResponseEntity<List<MedicamentoResponseDto>> getAllMedicamentos() {
-        List<MedicamentoResponseDto> medicamentos = medicamentoService.getAllMedicamentos();
-        return ResponseEntity.ok(medicamentos);
+    public ResponseDto route(RequestDto request) {
+        try {
+            switch (request.getRequest()) {
+                case "add":
+                    return handleAdd(request);
+                case "update":
+                    return handleUpdate(request);
+                case "delete":
+                    return handleDelete(request);
+                case "list":
+                    return handleList(request);
+                case "get":
+                    return handleGet(request);
+                default:
+                    return new ResponseDto(false, "Unknown request: " + request.getRequest(), null);
+            }
+        } catch (Exception e) {
+            return new ResponseDto(false, e.getMessage(), null);
+        }
     }
 
-    /**
-     * Agregar un nuevo medicamento
-     */
-    @PostMapping
-    public ResponseEntity<MedicamentoResponseDto> addMedicamento(@RequestBody AddMedicamentoRequestDto dto) {
-        MedicamentoResponseDto created = medicamentoService.addMedicamento(dto);
-        return ResponseEntity.ok(created);
+    private ResponseDto handleAdd(RequestDto request) {
+        try {
+            AddMedicamentoRequestDto dto = gson.fromJson(request.getData(), AddMedicamentoRequestDto.class);
+            Medicamento medicamento = medicamentoService.create(dto.getNombre(), dto.getPresentacion());
+
+            MedicamentoResponseDto response = toResponseDto(medicamento);
+            return new ResponseDto(true, "Medicamento agregado exitosamente", gson.toJson(response));
+        } catch (Exception e) {
+            System.err.println("[MedicamentoController] Error en handleAdd: " + e.getMessage());
+            return new ResponseDto(false, "Error agregando medicamento: " + e.getMessage(), null);
+        }
     }
 
-    /**
-     * Actualizar un medicamento existente
-     */
-    @PutMapping
-    public ResponseEntity<MedicamentoResponseDto> updateMedicamento(@RequestBody UpdateMedicamentoRequestDto dto) {
-        MedicamentoResponseDto updated = medicamentoService.updateMedicamento(dto);
-        return ResponseEntity.ok(updated);
+    private ResponseDto handleUpdate(RequestDto request) {
+        try {
+            UpdateMedicamentoRequestDto dto = gson.fromJson(request.getData(), UpdateMedicamentoRequestDto.class);
+            Medicamento updated = medicamentoService.update(
+                    Long.valueOf(dto.getId()),
+                    dto.getNombre(),
+                    dto.getPresentacion()
+            );
+
+            if (updated == null) {
+                return new ResponseDto(false, "Medicamento no encontrado", null);
+            }
+
+            MedicamentoResponseDto response = toResponseDto(updated);
+            return new ResponseDto(true, "Medicamento actualizado exitosamente", gson.toJson(response));
+        } catch (Exception e) {
+            System.err.println("[MedicamentoController] Error en handleUpdate: " + e.getMessage());
+            return new ResponseDto(false, "Error actualizando medicamento: " + e.getMessage(), null);
+        }
     }
 
-    /**
-     * Eliminar un medicamento por ID
-     */
-    @DeleteMapping
-    public ResponseEntity<Boolean> deleteMedicamento(@RequestBody DeleteMedicamentoRequestDto dto) {
-        boolean success = medicamentoService.deleteMedicamento(dto);
-        return ResponseEntity.ok(success);
+    private ResponseDto handleDelete(RequestDto request) {
+        try {
+            DeleteMedicamentoRequestDto dto = gson.fromJson(request.getData(), DeleteMedicamentoRequestDto.class);
+            boolean deleted = medicamentoService.delete(Long.valueOf(dto.getId()));
+
+            if (!deleted) {
+                return new ResponseDto(false, "Medicamento no encontrado", null);
+            }
+
+            return new ResponseDto(true, "Medicamento eliminado exitosamente", null);
+        } catch (Exception e) {
+            System.err.println("[MedicamentoController] Error en handleDelete: " + e.getMessage());
+            return new ResponseDto(false, "Error eliminando medicamento: " + e.getMessage(), null);
+        }
+    }
+
+    private ResponseDto handleList(RequestDto request) {
+        try {
+            List<Medicamento> medicamentos = medicamentoService.getAll();
+            List<MedicamentoResponseDto> medicamentoDtos = medicamentos.stream()
+                    .map(this::toResponseDto)
+                    .collect(Collectors.toList());
+
+            ListMedicamentoResponseDto response = new ListMedicamentoResponseDto(medicamentoDtos);
+            return new ResponseDto(true, "Medicamentos obtenidos exitosamente", gson.toJson(response));
+        } catch (Exception e) {
+            System.err.println("[MedicamentoController] Error en handleList: " + e.getMessage());
+            return new ResponseDto(false, "Error obteniendo medicamentos: " + e.getMessage(), null);
+        }
+    }
+
+    private ResponseDto handleGet(RequestDto request) {
+        try {
+            DeleteMedicamentoRequestDto dto = gson.fromJson(request.getData(), DeleteMedicamentoRequestDto.class);
+            Medicamento medicamento = medicamentoService.getById(Long.valueOf(dto.getId()));
+
+            if (medicamento == null) {
+                return new ResponseDto(false, "Medicamento no encontrado", null);
+            }
+
+            MedicamentoResponseDto response = toResponseDto(medicamento);
+            return new ResponseDto(true, "Medicamento obtenido exitosamente", gson.toJson(response));
+        } catch (Exception e) {
+            System.err.println("[MedicamentoController] Error en handleGet: " + e.getMessage());
+            return new ResponseDto(false, "Error obteniendo medicamento: " + e.getMessage(), null);
+        }
+    }
+
+    private MedicamentoResponseDto toResponseDto(Medicamento medicamento) {
+        return new MedicamentoResponseDto(
+                medicamento.getId().intValue(),
+                medicamento.getNombre(),
+                medicamento.getPresentacion()
+        );
     }
 }
-
-// Revisar

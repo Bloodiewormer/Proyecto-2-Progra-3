@@ -1,1 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?><usuarios><administrador><id>1</id><nombre>Admin</nombre><password>123</password></administrador><medico><id>2</id><nombre>Pablo</nombre><password>1</password><especialidad>Cardiologia</especialidad></medico><farmaceuta><id>3</id><nombre>Adrian</nombre><password></password></farmaceuta></usuarios>

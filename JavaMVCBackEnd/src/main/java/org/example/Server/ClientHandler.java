@@ -1,12 +1,9 @@
 package org.example.Server;
 
 import com.google.gson.Gson;
-import org.example.API.Controllers.DashboardController;
-import org.example.API.Controllers.HistoricoRecetasController;
-import org.example.API.Controllers.PrescribirController;
-import org.example.API.Controllers.RecetaController;
-import org.example.Domain.Dtos.RequestDto;
-import org.example.Domain.Dtos.ResponseDto;
+import org.example.API.Controllers.*;
+import org.example.Domain.dtos.RequestDto;
+import org.example.Domain.dtos.ResponseDto;
 
 import java.io.*;
 import java.net.Socket;
@@ -18,55 +15,71 @@ import java.net.Socket;
 public class ClientHandler implements Runnable {
 
     private final Socket clientSocket;
-    private final DashboardController dashboardController;
-    private final HistoricoRecetasController historicoRecetasController;
-    private final PrescribirController prescribirController;
+    private final AuthController authController;
+    private final MedicamentoController medicamentoController;
+    private final PacienteController pacienteController;
+    private final MedicoController medicoController;
     private final RecetaController recetaController;
+    private final PrescribirController prescribirController;
+    private final HistoricoRecetasController historicoRecetasController;
     private final SocketServer server;
     private final Gson gson = new Gson();
     private PrintWriter out;
+    private BufferedReader in;
 
     public ClientHandler(Socket clientSocket,
-                         DashboardController dashboardController,
-                         HistoricoRecetasController historicoRecetasController,
-                         PrescribirController prescribirController,
+                         AuthController authController,
+                         MedicamentoController medicamentoController,
+                         PacienteController pacienteController,
+                         MedicoController medicoController,
                          RecetaController recetaController,
+                         PrescribirController prescribirController,
+                         HistoricoRecetasController historicoRecetasController,
                          SocketServer server) {
         this.clientSocket = clientSocket;
-        this.dashboardController = dashboardController;
-        this.historicoRecetasController = historicoRecetasController;
-        this.prescribirController = prescribirController;
+        this.authController = authController;
+        this.medicamentoController = medicamentoController;
+        this.pacienteController = pacienteController;
+        this.medicoController = medicoController;
         this.recetaController = recetaController;
+        this.prescribirController = prescribirController;
+        this.historicoRecetasController = historicoRecetasController;
         this.server = server;
     }
 
     @Override
     public void run() {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+        try {
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             out = new PrintWriter(clientSocket.getOutputStream(), true);
+
             System.out.println("[ClientHandler] Cliente conectado: " + Thread.currentThread().getName());
 
             String inputJson;
             while ((inputJson = in.readLine()) != null) {
                 System.out.println("[ClientHandler] Recibido (" + Thread.currentThread().getName() + "): " + inputJson);
 
-                RequestDto request = gson.fromJson(inputJson, RequestDto.class);
-                ResponseDto response = handleRequest(request);
-
-                // Simulación de procesamiento
                 try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                }
+                    RequestDto request = gson.fromJson(inputJson, RequestDto.class);
+                    ResponseDto response = handleRequest(request);
 
-                out.println(gson.toJson(response));
+                    String responseJson = gson.toJson(response);
+                    out.println(responseJson);
+                    System.out.println("[ClientHandler] Enviado (" + Thread.currentThread().getName() + "): " + responseJson);
+
+                } catch (Exception e) {
+                    System.err.println("[ClientHandler] Error procesando petición: " + e.getMessage());
+                    e.printStackTrace();
+
+                    ResponseDto errorResponse = new ResponseDto(false, "Error interno del servidor: " + e.getMessage(), null);
+                    out.println(gson.toJson(errorResponse));
+                }
             }
+
         } catch (IOException e) {
             System.err.println("[ClientHandler] Cliente desconectado: " + Thread.currentThread().getName());
         } finally {
-            try { clientSocket.close(); } catch (IOException ignore) {}
-            server.removeClient(this);
+            cleanup();
         }
     }
 
@@ -79,25 +92,49 @@ public class ClientHandler implements Runnable {
         }
 
         ResponseDto response;
-        switch (request.getController()) {
-            case "Dashboard":
-                response = dashboardController.route(request);
-                break;
+        try {
+            switch (request.getController()) {
+                case "Auth":
+                    response = authController.route(request);
+                    break;
 
-            case "HistoricoRecetas":
-                response = historicoRecetasController.route(request);
-                break;
+                case "Medicamento":
+                case "Medicamentos":
+                    response = medicamentoController.route(request);
+                    break;
 
-            case "Prescribir":
-                response = prescribirController.route(request);
-                break;
+                case "Paciente":
+                case "Pacientes":
+                    response = pacienteController.route(request);
+                    break;
 
-            case "Receta":
-                response = recetaController.route(request);
-                break;
+                case "Medico":
+                case "Medicos":
+                    response = medicoController.route(request);
+                    break;
 
-            default:
-                response = new ResponseDto(false, "Controlador desconocido: " + request.getController(), null);
+                case "Receta":
+                case "Recetas":
+                    response = recetaController.route(request);
+                    break;
+
+                case "Prescribir":
+                case "Prescripcion":
+                    response = prescribirController.route(request);
+                    break;
+
+                case "HistoricoRecetas":
+                case "Historico":
+                    response = historicoRecetasController.route(request);
+                    break;
+
+                default:
+                    response = new ResponseDto(false, "Controlador desconocido: " + request.getController(), null);
+            }
+        } catch (Exception e) {
+            System.err.println("[ClientHandler] Error en controlador " + request.getController() + ": " + e.getMessage());
+            e.printStackTrace();
+            response = new ResponseDto(false, "Error procesando petición: " + e.getMessage(), null);
         }
 
         return response;
@@ -108,11 +145,31 @@ public class ClientHandler implements Runnable {
      */
     public void sendMessage(Object message) {
         if (out != null) {
-            String jsonMessage = gson.toJson(message);
-            out.println(jsonMessage);
-            System.out.println("[ClientHandler] Enviado a " + Thread.currentThread().getName() + ": " + jsonMessage);
+            try {
+                String jsonMessage = gson.toJson(message);
+                out.println(jsonMessage);
+                System.out.println("[ClientHandler] Enviado a " + Thread.currentThread().getName() + ": " + jsonMessage);
+            } catch (Exception e) {
+                System.err.println("[ClientHandler] Error enviando mensaje: " + e.getMessage());
+            }
         }
     }
-}
 
-// Revisar
+    /**
+     * Limpia recursos al desconectar cliente
+     */
+    private void cleanup() {
+        try {
+            if (in != null) in.close();
+            if (out != null) out.close();
+            if (clientSocket != null && !clientSocket.isClosed()) {
+                clientSocket.close();
+            }
+        } catch (IOException e) {
+            System.err.println("[ClientHandler] Error en cleanup: " + e.getMessage());
+        }
+
+        server.removeClient(this);
+        System.out.println("[ClientHandler] Recursos liberados para: " + Thread.currentThread().getName());
+    }
+}

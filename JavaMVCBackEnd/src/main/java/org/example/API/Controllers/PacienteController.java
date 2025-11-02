@@ -1,65 +1,163 @@
 package org.example.API.Controllers;
 
-import org.example.Services.PacienteService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import com.google.gson.Gson;
+import org.example.DataAcces.services.PacienteService;
+import org.example.Domain.dtos.RequestDto;
+import org.example.Domain.dtos.ResponseDto;
+import org.example.Domain.dtos.Paciente.*;
+import org.example.Domain.models.Paciente;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@RestController
-@RequestMapping("/api/pacientes")
-@CrossOrigin(origins = "*") // Permite comunicación desde el FrontEnd
 public class PacienteController {
-
     private final PacienteService pacienteService;
+    private final Gson gson = new Gson();
 
-    @Autowired
     public PacienteController(PacienteService pacienteService) {
         this.pacienteService = pacienteService;
     }
 
-    // ✅ Obtener todos los pacientes
-    @GetMapping
-    public ResponseEntity<List<PacienteResponseDto>> getAllPacientes() {
-        List<PacienteResponseDto> pacientes = pacienteService.getAllPacientes();
-        return ResponseEntity.ok(pacientes);
+    public ResponseDto route(RequestDto request) {
+        try {
+            switch (request.getRequest()) {
+                case "add":
+                    return handleAdd(request);
+                case "update":
+                    return handleUpdate(request);
+                case "delete":
+                    return handleDelete(request);
+                case "list":
+                    return handleList(request);
+                case "get":
+                    return handleGet(request);
+                case "buscarPorNombre":
+                    return handleBuscarPorNombre(request);
+                default:
+                    return new ResponseDto(false, "Unknown request: " + request.getRequest(), null);
+            }
+        } catch (Exception e) {
+            return new ResponseDto(false, e.getMessage(), null);
+        }
     }
 
-    // ✅ Obtener paciente por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<PacienteResponseDto> getPacienteById(@PathVariable int id) {
-        PacienteResponseDto paciente = pacienteService.getPacienteById(id);
-        return paciente != null ? ResponseEntity.ok(paciente) : ResponseEntity.notFound().build();
+    private ResponseDto handleAdd(RequestDto request) {
+        try {
+            AddPacienteRequestDto dto = gson.fromJson(request.getData(), AddPacienteRequestDto.class);
+            LocalDate fechaNacimiento = LocalDate.parse(dto.getFechaNacimiento());
+
+            Paciente paciente = pacienteService.create(
+                    dto.getNombre(),
+                    dto.getTelefono(),
+                    fechaNacimiento
+            );
+
+            PacienteResponseDto response = toResponseDto(paciente);
+            return new ResponseDto(true, "Paciente agregado exitosamente", gson.toJson(response));
+        } catch (Exception e) {
+            System.err.println("[PacienteController] Error en handleAdd: " + e.getMessage());
+            return new ResponseDto(false, "Error agregando paciente: " + e.getMessage(), null);
+        }
     }
 
-    // ✅ Agregar nuevo paciente
-    @PostMapping
-    public ResponseEntity<PacienteResponseDto> addPaciente(@RequestBody AddPacienteRequestDto request) {
-        PacienteResponseDto created = pacienteService.addPaciente(request);
-        return ResponseEntity.ok(created);
+    private ResponseDto handleUpdate(RequestDto request) {
+        try {
+            UpdatePacienteRequestDto dto = gson.fromJson(request.getData(), UpdatePacienteRequestDto.class);
+            LocalDate fechaNacimiento = LocalDate.parse(dto.getFechaNacimiento());
+
+            Paciente updated = pacienteService.update(
+                    Long.valueOf(dto.getId()),
+                    dto.getNombre(),
+                    dto.getTelefono(),
+                    fechaNacimiento
+            );
+
+            if (updated == null) {
+                return new ResponseDto(false, "Paciente no encontrado", null);
+            }
+
+            PacienteResponseDto response = toResponseDto(updated);
+            return new ResponseDto(true, "Paciente actualizado exitosamente", gson.toJson(response));
+        } catch (Exception e) {
+            System.err.println("[PacienteController] Error en handleUpdate: " + e.getMessage());
+            return new ResponseDto(false, "Error actualizando paciente: " + e.getMessage(), null);
+        }
     }
 
-    // ✅ Actualizar paciente
-    @PutMapping
-    public ResponseEntity<PacienteResponseDto> updatePaciente(@RequestBody UpdatePacienteRequestDto request) {
-        PacienteResponseDto updated = pacienteService.updatePaciente(request);
-        return ResponseEntity.ok(updated);
+    private ResponseDto handleDelete(RequestDto request) {
+        try {
+            DeletePacienteRequestDto dto = gson.fromJson(request.getData(), DeletePacienteRequestDto.class);
+            boolean deleted = pacienteService.delete(Long.valueOf(dto.getId()));
+
+            if (!deleted) {
+                return new ResponseDto(false, "Paciente no encontrado", null);
+            }
+
+            return new ResponseDto(true, "Paciente eliminado exitosamente", null);
+        } catch (Exception e) {
+            System.err.println("[PacienteController] Error en handleDelete: " + e.getMessage());
+            return new ResponseDto(false, "Error eliminando paciente: " + e.getMessage(), null);
+        }
     }
 
-    // ✅ Eliminar paciente
-    @DeleteMapping
-    public ResponseEntity<Boolean> deletePaciente(@RequestBody DeletePacienteRequestDto request) {
-        boolean deleted = pacienteService.deletePaciente(request.getId());
-        return ResponseEntity.ok(deleted);
+    private ResponseDto handleList(RequestDto request) {
+        try {
+            List<Paciente> pacientes = pacienteService.getAll();
+            List<PacienteResponseDto> pacienteDtos = pacientes.stream()
+                    .map(this::toResponseDto)
+                    .collect(Collectors.toList());
+
+            ListPacienteResponseDto response = new ListPacienteResponseDto(pacienteDtos);
+            return new ResponseDto(true, "Pacientes obtenidos exitosamente", gson.toJson(response));
+        } catch (Exception e) {
+            System.err.println("[PacienteController] Error en handleList: " + e.getMessage());
+            return new ResponseDto(false, "Error obteniendo pacientes: " + e.getMessage(), null);
+        }
     }
 
-    // ✅ Buscar pacientes por nombre o teléfono
-    @GetMapping("/buscar")
-    public ResponseEntity<List<PacienteResponseDto>> searchPacientes(@RequestParam("filtro") String filtro) {
-        List<PacienteResponseDto> resultados = pacienteService.searchPacientes(filtro);
-        return ResponseEntity.ok(resultados);
+    private ResponseDto handleGet(RequestDto request) {
+        try {
+            DeletePacienteRequestDto dto = gson.fromJson(request.getData(), DeletePacienteRequestDto.class);
+            Paciente paciente = pacienteService.getById(Long.valueOf(dto.getId()));
+
+            if (paciente == null) {
+                return new ResponseDto(false, "Paciente no encontrado", null);
+            }
+
+            PacienteResponseDto response = toResponseDto(paciente);
+            return new ResponseDto(true, "Paciente obtenido exitosamente", gson.toJson(response));
+        } catch (Exception e) {
+            System.err.println("[PacienteController] Error en handleGet: " + e.getMessage());
+            return new ResponseDto(false, "Error obteniendo paciente: " + e.getMessage(), null);
+        }
+    }
+
+    private ResponseDto handleBuscarPorNombre(RequestDto request) {
+        try {
+            // Esperando un objeto JSON como {"nombre": "Juan"}
+            var params = gson.fromJson(request.getData(), java.util.Map.class);
+            String nombre = (String) params.get("nombre");
+
+            List<Paciente> pacientes = pacienteService.buscarPorNombre(nombre);
+            List<PacienteResponseDto> pacienteDtos = pacientes.stream()
+                    .map(this::toResponseDto)
+                    .collect(Collectors.toList());
+
+            ListPacienteResponseDto response = new ListPacienteResponseDto(pacienteDtos);
+            return new ResponseDto(true, "Pacientes encontrados", gson.toJson(response));
+        } catch (Exception e) {
+            System.err.println("[PacienteController] Error en handleBuscarPorNombre: " + e.getMessage());
+            return new ResponseDto(false, "Error buscando pacientes: " + e.getMessage(), null);
+        }
+    }
+
+    private PacienteResponseDto toResponseDto(Paciente paciente) {
+        return new PacienteResponseDto(
+                paciente.getId().intValue(),
+                paciente.getNombre(),
+                paciente.getTelefono(),
+                paciente.getFechaNacimiento().toString()
+        );
     }
 }
-
-// Revisar

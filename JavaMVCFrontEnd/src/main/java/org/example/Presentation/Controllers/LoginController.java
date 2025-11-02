@@ -1,7 +1,9 @@
 package org.example.Presentation.Controllers;
 
 import org.example.Domain.Dtos.Auth.UserResponseDto;
+import org.example.Presentation.Models.UserType;
 import org.example.Presentation.Observable;
+import org.example.Presentation.Views.CambioClaveView;
 import org.example.Presentation.Views.LoginView;
 import org.example.Presentation.Views.MenuPrincipalView;
 import org.example.Services.AuthService;
@@ -26,23 +28,43 @@ public class LoginController extends Observable {
         this.loginView = loginView;
         this.authService = authService;
 
-        // Add the view as an observer
         addObserver(loginView);
-
-        // Wire up event listeners
         wireEvents();
     }
 
     private void wireEvents() {
         loginView.addLoginListener(e -> handleLogin());
+        loginView.setPasswordChangeCallback(this::showPasswordChangeView);
     }
 
     private void handleLogin() {
-        String username = loginView.getUsername();
+        String userIdText = loginView.getUsername(); // ✅ Campo que contiene el ID
         String password = loginView.getPassword();
 
-        // Validate input
-        if (!validateInput(username, password)) {
+        // Validar que el ID no esté vacío
+        if (userIdText == null || userIdText.trim().isEmpty()) {
+            showError("El ID de usuario es requerido.");
+            return;
+        }
+
+        // Validar que la contraseña no esté vacía
+        if (password == null || password.trim().isEmpty()) {
+            showError("La contraseña es requerida.");
+            return;
+        }
+
+        // Parsear el ID de usuario como int
+        int userId;
+        try {
+            userId = Integer.parseInt(userIdText.trim());
+        } catch (NumberFormatException ex) {
+            showError("ID de usuario inválido.\nDebe ser un número entero positivo.");
+            return;
+        }
+
+        // Validar que el ID sea positivo
+        if (userId <= 0) {
+            showError("El ID de usuario debe ser mayor a 0.");
             return;
         }
 
@@ -51,7 +73,7 @@ public class LoginController extends Observable {
         SwingWorker<UserResponseDto, Void> worker = new SwingWorker<>() {
             @Override
             protected UserResponseDto doInBackground() throws Exception {
-                return authService.login(username, password).get();
+                return authService.login(userId, password).get();
             }
 
             @Override
@@ -63,7 +85,11 @@ public class LoginController extends Observable {
                         currentUser = user;
                         onLoginSuccess(user);
                     } else {
-                        showError("Credenciales inválidas. Por favor, verifique su usuario y contraseña.");
+                        showError("Credenciales inválidas o usuario inactivo.\n\n" +
+                                "Verifique:\n" +
+                                "• ID de usuario correcto\n" +
+                                "• Contraseña correcta\n" +
+                                "• Usuario activo en el sistema");
                     }
                 } catch (Exception ex) {
                     handleError("Error al intentar iniciar sesión", ex);
@@ -72,6 +98,7 @@ public class LoginController extends Observable {
         };
         worker.execute();
     }
+
 
     private void onLoginSuccess(UserResponseDto user) {
         // Notify observers
@@ -84,6 +111,7 @@ public class LoginController extends Observable {
         UserType userType = determineUserType(user.getRole());
         openMainView(userType, user);
     }
+
 
     private UserType determineUserType(String role) {
         if (role == null) return UserType.NULL;
@@ -114,14 +142,11 @@ public class LoginController extends Observable {
         mainView.setVisible(true);
     }
 
+
     public void showPasswordChangeView() {
-        // TODO: Implement password change view if needed
-        JOptionPane.showMessageDialog(
-                loginView,
-                "Funcionalidad de cambio de contraseña próximamente",
-                "Información",
-                JOptionPane.INFORMATION_MESSAGE
-        );
+        AuthService passwordAuthService = new AuthService(SERVER_HOST, SERVER_PORT);
+
+        new CambioClaveView(passwordAuthService);
     }
 
     public void exitApplication() {
@@ -149,19 +174,14 @@ public class LoginController extends Observable {
     }
 
     // Validation
-    private boolean validateInput(String username, String password) {
-        if (username == null || username.trim().isEmpty()) {
-            showWarning("Por favor, ingrese su usuario o email");
+    private boolean validateInput(String userId, String password) {
+        if (userId == null || userId.trim().isEmpty()) {
+            showError("El ID de usuario es requerido.");
             return false;
         }
 
-        if (password == null || password.isEmpty()) {
-            showWarning("Por favor, ingrese su contraseña");
-            return false;
-        }
-
-        if (password.length() < 4) {
-            showWarning("La contraseña debe tener al menos 4 caracteres");
+        if (password == null || password.trim().isEmpty()) {
+            showError("La contraseña es requerida.");
             return false;
         }
 
@@ -170,12 +190,7 @@ public class LoginController extends Observable {
 
     // UI Helper Methods
     private void showError(String message) {
-        JOptionPane.showMessageDialog(
-                loginView,
-                message,
-                "Error",
-                JOptionPane.ERROR_MESSAGE
-        );
+        JOptionPane.showMessageDialog(loginView, message, "Error de Login", JOptionPane.ERROR_MESSAGE);
     }
 
     private void showWarning(String message) {
@@ -188,16 +203,9 @@ public class LoginController extends Observable {
     }
 
     private void handleError(String message, Exception ex) {
+        System.err.println(message + ": " + ex.getMessage());
         ex.printStackTrace();
-        String errorDetails = ex.getMessage() != null ? ex.getMessage() : "Error desconocido";
-        showError(message + "\nDetalles: " + errorDetails);
+        showError(message + "\n" + ex.getMessage());
     }
 
-    // Enum for user types
-    public enum UserType {
-        ADMINISTRADOR,
-        FARMACEUTA,
-        MEDICO,
-        NULL
-    }
 }

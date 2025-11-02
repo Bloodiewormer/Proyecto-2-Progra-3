@@ -1,25 +1,23 @@
-// java
 package org.example.Presentation.Controllers;
 
 import org.example.Presentation.Views.CambioClaveView;
-import org.example.Services.UsuarioService;
+import org.example.Services.AuthService;
 
 import javax.swing.*;
 
 public class CambioClaveController {
 
     private final CambioClaveView view;
-    private final UsuarioService usuarioService;
-    private final Integer fixedUserId; // optional preselected user id
+    private final AuthService authService;
+    private final Integer fixedUserId;
 
-    // Overloads to satisfy different constructor usages in the view
-    public CambioClaveController(CambioClaveView view, UsuarioService usuarioService) {
-        this(view, usuarioService, null);
+    public CambioClaveController(CambioClaveView view, AuthService authService) {
+        this(view, authService, null);
     }
 
-    public CambioClaveController(CambioClaveView view, UsuarioService usuarioService, Integer userId) {
+    public CambioClaveController(CambioClaveView view, AuthService authService, Integer userId) {
         this.view = view;
-        this.usuarioService = usuarioService;
+        this.authService = authService;
         this.fixedUserId = userId;
         wire();
     }
@@ -30,48 +28,60 @@ public class CambioClaveController {
 
     private void onAccept() {
         String idText = view.getIdTextField().getText().trim();
-        String pass = new String(view.getPasswordField().getPassword());
+        String newPass = new String(view.getPasswordField().getPassword());
         String confirm = new String(view.getConfirmPasswordField().getPassword());
 
+        // Validar ID de usuario
         int userId;
         try {
             userId = fixedUserId != null ? fixedUserId : Integer.parseInt(idText);
         } catch (NumberFormatException ex) {
-            showError("ID inválido");
+            showError("ID de usuario inválido");
             return;
         }
 
-        if (!isValidPassword(pass)) {
-            showError("La contraseña no cumple los requisitos");
+        // Validar formato de contraseña
+        if (!isValidPassword(newPass)) {
+            showError("La contraseña debe tener al menos 6 caracteres");
             return;
         }
-        if (!pass.equals(confirm)) {
+
+        // Validar confirmación
+        if (!newPass.equals(confirm)) {
             showError("Las contraseñas no coinciden");
             return;
         }
 
+        // Ejecutar cambio en background
         view.showLoading(true);
         SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
             @Override
-            protected Boolean doInBackground() {
-                // TODO: replace with usuarioService call when available
-                // e.g. return usuarioService.changePasswordAsync(userId, pass).get();
-                return userExists(userId) && changePassword(userId, pass);
+            protected Boolean doInBackground() throws Exception {
+                // 🔧 FIX: Llamar al backend con contraseña vacía como "current"
+                // El backend debe permitir esto para "primer cambio"
+                return authService.changePassword(userId, "", newPass).get();
             }
 
             @Override
             protected void done() {
                 try {
-                    Boolean ok = get();
-                    if (Boolean.TRUE.equals(ok)) {
-                        JOptionPane.showMessageDialog(view, "Contraseña actualizada", "Éxito",
+                    Boolean success = get();
+                    if (Boolean.TRUE.equals(success)) {
+                        JOptionPane.showMessageDialog(view,
+                                "Contraseña establecida exitosamente.\nYa puede iniciar sesión.",
+                                "Éxito",
                                 JOptionPane.INFORMATION_MESSAGE);
                         view.clearFields();
+
+                        // ✅ Más simple: la vista ya es un JFrame
+                        ((JFrame) SwingUtilities.getRoot(view)).dispose();
+
                     } else {
-                        showError("No se pudo actualizar la contraseña");
+                        showError("No se pudo establecer la contraseña. Verifique el ID de usuario.");
                     }
                 } catch (Exception ex) {
-                    showError("Error: " + ex.getMessage());
+                    showError("Error al establecer contraseña: " + ex.getMessage());
+                    ex.printStackTrace();
                 } finally {
                     view.showLoading(false);
                 }
@@ -80,23 +90,9 @@ public class CambioClaveController {
         worker.execute();
     }
 
-    // FIX: make public so the view can compile if it calls it
     public boolean isValidPassword(String password) {
         if (password == null) return false;
-        // min 6 chars example rule
         return password.trim().length() >= 6;
-    }
-
-    // FIX: provide method the view expects
-    public boolean userExists(int userId) {
-        // TODO: call backend if needed; returning true for now
-        return userId > 0;
-    }
-
-    // FIX: provide method the view expects
-    public boolean changePassword(int userId, String newPassword) {
-        // TODO: call backend; return true to keep flow working
-        return userId > 0 && newPassword != null && !newPassword.isBlank();
     }
 
     private void showError(String msg) {
