@@ -1,19 +1,19 @@
 package org.example.API.Controllers;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.example.DataAcces.services.UsuarioService;
+import org.example.Domain.dtos.Farmaceuta.*;
 import org.example.Domain.dtos.RequestDto;
 import org.example.Domain.dtos.ResponseDto;
-import org.example.Domain.dtos.Farmaceuta.AddFarmaceutaRequestDto;
-import org.example.Domain.dtos.Farmaceuta.DeleteFarmaceutaRequestDto;
-import org.example.Domain.dtos.Farmaceuta.FarmaceutaResponseDto;
-import org.example.Domain.dtos.Farmaceuta.UpdateFarmaceutaRequestDto;
+import org.example.Domain.models.Farmaceuta;
 
-import java.lang.reflect.Type;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controlador para operaciones CRUD de Farmacéuticos
+ * Modelo igual a MedicoController
+ */
 public class FarmaceutaController {
 
     private final UsuarioService usuarioService;
@@ -23,62 +23,188 @@ public class FarmaceutaController {
         this.usuarioService = usuarioService;
     }
 
+    /**
+     * Enruta las peticiones a sus métodos correspondientes
+     */
     public ResponseDto route(RequestDto request) {
         try {
+            if (request.getRequest() == null) {
+                return new ResponseDto(false, "Petición sin tipo de request", null);
+            }
+
             switch (request.getRequest()) {
                 case "listar":
+                case "list":
                     return handleListar();
                 case "agregar":
+                case "add":
                     return handleAgregar(request);
                 case "actualizar":
+                case "update":
                     return handleActualizar(request);
                 case "eliminar":
+                case "delete":
                     return handleEliminar(request);
                 case "buscarPorNombre":
+                case "search":
                     return handleBuscarPorNombre(request);
                 default:
-                    return new ResponseDto(false, "Unknown request: " + request.getRequest(), null);
+                    return new ResponseDto(false, "Petición desconocida: " + request.getRequest(), null);
             }
         } catch (Exception e) {
-            return new ResponseDto(false, e.getMessage(), null);
+            System.err.println("[FarmaceutaController] Error en route: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error interno: " + e.getMessage(), null);
         }
     }
 
+    /**
+     * Lista todos los farmacéuticos
+     */
     private ResponseDto handleListar() {
-        return new ResponseDto(true, "Farmaceutas obtenidos", gson.toJson(farmaceutas));
-    }
+        try {
+            List<Farmaceuta> farmaceutas = usuarioService.getAllFarmaceutas();
 
-    private ResponseDto handleAgregar(RequestDto request) {
-        AddFarmaceutaRequestDto dto = gson.fromJson(request.getData(), AddFarmaceutaRequestDto.class);
-        FarmaceutaResponseDto nuevo = new FarmaceutaResponseDto(dto.getId(), dto.getNombre());
+            List<FarmaceutaResponseDto> farmaceutaDtos = farmaceutas.stream()
+                    .map(f -> new FarmaceutaResponseDto(
+                            f.getId().intValue(),
+                            f.getNombre()
+                    ))
+                    .collect(Collectors.toList());
 
-        return new ResponseDto(true, "Farmaceuta agregado", gson.toJson(nuevo));
-    }
+            ListFarmaceutaResponseDto listResponse = new ListFarmaceutaResponseDto(farmaceutaDtos);
 
-    private ResponseDto handleActualizar(RequestDto request) {
-        UpdateFarmaceutaRequestDto dto = gson.fromJson(request.getData(), UpdateFarmaceutaRequestDto.class);
-        for (FarmaceutaResponseDto f : farmaceutas) {
-            if (f.getId() == dto.getId()) {
-                f.setNombre(dto.getNombre());
-                return new ResponseDto(true, "Farmaceuta actualizado", gson.toJson(f));
-            }
+            System.out.println("[FarmaceutaController] Farmacéuticos listados: " + farmaceutaDtos.size());
+            return new ResponseDto(true, "Farmacéuticos obtenidos exitosamente", gson.toJson(listResponse));
+
+        } catch (Exception e) {
+            System.err.println("[FarmaceutaController] Error en handleListar: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error al listar farmacéuticos: " + e.getMessage(), null);
         }
-        return new ResponseDto(false, "No se encontró el farmaceuta", null);
     }
 
+    /**
+     * Agrega un nuevo farmacéutico
+     */
+    private ResponseDto handleAgregar(RequestDto request) {
+        try {
+            AddFarmaceutaRequestDto dto = gson.fromJson(request.getData(), AddFarmaceutaRequestDto.class);
+
+            if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) {
+                return new ResponseDto(false, "El nombre es requerido", null);
+            }
+
+            // Crear farmacéutico con contraseña por defecto
+            Farmaceuta farmaceuta = usuarioService.createFarmaceuta(
+                    dto.getNombre(),
+                    dto.getClave() != null ? dto.getClave() : "temp123"
+            );
+
+            FarmaceutaResponseDto responseDto = new FarmaceutaResponseDto(
+                    farmaceuta.getId().intValue(),
+                    farmaceuta.getNombre()
+            );
+
+            System.out.println("[FarmaceutaController] Farmacéutico creado: " + farmaceuta.getNombre() + " (ID: " + farmaceuta.getId() + ")");
+            return new ResponseDto(true, "Farmacéutico agregado exitosamente", gson.toJson(responseDto));
+
+        } catch (IllegalArgumentException e) {
+            System.err.println("[FarmaceutaController] Error de validación: " + e.getMessage());
+            return new ResponseDto(false, e.getMessage(), null);
+        } catch (Exception e) {
+            System.err.println("[FarmaceutaController] Error en handleAgregar: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error al agregar farmacéutico: " + e.getMessage(), null);
+        }
+    }
+
+    /**
+     * Actualiza un farmacéutico existente
+     */
+    private ResponseDto handleActualizar(RequestDto request) {
+        try {
+            UpdateFarmaceutaRequestDto dto = gson.fromJson(request.getData(), UpdateFarmaceutaRequestDto.class);
+
+            Farmaceuta farmaceuta = usuarioService.updateFarmaceuta(
+                    (long) dto.getId(),
+                    dto.getNombre(),
+                    dto.getClave()
+            );
+
+            if (farmaceuta == null) {
+                return new ResponseDto(false, "Farmacéutico no encontrado con ID: " + dto.getId(), null);
+            }
+
+            FarmaceutaResponseDto responseDto = new FarmaceutaResponseDto(
+                    farmaceuta.getId().intValue(),
+                    farmaceuta.getNombre()
+            );
+
+            System.out.println("[FarmaceutaController] Farmacéutico actualizado: " + farmaceuta.getNombre() + " (ID: " + farmaceuta.getId() + ")");
+            return new ResponseDto(true, "Farmacéutico actualizado exitosamente", gson.toJson(responseDto));
+
+        } catch (Exception e) {
+            System.err.println("[FarmaceutaController] Error en handleActualizar: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error al actualizar farmacéutico: " + e.getMessage(), null);
+        }
+    }
+
+    /**
+     * Elimina un farmacéutico
+     */
     private ResponseDto handleEliminar(RequestDto request) {
-        DeleteFarmaceutaRequestDto dto = gson.fromJson(request.getData(), DeleteFarmaceutaRequestDto.class);
-        boolean eliminado = farmaceutas.removeIf(f -> f.getId() == dto.getId());
-        return new ResponseDto(eliminado, eliminado ? "Farmaceuta eliminado" : "No se encontró el farmaceuta", null);
+        try {
+            DeleteFarmaceutaRequestDto dto = gson.fromJson(request.getData(), DeleteFarmaceutaRequestDto.class);
+
+            boolean eliminado = usuarioService.deleteFarmaceuta((long) dto.getId());
+
+            if (eliminado) {
+                System.out.println("[FarmaceutaController] Farmacéutico eliminado con ID: " + dto.getId());
+                return new ResponseDto(true, "Farmacéutico eliminado exitosamente", null);
+            } else {
+                return new ResponseDto(false, "Farmacéutico no encontrado con ID: " + dto.getId(), null);
+            }
+
+        } catch (Exception e) {
+            System.err.println("[FarmaceutaController] Error en handleEliminar: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error al eliminar farmacéutico: " + e.getMessage(), null);
+        }
     }
 
+    /**
+     * Busca farmacéuticos por nombre
+     */
     private ResponseDto handleBuscarPorNombre(RequestDto request) {
-        Type mapType = new TypeToken<Map<String, String>>(){}.getType();
-        Map<String, String> params = gson.fromJson(request.getData(), mapType);
-        String nombre = params.get("nombre").toLowerCase();
-        List<FarmaceutaResponseDto> filtrados = farmaceutas.stream()
-                .filter(f -> f.getNombre().toLowerCase().contains(nombre))
-                .collect(Collectors.toList());
-        return new ResponseDto(true, "Farmaceutas filtrados", gson.toJson(filtrados));
+        try {
+            var params = gson.fromJson(request.getData(), java.util.Map.class);
+            String nombre = (String) params.get("nombre");
+
+            if (nombre == null || nombre.trim().isEmpty()) {
+                return handleListar();
+            }
+
+            List<Farmaceuta> farmaceutas = usuarioService.getAllFarmaceutas();
+
+            List<FarmaceutaResponseDto> filtrados = farmaceutas.stream()
+                    .filter(f -> f.getNombre().toLowerCase().contains(nombre.toLowerCase()))
+                    .map(f -> new FarmaceutaResponseDto(
+                            f.getId().intValue(),
+                            f.getNombre()
+                    ))
+                    .collect(Collectors.toList());
+
+            ListFarmaceutaResponseDto listResponse = new ListFarmaceutaResponseDto(filtrados);
+
+            System.out.println("[FarmaceutaController] Búsqueda de farmacéuticos: " + filtrados.size() + " encontrados");
+            return new ResponseDto(true, "Farmacéuticos filtrados", gson.toJson(listResponse));
+
+        } catch (Exception e) {
+            System.err.println("[FarmaceutaController] Error en handleBuscarPorNombre: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error al buscar farmacéuticos: " + e.getMessage(), null);
+        }
     }
 }

@@ -1,4 +1,3 @@
-// java
 package org.example.Presentation.Views;
 
 import org.example.Presentation.Components.BlueRoundedButton;
@@ -62,6 +61,8 @@ public class DashboardView extends JPanel {
         initListeners();
         initChartsContainer();
         refreshCharts();
+        setLayout(new BorderLayout());
+        add(mainPanel, BorderLayout.CENTER);
     }
 
     private void initTableModel() {
@@ -242,7 +243,9 @@ public class DashboardView extends JPanel {
         selectGraphicTypeComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"Medicamentos", "Recetas"}));
     }
 
-    public JPanel getMainPanel() { return mainPanel; }
+    public JPanel getMainPanel() {
+        return mainPanel;
+    }
 
     private void createUIComponents() {
         addButton = new BlueRoundedButton("Agregar");

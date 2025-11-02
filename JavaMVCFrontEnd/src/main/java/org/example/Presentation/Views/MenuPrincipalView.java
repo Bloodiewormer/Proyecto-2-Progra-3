@@ -1,17 +1,9 @@
 package org.example.Presentation.Views;
 
 import org.example.Presentation.Components.CustomButton;
-import org.example.Presentation.Controllers.FarmaceutaController;
-import org.example.Presentation.Controllers.LoginController;
-import org.example.Presentation.Controllers.MedicoController;
-import org.example.Presentation.Controllers.PacienteController;
+import org.example.Presentation.Controllers.*;
 import org.example.Presentation.Models.UserType;
-import org.example.Services.MedicamentoService;
-import org.example.Services.PacienteService;
-import org.example.Services.UsuarioService;
-import org.example.Presentation.Components.BlueRoundedButton;
-import org.example.Presentation.Controllers.MedicoController;
-import org.example.Presentation.Controllers.MedicamentoController;
+import org.example.Services.*;
 import org.example.Services.MedicamentoService;
 
 import javax.swing.*;
@@ -20,6 +12,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.util.Objects;
+import java.util.function.Function;
 
 public class MenuPrincipalView extends JFrame {
 
@@ -67,11 +60,16 @@ public class MenuPrincipalView extends JFrame {
     private FarmaceutaForm farmaceutaForm;
     private FarmaceutaController farmaceutaController;
 
+    private DashboardView dashboardView;
+    private DashboardController dashboardController;
+    private DashboardService dashboardService;
+
     public MenuPrincipalView(UserType userType,
                              LoginController loginController,
                              UsuarioService usuarioService,
                              PacienteService pacienteService,
                              MedicamentoService medicamentoService,
+                             DashboardService dashboardService,
                              int userId) {
 
         this.userType = userType;
@@ -79,6 +77,7 @@ public class MenuPrincipalView extends JFrame {
         this.usuarioService = usuarioService;
         this.pacienteService = pacienteService;
         this.medicamentoService = medicamentoService;
+        this.dashboardService = dashboardService;
         this.userId = userId;
 
         initializeUI();
@@ -87,6 +86,7 @@ public class MenuPrincipalView extends JFrame {
         initializePacienteView();
         initializeFarmaceutaView();
         initializeMedicamentoView();
+        initializeDashboardView();
         wireEvents();
         initializeView();
     }
@@ -190,6 +190,11 @@ public class MenuPrincipalView extends JFrame {
         medicamentoController = new MedicamentoController(medicamentoForm, medicamentoService);
     }
 
+    private void initializeDashboardView() {
+        dashboardController = new DashboardController( dashboardService );
+        dashboardView = new DashboardView(dashboardController,medicamentoService );
+    }
+
     private void showMedicamentoView() {
         switchContent(medicamentoForm, "Medicamentos");
     }
@@ -206,7 +211,7 @@ public class MenuPrincipalView extends JFrame {
         farmaceutasButton.addActionListener(e ->showFarmaceutaView() );
         pacientesButton.addActionListener(e -> showPacienteView());
         medicamentosButton.addActionListener(e -> showMedicamentoView());
-        dashboardButton.addActionListener(e -> showPlaceholderView("Dashboard"));
+        dashboardButton.addActionListener(e -> showDashboardView());
         acercadeButton.addActionListener(e -> showAcercaDeView());
         prescribirButton.addActionListener(e -> showPlaceholderView("Prescribir"));
         despachoButton.addActionListener(e -> showPlaceholderView("Despacho"));
@@ -278,6 +283,10 @@ public class MenuPrincipalView extends JFrame {
 
     private void showFarmaceutaView() {
         switchContent(farmaceutaForm, "Farmaceutas");
+    }
+
+    private void showDashboardView() {
+        switchContent(dashboardView, "Dashboard");
     }
 
     private void showAcercaDeView() {
@@ -382,7 +391,7 @@ public class MenuPrincipalView extends JFrame {
 
     private void createUIComponents() {
         // Helper para cargar iconos de forma segura
-        java.util.function.Function<String, Image> loadIcon = (path) -> {
+       Function<String, Image> loadIcon = (path) -> {
             try {
                 var resource = getClass().getResource(path);
                 if (resource != null) {

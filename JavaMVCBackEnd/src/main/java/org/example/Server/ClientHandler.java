@@ -23,6 +23,7 @@ public class ClientHandler implements Runnable {
     private final PrescribirController prescribirController;
     private final FarmaceutaController farmaceutaController;
     private final HistoricoRecetasController historicoRecetasController;
+    private final DashboardController dashboardController; // ← NUEVO
     private final SocketServer server;
     private final Gson gson = new Gson();
     private PrintWriter out;
@@ -37,6 +38,7 @@ public class ClientHandler implements Runnable {
                          RecetaController recetaController,
                          PrescribirController prescribirController,
                          HistoricoRecetasController historicoRecetasController,
+                         DashboardController dashboardController, // ← NUEVO PARÁMETRO
                          SocketServer server) {
         this.clientSocket = clientSocket;
         this.authController = authController;
@@ -47,6 +49,7 @@ public class ClientHandler implements Runnable {
         this.recetaController = recetaController;
         this.prescribirController = prescribirController;
         this.historicoRecetasController = historicoRecetasController;
+        this.dashboardController = dashboardController; // ← ASIGNAR
         this.server = server;
     }
 
@@ -106,8 +109,6 @@ public class ClientHandler implements Runnable {
                     response = medicamentoController.route(request);
                     break;
 
-
-
                 case "Paciente":
                 case "Pacientes":
                     response = pacienteController.route(request);
@@ -120,7 +121,7 @@ public class ClientHandler implements Runnable {
 
                 case "Farmaceutas":
                 case "Farmaceuta":
-                    response = FarmaceutaController.route(request);
+                    response = farmaceutaController.route(request);
                     break;
 
                 case "Receta":
@@ -136,6 +137,10 @@ public class ClientHandler implements Runnable {
                 case "HistoricoRecetas":
                 case "Historico":
                     response = historicoRecetasController.route(request);
+                    break;
+
+                case "Dashboard": // ← NUEVO CASO
+                    response = dashboardController.handleRequest(request);
                     break;
 
                 default:

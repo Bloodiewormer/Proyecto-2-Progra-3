@@ -6,10 +6,7 @@ import org.example.Presentation.Observable;
 import org.example.Presentation.Views.CambioClaveView;
 import org.example.Presentation.Views.LoginView;
 import org.example.Presentation.Views.MenuPrincipalView;
-import org.example.Services.AuthService;
-import org.example.Services.MedicamentoService;
-import org.example.Services.PacienteService;
-import org.example.Services.UsuarioService;
+import org.example.Services.*;
 import org.example.Utilities.ChangeType;
 
 import javax.swing.*;
@@ -129,6 +126,7 @@ public class LoginController extends Observable {
         UsuarioService usuarioService = new UsuarioService(SERVER_HOST, SERVER_PORT);
         PacienteService pacienteService = new PacienteService(SERVER_HOST, SERVER_PORT);
         MedicamentoService medicamentoService = new MedicamentoService(SERVER_HOST, SERVER_PORT);
+        DashboardService dashboardService = new DashboardService(SERVER_HOST, SERVER_PORT);
 
         // Create and show main view
         MenuPrincipalView mainView = new MenuPrincipalView(
@@ -137,6 +135,7 @@ public class LoginController extends Observable {
                 usuarioService,
                 pacienteService,
                 medicamentoService,
+                dashboardService,
                 user.getId().intValue() // int userId
         );
 

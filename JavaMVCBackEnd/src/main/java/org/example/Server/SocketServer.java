@@ -27,6 +27,7 @@ public class SocketServer {
     private final RecetaController recetaController;
     private final PrescribirController prescribirController;
     private final HistoricoRecetasController historicoRecetasController;
+    private final DashboardController dashboardController; // ← NUEVO
 
     private MessageBroadcaster messageBroadcaster;
     private boolean running;
@@ -40,7 +41,8 @@ public class SocketServer {
                         FarmaceutaController farmaceutaController,
                         RecetaController recetaController,
                         PrescribirController prescribirController,
-                        HistoricoRecetasController historicoRecetasController) {
+                        HistoricoRecetasController historicoRecetasController,
+                        DashboardController dashboardController) { // ← NUEVO PARÁMETRO
         this.port = port;
         this.authController = authController;
         this.medicamentoController = medicamentoController;
@@ -50,6 +52,7 @@ public class SocketServer {
         this.recetaController = recetaController;
         this.prescribirController = prescribirController;
         this.historicoRecetasController = historicoRecetasController;
+        this.dashboardController = dashboardController; // ← ASIGNAR
     }
 
     /**
@@ -78,6 +81,7 @@ public class SocketServer {
                             recetaController,
                             prescribirController,
                             historicoRecetasController,
+                            dashboardController,
                             this
                     );
 

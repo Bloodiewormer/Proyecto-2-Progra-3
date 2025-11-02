@@ -2,174 +2,143 @@ package org.example.API.Controllers;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.example.DataAcces.services.DashboardService;
 import org.example.Domain.dtos.RequestDto;
 import org.example.Domain.dtos.ResponseDto;
-import org.example.Domain.dtos.Receta.RecetaResponseDto;
-import org.example.Domain.dtos.DetalleReceta.DetalleRecetaResponseDto;
 
-import java.lang.reflect.Type;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
 
+/**
+ * Controlador para las operaciones del Dashboard
+ */
 public class DashboardController {
-
-    private final List<RecetaResponseDto> recetas;
+    private final DashboardService dashboardService;
     private final Gson gson = new Gson();
 
-    public DashboardController(List<RecetaResponseDto> recetas) {
-        this.recetas = recetas != null ? recetas : new ArrayList<>();
+    public DashboardController(DashboardService dashboardService) {
+        this.dashboardService = dashboardService;
     }
 
-    public ResponseDto route(RequestDto request) {
+    public ResponseDto handleRequest(RequestDto request) {
+        String action = request.getRequest();
+        System.out.println("[DashboardController] Procesando acción: " + action);
+
         try {
-            switch (request.getRequest()) {
-                case "recetas":
-                    return handleRecetas(request);
-                case "line":
-                    return handleLine(request);
-                case "pie":
-                    return handlePie(request);
+            switch (action) {
+                case "getData":
+                    return getDashboardData(request);
+                case "getRecetasInRange":
+                    return getRecetasInRange(request);
+                case "getMedicamentosPorMes":
+                    return getMedicamentosPorMes(request);
+                case "getRecetasPorEstado":
+                    return getRecetasPorEstado(request);
                 default:
-                    return new ResponseDto(false, "Unknown request: " + request.getRequest(), null);
+                    return new ResponseDto(false, "Acción no reconocida: " + action, null);
             }
         } catch (Exception e) {
-            return new ResponseDto(false, e.getMessage(), null);
+            System.err.println("[DashboardController] Error procesando petición: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error en el servidor: " + e.getMessage(), null);
         }
     }
 
-    // Handler para obtener recetas en rango
-    private ResponseDto handleRecetas(RequestDto request) {
-        Map<String, String> params = gson.fromJson(request.getData(), Map.class);
-        String inicio = params.get("inicio");
-        String fin = params.get("fin");
-
-        List<RecetaResponseDto> result = getRecetasWithinRange(inicio, fin);
-        return new ResponseDto(true, "Recetas obtenidas", gson.toJson(result));
-    }
-
-    // Handler para datos de línea
-    private ResponseDto handleLine(RequestDto request) {
-        Type mapType = new TypeToken<Map<String, Object>>(){}.getType();
-        Map<String, Object> params = gson.fromJson(request.getData(), mapType);
-        String inicio = (String) params.get("inicio");
-        String fin = (String) params.get("fin");
-        Map<String, String> medsSeleccionados = (Map<String, String>) params.get("medsSeleccionados");
-
-        Map<Integer, String> meds = new LinkedHashMap<>();
-        for (Map.Entry<String, String> entry : medsSeleccionados.entrySet()) {
-            meds.put(Integer.parseInt(entry.getKey()), entry.getValue());
+    /**
+     * Obtiene datos básicos del dashboard
+     */
+    private ResponseDto getDashboardData(RequestDto request) {
+        try {
+            DateRangeRequest dateRange = gson.fromJson(request.getData(), DateRangeRequest.class);
+            DashboardService.DashboardData data = dashboardService.getDashboardData(
+                    dateRange.getStartDate(),
+                    dateRange.getEndDate()
+            );
+            return new ResponseDto(true, "Datos obtenidos exitosamente", gson.toJson(data));
+        } catch (Exception e) {
+            System.err.println("[DashboardController] Error en getData: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error obteniendo datos del dashboard: " + e.getMessage(), null);
         }
-
-        Map<String, Map<String, Integer>> result = getLineData(inicio, fin, meds);
-        return new ResponseDto(true, "Datos de línea", gson.toJson(result));
     }
 
-    // Handler para datos de pastel
-    private ResponseDto handlePie(RequestDto request) {
-        Map<String, String> params = gson.fromJson(request.getData(), Map.class);
-        String inicio = params.get("inicio");
-        String fin = params.get("fin");
-
-        Map<String, Long> result = getPieData(inicio, fin);
-        return new ResponseDto(true, "Datos de pastel", gson.toJson(result));
-    }
-
-    // --- Métodos auxiliares ---
-
-    private List<RecetaResponseDto> getRecetasWithinRange(String inicio, String fin) {
-        YearMonth ymInicio = YearMonth.parse(inicio);
-        YearMonth ymFin = YearMonth.parse(fin);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-        return recetas.stream()
-                .filter(r -> {
-                    try {
-                        if (r.getFechaConfeccion() == null) return false;
-                        LocalDate fecha = LocalDate.parse(r.getFechaConfeccion(), formatter);
-                        YearMonth ym = YearMonth.from(fecha);
-                        return !ym.isBefore(ymInicio) && !ym.isAfter(ymFin);
-                    } catch (DateTimeParseException e) {
-                        return false;
-                    }
-                })
-                .collect(Collectors.toList());
-    }
-
-    private Map<String, Map<String, Integer>> getLineData(String inicio, String fin, Map<Integer, String> medsSeleccionados) {
-        YearMonth ymInicio = YearMonth.parse(inicio);
-        YearMonth ymFin = YearMonth.parse(fin);
-
-        List<RecetaResponseDto> recetasEnRango = getRecetasWithinRange(inicio, fin);
-
-        Map<String, Map<String, Integer>> resultado = new LinkedHashMap<>();
-
-        for (Map.Entry<Integer, String> entry : medsSeleccionados.entrySet()) {
-            int medId = entry.getKey();
-            String etiqueta = entry.getValue();
-
-            Map<YearMonth, Integer> cantidades = sumarUnidadesPorMesYMedicamento(recetasEnRango, medId);
-
-            Map<String, Integer> dataFormateada = new LinkedHashMap<>();
-            YearMonth cursor = ymInicio;
-            while (!cursor.isAfter(ymFin)) {
-                String mes = formatYearMonth(cursor);
-                dataFormateada.put(mes, cantidades.getOrDefault(cursor, 0));
-                cursor = cursor.plusMonths(1);
-            }
-
-            resultado.put(etiqueta, dataFormateada);
+    /**
+     * Obtiene recetas en un rango de fechas
+     */
+    private ResponseDto getRecetasInRange(RequestDto request) {
+        try {
+            DateRangeRequest dateRange = gson.fromJson(request.getData(), DateRangeRequest.class);
+            List<DashboardService.RecetaData> recetas = dashboardService.getRecetasInRange(
+                    dateRange.getStartDate(),
+                    dateRange.getEndDate()
+            );
+            return new ResponseDto(true, "Recetas obtenidas exitosamente", gson.toJson(recetas));
+        } catch (Exception e) {
+            System.err.println("[DashboardController] Error en getRecetasInRange: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error obteniendo recetas: " + e.getMessage(), null);
         }
-
-        return resultado;
     }
 
-    private Map<String, Long> getPieData(String inicio, String fin) {
-        List<RecetaResponseDto> recetasEnRango = getRecetasWithinRange(inicio, fin);
-
-        if (recetasEnRango.isEmpty()) {
-            return Map.of("Sin datos", 1L);
+    /**
+     * Obtiene unidades de medicamentos por mes
+     */
+    private ResponseDto getMedicamentosPorMes(RequestDto request) {
+        try {
+            MedicamentosPorMesRequest req = gson.fromJson(request.getData(), MedicamentosPorMesRequest.class);
+            Map<String, Map<String, Integer>> unidades = dashboardService.getMedicamentosUnidadesPorMes(
+                    req.getStartDate(),
+                    req.getEndDate(),
+                    req.getMedicamentoIds()
+            );
+            return new ResponseDto(true, "Unidades por mes obtenidas exitosamente", gson.toJson(unidades));
+        } catch (Exception e) {
+            System.err.println("[DashboardController] Error en getMedicamentosPorMes: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error obteniendo unidades por mes: " + e.getMessage(), null);
         }
-
-        return recetasEnRango.stream()
-                .collect(Collectors.groupingBy(
-                        r -> r.getEstado() != null ? r.getEstado() : "DESCONOCIDO",
-                        Collectors.counting()
-                ));
     }
 
-    private Map<YearMonth, Integer> sumarUnidadesPorMesYMedicamento(List<RecetaResponseDto> recetas, int medicamentoId) {
-        Map<YearMonth, Integer> mapa = new HashMap<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-        for (RecetaResponseDto r : recetas) {
-            if (r == null || r.getDetalles() == null || r.getFechaConfeccion() == null) continue;
-
-            try {
-                LocalDate fecha = LocalDate.parse(r.getFechaConfeccion(), formatter);
-                YearMonth ym = YearMonth.from(fecha);
-
-                int acumulado = mapa.getOrDefault(ym, 0);
-                int sumaReceta = r.getDetalles().stream()
-                        .filter(d -> d != null && d.getIdMedicamento() == medicamentoId)
-                        .mapToInt(DetalleRecetaResponseDto::getCantidad)
-                        .sum();
-
-                if (sumaReceta > 0) {
-                    mapa.put(ym, acumulado + sumaReceta);
-                }
-            } catch (DateTimeParseException e) {
-                // Ignorar fechas inválidas
-            }
+    /**
+     * Obtiene distribución de recetas por estado
+     */
+    private ResponseDto getRecetasPorEstado(RequestDto request) {
+        try {
+            DateRangeRequest dateRange = gson.fromJson(request.getData(), DateRangeRequest.class);
+            Map<String, Integer> distribucion = dashboardService.getRecetasPorEstado(
+                    dateRange.getStartDate(),
+                    dateRange.getEndDate()
+            );
+            return new ResponseDto(true, "Distribución por estado obtenida exitosamente", gson.toJson(distribucion));
+        } catch (Exception e) {
+            System.err.println("[DashboardController] Error en getRecetasPorEstado: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error obteniendo distribución por estado: " + e.getMessage(), null);
         }
-
-        return mapa;
     }
 
-    private String formatYearMonth(YearMonth ym) {
-        return String.format("%02d-%d", ym.getMonthValue(), ym.getYear());
+    // =============== DTOs de Request ===============
+
+    private static class DateRangeRequest {
+        private String startDate;
+        private String endDate;
+
+        public String getStartDate() { return startDate; }
+        public void setStartDate(String startDate) { this.startDate = startDate; }
+        public String getEndDate() { return endDate; }
+        public void setEndDate(String endDate) { this.endDate = endDate; }
+    }
+
+    private static class MedicamentosPorMesRequest {
+        private String startDate;
+        private String endDate;
+        private List<Long> medicamentoIds;
+
+        public String getStartDate() { return startDate; }
+        public void setStartDate(String startDate) { this.startDate = startDate; }
+        public String getEndDate() { return endDate; }
+        public void setEndDate(String endDate) { this.endDate = endDate; }
+        public List<Long> getMedicamentoIds() { return medicamentoIds; }
+        public void setMedicamentoIds(List<Long> medicamentoIds) { this.medicamentoIds = medicamentoIds; }
     }
 }
