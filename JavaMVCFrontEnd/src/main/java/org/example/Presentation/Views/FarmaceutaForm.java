@@ -6,6 +6,7 @@ import org.example.Presentation.Components.LoadingOverlay;
 import org.example.Presentation.Models.FarmaceutaTableModel;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class FarmaceutaForm extends JPanel {
     private JPanel MainPanel;
@@ -33,6 +34,10 @@ public class FarmaceutaForm extends JPanel {
         this.loadingOverlay = new LoadingOverlay(parentFrame);
 
         Farmaceutastable.setModel(tableModel);
+
+        // Solución: agregar el MainPanel al propio FarmaceutaForm
+        setLayout(new BorderLayout());
+        add(MainPanel, BorderLayout.CENTER);
     }
 
     public void showLoading(boolean visible) {

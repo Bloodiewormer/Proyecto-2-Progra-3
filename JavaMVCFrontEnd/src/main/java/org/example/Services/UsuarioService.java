@@ -23,7 +23,7 @@ public class UsuarioService extends BaseService {
         return executor.submit(() -> {
             RequestDto request = new RequestDto(
                     "Farmaceuta",
-                    "add",
+                    "agregar",
                     gson.toJson(dto),
                     null
             );
@@ -64,7 +64,7 @@ public class UsuarioService extends BaseService {
         return executor.submit(() -> {
             RequestDto request = new RequestDto(
                     "Farmaceuta",
-                    "list",
+                    "listar",   // <-- antes decía "list"
                     "",
                     null
             );
