@@ -185,6 +185,11 @@ public class MenuPrincipalView extends JFrame {
         farmaceutaController = new FarmaceutaController(farmaceutaForm, usuarioService);
     }
 
+    private void initializeMedicamentoView() {
+        medicamentoForm = new MedicamentoForm(this);
+        medicamentoController = new MedicamentoController(medicamentoForm, medicamentoService);
+    }
+
     private void showMedicamentoView() {
         switchContent(medicamentoForm, "Medicamentos");
     }
