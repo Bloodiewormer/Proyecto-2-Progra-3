@@ -28,6 +28,7 @@ public class Main {
         MedicamentoController medicamentoController = new MedicamentoController(medicamentoService);
         PacienteController pacienteController = new PacienteController(pacienteService);
         MedicoController medicoController = new MedicoController(usuarioService);
+        FarmaceutaController farmaceutaController = new FarmaceutaController(usuarioService);
         RecetaController recetaController = new RecetaController(recetaService);
         PrescribirController prescribirController = new PrescribirController(recetaService, pacienteService, medicamentoService);
         HistoricoRecetasController historicoRecetasController = new HistoricoRecetasController(recetaService, pacienteService);
@@ -44,6 +45,7 @@ public class Main {
                 medicamentoController,
                 pacienteController,
                 medicoController,
+                farmaceutaController,
                 recetaController,
                 prescribirController,
                 historicoRecetasController

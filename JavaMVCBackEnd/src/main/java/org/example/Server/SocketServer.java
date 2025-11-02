@@ -23,6 +23,7 @@ public class SocketServer {
     private final MedicamentoController medicamentoController;
     private final PacienteController pacienteController;
     private final MedicoController medicoController;
+    private final FarmaceutaController farmaceutaController;
     private final RecetaController recetaController;
     private final PrescribirController prescribirController;
     private final HistoricoRecetasController historicoRecetasController;
@@ -36,6 +37,7 @@ public class SocketServer {
                         MedicamentoController medicamentoController,
                         PacienteController pacienteController,
                         MedicoController medicoController,
+                        FarmaceutaController farmaceutaController,
                         RecetaController recetaController,
                         PrescribirController prescribirController,
                         HistoricoRecetasController historicoRecetasController) {
@@ -44,6 +46,7 @@ public class SocketServer {
         this.medicamentoController = medicamentoController;
         this.pacienteController = pacienteController;
         this.medicoController = medicoController;
+        this.farmaceutaController = farmaceutaController;
         this.recetaController = recetaController;
         this.prescribirController = prescribirController;
         this.historicoRecetasController = historicoRecetasController;
@@ -71,6 +74,7 @@ public class SocketServer {
                             medicamentoController,
                             pacienteController,
                             medicoController,
+                            farmaceutaController,
                             recetaController,
                             prescribirController,
                             historicoRecetasController,

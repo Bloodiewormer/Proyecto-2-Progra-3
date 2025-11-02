@@ -21,6 +21,7 @@ public class ClientHandler implements Runnable {
     private final MedicoController medicoController;
     private final RecetaController recetaController;
     private final PrescribirController prescribirController;
+    private final FarmaceutaController farmaceutaController;
     private final HistoricoRecetasController historicoRecetasController;
     private final SocketServer server;
     private final Gson gson = new Gson();
@@ -32,6 +33,7 @@ public class ClientHandler implements Runnable {
                          MedicamentoController medicamentoController,
                          PacienteController pacienteController,
                          MedicoController medicoController,
+                         FarmaceutaController farmaceutaController,
                          RecetaController recetaController,
                          PrescribirController prescribirController,
                          HistoricoRecetasController historicoRecetasController,
@@ -41,6 +43,7 @@ public class ClientHandler implements Runnable {
         this.medicamentoController = medicamentoController;
         this.pacienteController = pacienteController;
         this.medicoController = medicoController;
+        this.farmaceutaController = farmaceutaController;
         this.recetaController = recetaController;
         this.prescribirController = prescribirController;
         this.historicoRecetasController = historicoRecetasController;
@@ -103,6 +106,8 @@ public class ClientHandler implements Runnable {
                     response = medicamentoController.route(request);
                     break;
 
+
+
                 case "Paciente":
                 case "Pacientes":
                     response = pacienteController.route(request);
@@ -111,6 +116,11 @@ public class ClientHandler implements Runnable {
                 case "Medico":
                 case "Medicos":
                     response = medicoController.route(request);
+                    break;
+
+                case "Farmaceutas":
+                case "Farmaceuta":
+                    response = FarmaceutaController.route(request);
                     break;
 
                 case "Receta":

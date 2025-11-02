@@ -2,6 +2,7 @@ package org.example.API.Controllers;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.example.DataAcces.services.UsuarioService;
 import org.example.Domain.dtos.RequestDto;
 import org.example.Domain.dtos.ResponseDto;
 import org.example.Domain.dtos.Farmaceuta.AddFarmaceutaRequestDto;
@@ -15,11 +16,11 @@ import java.util.stream.Collectors;
 
 public class FarmaceutaController {
 
-    private final List<FarmaceutaResponseDto> farmaceutas;
+    private final UsuarioService usuarioService;
     private final Gson gson = new Gson();
 
-    public FarmaceutaController(List<FarmaceutaResponseDto> farmaceutas) {
-        this.farmaceutas = farmaceutas != null ? farmaceutas : new ArrayList<>();
+    public FarmaceutaController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
     }
 
     public ResponseDto route(RequestDto request) {
@@ -50,7 +51,7 @@ public class FarmaceutaController {
     private ResponseDto handleAgregar(RequestDto request) {
         AddFarmaceutaRequestDto dto = gson.fromJson(request.getData(), AddFarmaceutaRequestDto.class);
         FarmaceutaResponseDto nuevo = new FarmaceutaResponseDto(dto.getId(), dto.getNombre());
-        farmaceutas.add(nuevo);
+
         return new ResponseDto(true, "Farmaceuta agregado", gson.toJson(nuevo));
     }
 
