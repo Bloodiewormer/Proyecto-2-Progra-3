@@ -28,6 +28,8 @@ public class LoginView extends JFrame implements IObserver {
 
     private final LoadingOverlay loadingOverlay;
 
+    private Runnable passwordChangeCallback;
+
     public LoginView() {
         initializeUI();
         registerEventHandlers();
@@ -88,7 +90,19 @@ public class LoginView extends JFrame implements IObserver {
         forgotLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // This will be handled by the controller
+                if (passwordChangeCallback != null) {
+                    passwordChangeCallback.run();
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                forgotLabel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                forgotLabel.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
             }
         });
     }
@@ -145,6 +159,10 @@ public class LoginView extends JFrame implements IObserver {
             clearFields();
             setVisible(true);
         }
+    }
+
+    public void setPasswordChangeCallback(Runnable callback) {
+        this.passwordChangeCallback = callback;
     }
 
     public JPanel getMainPanel() {

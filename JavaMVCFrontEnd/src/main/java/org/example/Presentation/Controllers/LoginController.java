@@ -2,6 +2,7 @@ package org.example.Presentation.Controllers;
 
 import org.example.Domain.Dtos.Auth.UserResponseDto;
 import org.example.Presentation.Observable;
+import org.example.Presentation.Views.CambioClaveView;
 import org.example.Presentation.Views.LoginView;
 import org.example.Presentation.Views.MenuPrincipalView;
 import org.example.Services.AuthService;
@@ -26,15 +27,13 @@ public class LoginController extends Observable {
         this.loginView = loginView;
         this.authService = authService;
 
-        // Add the view as an observer
         addObserver(loginView);
-
-        // Wire up event listeners
         wireEvents();
     }
 
     private void wireEvents() {
         loginView.addLoginListener(e -> handleLogin());
+        loginView.setPasswordChangeCallback(this::showPasswordChangeView);
     }
 
     private void handleLogin() {
@@ -115,13 +114,11 @@ public class LoginController extends Observable {
     }
 
     public void showPasswordChangeView() {
-        // TODO: Implement password change view if needed
-        JOptionPane.showMessageDialog(
-                loginView,
-                "Funcionalidad de cambio de contraseña próximamente",
-                "Información",
-                JOptionPane.INFORMATION_MESSAGE
-        );
+        AuthService passwordAuthService = new AuthService(SERVER_HOST, SERVER_PORT);
+
+        // ✅ Crear CambioClaveView directamente (ya es un JFrame)
+        new CambioClaveView(passwordAuthService);
+        // No necesitas setVisible(true) porque lo hace en initializeFrame()
     }
 
     public void exitApplication() {
