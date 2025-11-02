@@ -2,6 +2,7 @@ package org.example.Presentation.Views;
 
 import org.example.Presentation.Components.CustomButton;
 import org.example.Presentation.Controllers.FarmaceutaController;
+import org.example.Presentation.Controllers.HistoricoRecetasController;
 import org.example.Presentation.Controllers.LoginController;
 import org.example.Presentation.Controllers.MedicoController;
 import org.example.Presentation.Controllers.PacienteController;
@@ -9,6 +10,7 @@ import org.example.Presentation.Models.UserType;
 import org.example.Services.MedicamentoService;
 import org.example.Services.PacienteService;
 import org.example.Services.UsuarioService;
+import org.example.Services.RecetaService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,16 +51,18 @@ public class MenuPrincipalView extends JFrame {
     private final UserType userType;
     private final LoginController loginController;
 
-
     private MedicoForm medicoForm;
     private MedicoController medicoController;
 
     private PacienteController pacienteController;
     private PacienteForm pacienteForm;
 
-
     private FarmaceutaForm farmaceutaForm;
     private FarmaceutaController farmaceutaController;
+
+    // --- NUEVO: Vista y controlador de histórico de recetas
+    private HistoricoRecetasView historicoRecetasView;
+    private HistoricoRecetasController historicoRecetasController;
 
     public MenuPrincipalView(UserType userType,
                              LoginController loginController,
@@ -78,7 +82,8 @@ public class MenuPrincipalView extends JFrame {
         configureMenu();
         initializeMedicoView();
         initializePacienteView();
-        initializeFarmaceutaView(); // --- Inicializa la vista de farmaceutas
+        initializeFarmaceutaView();
+        initializeHistoricoRecetasView(); // --- Inicializa la vista y el controlador de histórico
         wireEvents();
         initializeView();
     }
@@ -160,7 +165,6 @@ public class MenuPrincipalView extends JFrame {
         }
     }
 
-
     private void initializeMedicoView() {
         medicoForm = new MedicoForm(this);
         medicoController = new MedicoController(medicoForm, usuarioService);
@@ -171,10 +175,19 @@ public class MenuPrincipalView extends JFrame {
         pacienteController = new PacienteController(pacienteForm, pacienteService);
     }
 
-    // --- NUEVO: Inicializa la vista y el controlador de farmaceutas
     private void initializeFarmaceutaView() {
         farmaceutaForm = new FarmaceutaForm(this);
         farmaceutaController = new FarmaceutaController(farmaceutaForm, usuarioService);
+    }
+
+    // --- NUEVO: Inicializa la vista y el controlador de histórico de recetas
+    private void initializeHistoricoRecetasView() {
+        historicoRecetasView = new HistoricoRecetasView(this);
+        historicoRecetasController = new HistoricoRecetasController(
+                historicoRecetasView,
+                new RecetaService("localhost", 7000),
+                new PacienteService("localhost", 7000)
+        );
     }
 
     private void wireEvents() {
@@ -186,14 +199,15 @@ public class MenuPrincipalView extends JFrame {
 
         salirButton.addActionListener(e -> handleLogout());
         medicosButton.addActionListener(e -> showMedicoView());
-        farmaceutasButton.addActionListener(e ->showFarmaceutaView() );
+        farmaceutasButton.addActionListener(e -> showFarmaceutaView());
         pacientesButton.addActionListener(e -> showPacienteView());
         medicamentosButton.addActionListener(e -> showPlaceholderView("Medicamentos"));
         dashboardButton.addActionListener(e -> showPlaceholderView("Dashboard"));
         acercadeButton.addActionListener(e -> showAcercaDeView());
         prescribirButton.addActionListener(e -> showPlaceholderView("Prescribir"));
         despachoButton.addActionListener(e -> showPlaceholderView("Despacho"));
-        historicoRecetasButton.addActionListener(e -> showPlaceholderView("Histórico de Recetas"));
+        // --- CAMBIO: muestra la vista real de histórico
+        historicoRecetasButton.addActionListener(e -> showHistoricoRecetasView());
     }
 
     private void initializeView() {
@@ -248,19 +262,21 @@ public class MenuPrincipalView extends JFrame {
         switchContent(panel, viewName);
     }
 
-
     private void showMedicoView() {
         switchContent(medicoForm, "Médicos");
     }
 
-    private  void showPacienteView() {
+    private void showPacienteView() {
         switchContent(pacienteForm, "Pacientes");
     }
 
-
-
     private void showFarmaceutaView() {
         switchContent(farmaceutaForm, "Farmaceutas");
+    }
+
+    // --- NUEVO: muestra la vista de histórico de recetas
+    private void showHistoricoRecetasView() {
+        switchContent(historicoRecetasView, "Histórico de Recetas");
     }
 
     private void showAcercaDeView() {
@@ -320,11 +336,9 @@ public class MenuPrincipalView extends JFrame {
             int currentWidth = collapsiblePanel.getWidth();
 
             if (currentWidth < targetWidth) { // Expand
-                MenuLabel.setVisible(true);
                 currentWidth += 10;
                 if (currentWidth > targetWidth) currentWidth = targetWidth;
             } else if (currentWidth > targetWidth) { // Collapse
-                MenuLabel.setVisible(false);
                 currentWidth -= 10;
                 if (currentWidth < targetWidth) currentWidth = targetWidth;
             }
@@ -403,4 +417,7 @@ public class MenuPrincipalView extends JFrame {
         acercadeButton = new CustomButton("Acerca de", buttonColor, textColor, infoIcon);
     }
 }
+
+
+
 
