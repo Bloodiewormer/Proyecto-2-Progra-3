@@ -71,4 +71,18 @@ public class MedicamentoService extends BaseService {
             return listResponse.getMedicamentos();
         });
     }
+    public Future<MedicamentoResponseDto> getMedicamentoByIdAsync(int id) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Medicamento",
+                    "getById",
+                    String.valueOf(id),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), MedicamentoResponseDto.class);
+        });
+    }
+
 }

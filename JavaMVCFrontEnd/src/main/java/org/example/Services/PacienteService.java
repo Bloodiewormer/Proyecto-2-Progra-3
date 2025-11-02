@@ -71,4 +71,18 @@ public class PacienteService extends BaseService {
             return listResponse.getPacientes();
         });
     }
+
+    public Future<PacienteResponseDto> getPacienteByIdAsync(int id) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Paciente",
+                    "getById",
+                    String.valueOf(id),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), PacienteResponseDto.class);
+        });
+    }
 }

@@ -69,27 +69,17 @@ public class PrescribirForm extends JPanel {
     private JDialog agregarMedicamentoDialog;
     private JDialog detalleDialog;
 
-    public PrescribirForm(List<PacienteResponseDto> pacientes,
-                          List<MedicamentoResponseDto> medicamentos,
-                          int idMedico) {
-
+    public PrescribirForm(JFrame parentFrame) {
         MedicamentoRecetatable.setModel(new DetalleRecetaTableModel());
         initDatePicker();
         MedicamentosTable.setModel(new MedicamentoTableModel());
         pacientesTable.setModel(new PacienteTableModel());
-
-        // Populate models
-        ((MedicamentoTableModel) MedicamentosTable.getModel()).setMedicamentos(medicamentos);
-        ((PacienteTableModel) pacientesTable.getModel()).setPacientes(pacientes);
 
         catidadSpinner.setModel(new SpinnerNumberModel(1, 1, 1000, 1));
         duracionSpinner.setModel(new SpinnerNumberModel(1, 1, 365, 1));
 
         filtrarPacientecomboBox.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
         FiltraMedicamentoComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
-
-        // Create controller
-        new PrescribirController(this, pacientes, medicamentos, idMedico);
     }
 
     // --- Getters for Controller ---

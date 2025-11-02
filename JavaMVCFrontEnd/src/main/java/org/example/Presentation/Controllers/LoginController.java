@@ -127,6 +127,7 @@ public class LoginController extends Observable {
         PacienteService pacienteService = new PacienteService(SERVER_HOST, SERVER_PORT);
         MedicamentoService medicamentoService = new MedicamentoService(SERVER_HOST, SERVER_PORT);
         DashboardService dashboardService = new DashboardService(SERVER_HOST, SERVER_PORT);
+        PrescribirService prescribirService = new PrescribirService(SERVER_HOST, SERVER_PORT);
 
         // Create and show main view
         MenuPrincipalView mainView = new MenuPrincipalView(
@@ -136,6 +137,7 @@ public class LoginController extends Observable {
                 pacienteService,
                 medicamentoService,
                 dashboardService,
+                prescribirService,
                 user.getId().intValue() // int userId
         );
 

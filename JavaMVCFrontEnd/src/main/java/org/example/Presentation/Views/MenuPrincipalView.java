@@ -33,6 +33,7 @@ public class MenuPrincipalView extends JFrame {
     private JLabel MenuLabel;
     private JButton despachoButton;
     private JButton historicoRecetasButton;
+    private JButton mensajesButton;
 
     private boolean menuVisible = true;
     private static final int MENU_WIDTH = 170;
@@ -66,12 +67,17 @@ public class MenuPrincipalView extends JFrame {
     private HistoricoRecetasView historicoRecetasView;
     private HistoricoRecetasController historicoRecetasController;
 
+    private PrescribirForm prescribirForm;
+    private PrescribirController prescribirController;
+    private PrescribirService prescribirService;
+
     public MenuPrincipalView(UserType userType,
                              LoginController loginController,
                              UsuarioService usuarioService,
                              PacienteService pacienteService,
                              MedicamentoService medicamentoService,
                              DashboardService dashboardService,
+                             PrescribirService prescribirService,
                              int userId) {
 
         this.userType = userType;
@@ -81,18 +87,25 @@ public class MenuPrincipalView extends JFrame {
         this.medicamentoService = medicamentoService;
         this.dashboardService = dashboardService;
         this.userId = userId;
+        this.prescribirService = prescribirService;
 
         initializeUI();
         configureMenu();
         initializeMedicoView();
         initializePacienteView();
         initializeFarmaceutaView();
-        initializeHistoricoRecetasView(); // --- Inicializa la vista y el controlador de histórico
+        initializeHistoricoRecetasView(); 
         initializeFarmaceutaView();
         initializeMedicamentoView();
         initializeDashboardView();
+        initializePrescribirView();
         wireEvents();
         initializeView();
+    }
+
+    private void initializePrescribirView() {
+        prescribirForm = new PrescribirForm(this);
+        prescribirController = new PrescribirController(prescribirForm, prescribirService, userId);
     }
 
     private void initializeUI() {
@@ -128,7 +141,7 @@ public class MenuPrincipalView extends JFrame {
     private void configureButtonsForUserType() {
         JButton[] allButtons = {medicosButton, farmaceutasButton, pacientesButton,
                 medicamentosButton, dashboardButton, acercadeButton,
-                prescribirButton, despachoButton, historicoRecetasButton};
+                prescribirButton, despachoButton,mensajesButton, historicoRecetasButton};
 
         switch (userType) {
             case ADMINISTRADOR -> {
@@ -140,6 +153,7 @@ public class MenuPrincipalView extends JFrame {
                 acercadeButton.setEnabled(true);
                 historicoRecetasButton.setEnabled(true);
                 prescribirButton.setEnabled(false);
+                mensajesButton.setEnabled(true);
                 despachoButton.setEnabled(false);
             }
             case FARMACEUTA -> {
@@ -151,6 +165,7 @@ public class MenuPrincipalView extends JFrame {
                 acercadeButton.setEnabled(true);
                 despachoButton.setEnabled(true);
                 historicoRecetasButton.setEnabled(true);
+                mensajesButton.setEnabled(true);
                 prescribirButton.setEnabled(false);
             }
             case MEDICO -> {
@@ -162,6 +177,7 @@ public class MenuPrincipalView extends JFrame {
                 historicoRecetasButton.setEnabled(true);
                 dashboardButton.setEnabled(true);
                 acercadeButton.setEnabled(true);
+                mensajesButton.setEnabled(true);
                 despachoButton.setEnabled(false);
             }
         }
@@ -225,17 +241,22 @@ public class MenuPrincipalView extends JFrame {
         medicamentosButton.addActionListener(e -> showMedicamentoView());
         dashboardButton.addActionListener(e -> showDashboardView());
         acercadeButton.addActionListener(e -> showAcercaDeView());
-        prescribirButton.addActionListener(e -> showPlaceholderView("Prescribir"));
+        prescribirButton.addActionListener(e -> showPrescribirView());
         despachoButton.addActionListener(e -> showPlaceholderView("Despacho"));
+        mensajesButton.addActionListener(e -> showPlaceholderView("Mensajes"));
         historicoRecetasButton.addActionListener(e -> showHistoricoRecetasView());
+    }
+
+    private void showPrescribirView() {
+        switchContent(prescribirForm.getMainPanel(), "Prescribir");
     }
 
     private void initializeView() {
         // Mostrar vista inicial según tipo de usuario
         switch (userType) {
             case ADMINISTRADOR -> showWelcomeView();
-            case FARMACEUTA -> showPlaceholderView("Despacho");
-            case MEDICO -> showPlaceholderView("Prescribir");
+            case FARMACEUTA -> showWelcomeView();
+            case MEDICO -> showWelcomeView();
         }
 
         setVisible(true);
@@ -428,6 +449,7 @@ public class MenuPrincipalView extends JFrame {
         Image dashboardIcon = loadIcon.apply("/DashBoard.png");
         Image prescribirIcon = loadIcon.apply("/Prescripcion.png");
         Image infoIcon = loadIcon.apply("/Info.png");
+        Image mesajesIcon = loadIcon.apply("/Message.png");
 
         Color buttonColor = new Color(244, 243, 248);
         Color textColor = Color.BLACK;
@@ -441,7 +463,9 @@ public class MenuPrincipalView extends JFrame {
         dashboardButton = new CustomButton("Dashboard", buttonColor, textColor, dashboardIcon);
         prescribirButton = new CustomButton("Prescribir", buttonColor, textColor, prescribirIcon);
         despachoButton = new CustomButton("Despacho", buttonColor, textColor, medicamentoIcon);
+        mensajesButton = new CustomButton("Mensajes", buttonColor, textColor, mesajesIcon);
         historicoRecetasButton = new CustomButton("Histórico", buttonColor, textColor, infoIcon);
+
         acercadeButton = new CustomButton("Acerca de", buttonColor, textColor, infoIcon);
     }
 }

@@ -5,11 +5,12 @@ import org.example.Domain.Dtos.DetalleReceta.DetalleRecetaResponseDto;
 import org.example.Domain.Dtos.Paciente.PacienteResponseDto;
 import org.example.Domain.Dtos.Medicamento.MedicamentoResponseDto;
 import org.example.Domain.Dtos.Receta.AddRecetaRequestDto;
-
+import org.example.Domain.Dtos.Receta.RecetaResponseDto;
 import org.example.Presentation.Models.DetalleRecetaTableModel;
 import org.example.Presentation.Models.MedicamentoTableModel;
 import org.example.Presentation.Models.PacienteTableModel;
 import org.example.Presentation.Views.PrescribirForm;
+import org.example.Services.PrescribirService;
 
 import javax.swing.*;
 import java.text.SimpleDateFormat;
@@ -19,21 +20,37 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class PrescribirController {
-
     private final PrescribirForm view;
-    private final List<PacienteResponseDto> pacientes;
-    private final List<MedicamentoResponseDto> medicamentos;
+    private final PrescribirService service;
     private final int idMedico;
+    private List<PacienteResponseDto> pacientes = new ArrayList<>();
+    private List<MedicamentoResponseDto> medicamentos = new ArrayList<>();
 
-    public PrescribirController(PrescribirForm view,
-                                List<PacienteResponseDto> pacientes,
-                                List<MedicamentoResponseDto> medicamentos,
-                                int idMedico) {
+    public PrescribirController(PrescribirForm view, PrescribirService service, int idMedico) {
         this.view = view;
-        this.pacientes = pacientes != null ? pacientes : new ArrayList<>();
-        this.medicamentos = medicamentos != null ? medicamentos : new ArrayList<>();
+        this.service = service;
         this.idMedico = idMedico;
+        cargarDatos();
         wireEvents();
+    }
+
+    private void cargarDatos() {
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() {
+                pacientes = service.listarPacientes();
+                medicamentos = service.listarMedicamentos();
+                if (pacientes == null) pacientes = new ArrayList<>();
+                if (medicamentos == null) medicamentos = new ArrayList<>();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                ((PacienteTableModel) view.getPacientesTable().getModel()).setPacientes(pacientes);
+                ((MedicamentoTableModel) view.getMedicamentosTable().getModel()).setMedicamentos(medicamentos);
+            }
+        }.execute();
     }
 
     private void wireEvents() {
@@ -43,7 +60,6 @@ public class PrescribirController {
         view.getLimpiarMainMenuButton().addActionListener(e -> limpiar());
         view.getDescartarMainMenuButton().addActionListener(e -> descartar());
 
-        // Dialog buttons
         if (view.getBuscarPacientMenuButton() != null)
             view.getBuscarPacientMenuButton().addActionListener(e -> filtrarPacientes());
         if (view.getGuardarPacienteMenuButton() != null)
@@ -119,6 +135,7 @@ public class PrescribirController {
             JOptionPane.showMessageDialog(view, "No hay medicamento seleccionado");
             return;
         }
+
         int cantidad = (int) view.getCatidadSpinner().getValue();
         int dias = (int) view.getDuracionSpinner().getValue();
         String indicaciones = view.getIndicacionesField().getText().trim();
@@ -128,7 +145,6 @@ public class PrescribirController {
             return;
         }
 
-        // Crear detalle y agregarlo a la lista
         DetalleRecetaResponseDto detalle = new DetalleRecetaResponseDto();
         detalle.setIdMedicamento(m.getId());
         detalle.setCantidad(cantidad);
@@ -155,29 +171,34 @@ public class PrescribirController {
             return;
         }
 
-        // Crear DTO para enviar al backend
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         List<AddDetalleRecetaRequestDto> detallesDto = view.getDetalleRecetaList().stream()
-                .map(d -> new AddDetalleRecetaRequestDto(
-                        d.getIdMedicamento(),
-                        d.getCantidad(),
-                        d.getIndicaciones(),
-                        d.getDias()
-                ))
+                .map(d -> new AddDetalleRecetaRequestDto(d.getIdMedicamento(), d.getCantidad(), d.getIndicaciones(), d.getDias()))
                 .collect(Collectors.toList());
 
-        AddRecetaRequestDto dto = new AddRecetaRequestDto(
-                paciente.getId(),
-                idMedico,
-                sdf.format(new Date()),
-                detallesDto
-        );
+        AddRecetaRequestDto dto = new AddRecetaRequestDto(paciente.getId(), idMedico, sdf.format(view.getDatePicker().getDate()), detallesDto);
 
-        // TODO: Enviar al servicio
-        // recetaService.addRecetaAsync(dto).get();
+        new SwingWorker<RecetaResponseDto, Void>() {
+            @Override
+            protected RecetaResponseDto doInBackground() {
+                return service.crearReceta(dto);
+            }
 
-        JOptionPane.showMessageDialog(view, "Receta guardada exitosamente");
-        limpiar();
+            @Override
+            protected void done() {
+                try {
+                    RecetaResponseDto resultado = get();
+                    if (resultado != null) {
+                        JOptionPane.showMessageDialog(view, "Receta guardada - ID: " + resultado.getId(), "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                        limpiar();
+                    } else {
+                        JOptionPane.showMessageDialog(view, "Error al guardar receta", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(view, "Error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }.execute();
     }
 
     private void limpiar() {
@@ -189,7 +210,8 @@ public class PrescribirController {
     }
 
     private void descartar() {
-        int op = JOptionPane.showConfirmDialog(view, "¿Descartar cambios?", "Confirmar", JOptionPane.YES_NO_OPTION);
-        if (op == JOptionPane.YES_OPTION) limpiar();
+        if (JOptionPane.showConfirmDialog(view, "¿Descartar cambios?", "Confirmar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            limpiar();
+        }
     }
 }
