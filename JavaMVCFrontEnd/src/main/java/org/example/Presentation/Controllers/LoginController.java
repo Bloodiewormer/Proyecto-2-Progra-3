@@ -133,12 +133,13 @@ public class LoginController extends Observable {
         // Create and show main view
         MenuPrincipalView mainView = new MenuPrincipalView(
                 userType,
-                this,
+                this, // LoginController
                 usuarioService,
                 pacienteService,
                 medicamentoService,
-                user.getId().intValue()
+                user.getId().intValue() // int userId
         );
+
         mainView.setVisible(true);
     }
 

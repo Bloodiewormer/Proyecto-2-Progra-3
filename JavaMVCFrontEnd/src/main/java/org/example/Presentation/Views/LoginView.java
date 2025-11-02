@@ -171,7 +171,7 @@ public class LoginView extends JFrame implements IObserver {
 
     private void createUIComponents() {
         loginButton = new BlueRoundedButton("INICIAR SESIÓN");
-        userIdField = new CustomTextField();
-        passwordField = new CustomPasswordField();
+        userIdField = new CustomTextField("Ingrese su ID");
+        passwordField = new CustomPasswordField("Ingrese su contraseña");
     }
 }

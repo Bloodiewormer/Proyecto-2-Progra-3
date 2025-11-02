@@ -6,6 +6,7 @@ import org.example.Presentation.Components.LoadingOverlay;
 import org.example.Presentation.Models.MedicoTableModel;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class MedicoForm extends JPanel {
     private JPanel MainPanel;
@@ -34,6 +35,10 @@ public class MedicoForm extends JPanel {
         this.loadingOverlay = new LoadingOverlay(parentFrame);
 
         Medicostable.setModel(tableModel);
+
+
+        setLayout(new BorderLayout());
+        add(MainPanel, BorderLayout.CENTER);
     }
 
     public void showLoading(boolean visible) {

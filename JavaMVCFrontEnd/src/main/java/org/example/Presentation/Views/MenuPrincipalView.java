@@ -1,7 +1,10 @@
 package org.example.Presentation.Views;
 
 import org.example.Presentation.Components.CustomButton;
+import org.example.Presentation.Controllers.FarmaceutaController;
 import org.example.Presentation.Controllers.LoginController;
+import org.example.Presentation.Controllers.MedicoController;
+import org.example.Presentation.Controllers.PacienteController;
 import org.example.Presentation.Models.UserType;
 import org.example.Services.MedicamentoService;
 import org.example.Services.PacienteService;
@@ -46,6 +49,17 @@ public class MenuPrincipalView extends JFrame {
     private final UserType userType;
     private final LoginController loginController;
 
+
+    private MedicoForm medicoForm;
+    private MedicoController medicoController;
+
+    private PacienteController pacienteController;
+    private PacienteForm pacienteForm;
+
+
+    private FarmaceutaForm farmaceutaForm;
+    private FarmaceutaController farmaceutaController;
+
     public MenuPrincipalView(UserType userType,
                              LoginController loginController,
                              UsuarioService usuarioService,
@@ -62,6 +76,9 @@ public class MenuPrincipalView extends JFrame {
 
         initializeUI();
         configureMenu();
+        initializeMedicoView();
+        initializePacienteView();
+        initializeFarmaceutaView(); // --- Inicializa la vista de farmaceutas
         wireEvents();
         initializeView();
     }
@@ -143,6 +160,23 @@ public class MenuPrincipalView extends JFrame {
         }
     }
 
+
+    private void initializeMedicoView() {
+        medicoForm = new MedicoForm(this);
+        medicoController = new MedicoController(medicoForm, usuarioService);
+    }
+
+    private void initializePacienteView() {
+        pacienteForm = new PacienteForm(this);
+        pacienteController = new PacienteController(pacienteForm, pacienteService);
+    }
+
+    // --- NUEVO: Inicializa la vista y el controlador de farmaceutas
+    private void initializeFarmaceutaView() {
+        farmaceutaForm = new FarmaceutaForm(this);
+        farmaceutaController = new FarmaceutaController(farmaceutaForm, usuarioService);
+    }
+
     private void wireEvents() {
         toggleButton.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
@@ -151,9 +185,9 @@ public class MenuPrincipalView extends JFrame {
         });
 
         salirButton.addActionListener(e -> handleLogout());
-        medicosButton.addActionListener(e -> showPlaceholderView("Médicos"));
-        farmaceutasButton.addActionListener(e -> showPlaceholderView("Farmaceutas"));
-        pacientesButton.addActionListener(e -> showPlaceholderView("Pacientes"));
+        medicosButton.addActionListener(e -> showMedicoView());
+        farmaceutasButton.addActionListener(e ->showFarmaceutaView() );
+        pacientesButton.addActionListener(e -> showPacienteView());
         medicamentosButton.addActionListener(e -> showPlaceholderView("Medicamentos"));
         dashboardButton.addActionListener(e -> showPlaceholderView("Dashboard"));
         acercadeButton.addActionListener(e -> showAcercaDeView());
@@ -212,6 +246,21 @@ public class MenuPrincipalView extends JFrame {
 
         panel.add(label);
         switchContent(panel, viewName);
+    }
+
+
+    private void showMedicoView() {
+        switchContent(medicoForm, "Médicos");
+    }
+
+    private  void showPacienteView() {
+        switchContent(pacienteForm, "Pacientes");
+    }
+
+
+
+    private void showFarmaceutaView() {
+        switchContent(farmaceutaForm, "Farmaceutas");
     }
 
     private void showAcercaDeView() {
@@ -354,3 +403,4 @@ public class MenuPrincipalView extends JFrame {
         acercadeButton = new CustomButton("Acerca de", buttonColor, textColor, infoIcon);
     }
 }
+
