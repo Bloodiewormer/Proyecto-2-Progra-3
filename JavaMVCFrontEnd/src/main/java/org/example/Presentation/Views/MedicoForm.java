@@ -34,6 +34,10 @@ public class MedicoForm extends JPanel {
         this.loadingOverlay = new LoadingOverlay(parentFrame);
 
         Medicostable.setModel(tableModel);
+
+        // 👇 Esto hace visible el contenido del formulario
+        setLayout(new java.awt.BorderLayout());
+        add(MainPanel, java.awt.BorderLayout.CENTER);
     }
 
     public void showLoading(boolean visible) {
