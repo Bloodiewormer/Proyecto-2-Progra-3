@@ -147,15 +147,28 @@ public class DashboardController {
             Map<String, Integer> distribucion = new HashMap<>();
             for (RecetaResponseDto receta : recetasEnRango) {
                 String estado = receta.getEstado();
-                distribucion.put(estado, distribucion.getOrDefault(estado, 0) + 1);
+                if (estado != null && !estado.trim().isEmpty()) {
+                    distribucion.put(estado, distribucion.getOrDefault(estado, 0) + 1);
+                }
+            }
+
+            System.out.println("[DashboardController] Distribución de estados encontrada: " + distribucion);
+
+            // Si no hay distribución, mostrar "Sin datos"
+            if (distribucion.isEmpty()) {
+                dataset.setValue("Sin datos", 1);
+                return dataset;
             }
 
             // Traducir estados del enum a español
+            // enum EstadoReceta { CONFECCIONADA, PROCESO, LISTA, ENTREGADA }
             Map<String, String> traduccionEstados = new HashMap<>();
             traduccionEstados.put("CONFECCIONADA", "Confeccionada");
-            traduccionEstados.put("EN_PROCESO", "En Proceso");
+            traduccionEstados.put("PROCESO", "En Proceso");
             traduccionEstados.put("LISTA", "Lista");
             traduccionEstados.put("ENTREGADA", "Entregada");
+
+
 
             for (Map.Entry<String, Integer> entry : distribucion.entrySet()) {
                 String estado = entry.getKey();

@@ -44,11 +44,11 @@ INSERT INTO medicamentos (nombre, presentacion, stock, precio, is_active) VALUES
 
 -- Insertar Recetas de ejemplo
 INSERT INTO recetas (codigo, id_paciente, id_medico, fecha_confeccion, fecha_retiro, estado) VALUES
-                                                                                                 ('RX-2025-001', 1, 2, '2025-01-15 10:30:00', '2025-02-14 23:59:59', 'PENDIENTE'),
-                                                                                                 ('RX-2025-002', 2, 3, '2025-01-16 14:20:00', '2025-02-15 23:59:59', 'PENDIENTE'),
-                                                                                                 ('RX-2025-003', 3, 4, '2025-01-17 09:15:00', '2025-02-16 23:59:59', 'DESPACHADO'),
-                                                                                                 ('RX-2025-004', 4, 2, '2025-01-18 11:45:00', '2025-02-17 23:59:59', 'PENDIENTE'),
-                                                                                                 ('RX-2025-005', 5, 3, '2025-01-19 16:00:00', '2025-02-18 23:59:59', 'CANCELADO');
+                                                                                                 ('RX-2025-001', 1, 2, '2025-01-15 10:30:00', '2025-02-14 23:59:59', 'CONFECCIONADA'),
+                                                                                                 ('RX-2025-002', 2, 3, '2025-01-16 14:20:00', '2025-02-15 23:59:59', 'CONFECCIONADA'),
+                                                                                                 ('RX-2025-003', 3, 4, '2025-01-17 09:15:00', '2025-02-16 23:59:59', 'PROCESO'),
+                                                                                                 ('RX-2025-004', 4, 2, '2025-01-18 11:45:00', '2025-02-17 23:59:59', 'LISTA'),
+                                                                                                 ('RX-2025-005', 5, 3, '2025-01-19 16:00:00', '2025-02-18 23:59:59', 'ENTREGADA');
 
 -- Insertar Detalles de Recetas
 INSERT INTO detalle_recetas (id_receta, id_medicamento, cantidad, indicaciones, dias) VALUES
