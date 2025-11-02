@@ -290,22 +290,45 @@ public class MenuPrincipalView extends JFrame {
     }
 
     private void createUIComponents() {
-        // Load icons
-        Image doctorIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Doctor.png"))).getImage();
-        Image farmaceuticoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Farmaceuta.png"))).getImage();
-        Image pacienteIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Paciente.png"))).getImage();
-        Image medicamentoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Medicamento.png"))).getImage();
-        Image logoutIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/Logout.png"))).getImage();
-
-        // Create buttons with icons
         Color buttonColor = new Color(244, 243, 248);
         Color textColor = Color.BLACK;
 
+        // ✅ Helper para cargar iconos de forma segura
+        java.util.function.Function<String, Image> loadIcon = (path) -> {
+            try {
+                var resource = getClass().getResource(path);
+                if (resource != null) {
+                    return new ImageIcon(resource).getImage();
+                }
+            } catch (Exception e) {
+                System.err.println("No se pudo cargar icono: " + path);
+            }
+            return null;
+        };
+
+        // Cargar iconos (null si no existen)
+        Image doctorIcon = loadIcon.apply("/Doctor.png");
+        Image farmaceuticoIcon = loadIcon.apply("/Farmaceuta.png");
+        Image pacienteIcon = loadIcon.apply("/Paciente.png");
+        Image medicamentoIcon = loadIcon.apply("/Medicamento.png");
+        Image logoutIcon = loadIcon.apply("/Logout.png");
+        Image dashboardIcon = loadIcon.apply("/Dashboard.png");
+        Image prescribirIcon = loadIcon.apply("/Prescribir.png");
+        Image despachoIcon = loadIcon.apply("/Despacho.png");
+        Image historicoIcon = loadIcon.apply("/Historico.png");
+        Image infoIcon = loadIcon.apply("/Info.png");
+
+        // Crear botones (funciona con o sin iconos)
         salirButton = new CustomButton("Salir", buttonColor, textColor, logoutIcon);
         medicosButton = new CustomButton("Médicos", buttonColor, textColor, doctorIcon);
         farmaceutasButton = new CustomButton("Farmaceutas", buttonColor, textColor, farmaceuticoIcon);
         pacientesButton = new CustomButton("Pacientes", buttonColor, textColor, pacienteIcon);
         medicamentosButton = new CustomButton("Medicamentos", buttonColor, textColor, medicamentoIcon);
+        dashboardButton = new CustomButton("Dashboard", buttonColor, textColor, dashboardIcon);
+        prescribirButton = new CustomButton("Prescribir", buttonColor, textColor, prescribirIcon);
+        despachoButton = new CustomButton("Despacho", buttonColor, textColor, despachoIcon);
+        historicoRecetasButton = new CustomButton("Histórico", buttonColor, textColor, historicoIcon);
+        acercadeButton = new CustomButton("Acerca de", buttonColor, textColor, infoIcon);
     }
 
 }

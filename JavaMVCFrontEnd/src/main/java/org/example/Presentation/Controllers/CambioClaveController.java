@@ -72,6 +72,10 @@ public class CambioClaveController {
                                 "Éxito",
                                 JOptionPane.INFORMATION_MESSAGE);
                         view.clearFields();
+
+                        // ✅ Más simple: la vista ya es un JFrame
+                        ((JFrame) SwingUtilities.getRoot(view)).dispose();
+
                     } else {
                         showError("No se pudo establecer la contraseña. Verifique el ID de usuario.");
                     }
