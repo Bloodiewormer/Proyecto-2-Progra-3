@@ -9,6 +9,10 @@ import org.example.Presentation.Models.UserType;
 import org.example.Services.MedicamentoService;
 import org.example.Services.PacienteService;
 import org.example.Services.UsuarioService;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Controllers.MedicoController;
+import org.example.Presentation.Controllers.MedicamentoController;
+import org.example.Services.MedicamentoService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,6 +57,9 @@ public class MenuPrincipalView extends JFrame {
     private MedicoForm medicoForm;
     private MedicoController medicoController;
 
+    private MedicamentoForm medicamentoForm;
+    private MedicamentoController medicamentoController;
+
     private PacienteController pacienteController;
     private PacienteForm pacienteForm;
 
@@ -78,7 +85,8 @@ public class MenuPrincipalView extends JFrame {
         configureMenu();
         initializeMedicoView();
         initializePacienteView();
-        initializeFarmaceutaView(); // --- Inicializa la vista de farmaceutas
+        initializeFarmaceutaView();
+        initializeMedicamentoView();
         wireEvents();
         initializeView();
     }
@@ -177,6 +185,15 @@ public class MenuPrincipalView extends JFrame {
         farmaceutaController = new FarmaceutaController(farmaceutaForm, usuarioService);
     }
 
+    private void initializeMedicamentoView() {
+        medicamentoForm = new MedicamentoForm(this);
+        medicamentoController = new MedicamentoController(medicamentoForm, medicamentoService);
+    }
+
+    private void showMedicamentoView() {
+        switchContent(medicamentoForm, "Medicamentos");
+    }
+
     private void wireEvents() {
         toggleButton.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
@@ -188,7 +205,7 @@ public class MenuPrincipalView extends JFrame {
         medicosButton.addActionListener(e -> showMedicoView());
         farmaceutasButton.addActionListener(e ->showFarmaceutaView() );
         pacientesButton.addActionListener(e -> showPacienteView());
-        medicamentosButton.addActionListener(e -> showPlaceholderView("Medicamentos"));
+        medicamentosButton.addActionListener(e -> showMedicamentoView());
         dashboardButton.addActionListener(e -> showPlaceholderView("Dashboard"));
         acercadeButton.addActionListener(e -> showAcercaDeView());
         prescribirButton.addActionListener(e -> showPlaceholderView("Prescribir"));

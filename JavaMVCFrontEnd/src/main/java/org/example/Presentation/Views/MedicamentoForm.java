@@ -6,6 +6,7 @@ import org.example.Presentation.Components.LoadingOverlay;
 import org.example.Presentation.Models.MedicamentoTableModel;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class MedicamentoForm extends JPanel {
     private JPanel MainPanel;
@@ -20,13 +21,13 @@ public class MedicamentoForm extends JPanel {
     private JPanel ManagerMedicamento;
     private JTextField CodigotextField;
     private JTextField NametextField;
+    private JTextField PresentaciontextField;
     private JButton guardarButton;
     private JButton limpiarButton;
     private JButton borrarButton;
+    private JButton actualizarButton;
     private JLabel Codigolable;
     private JLabel NameLable;
-    private JTextField PresentaciontextField;
-    private JButton actualizarButton;
 
     private final MedicamentoTableModel tableModel;
     private final LoadingOverlay loadingOverlay;
@@ -35,13 +36,20 @@ public class MedicamentoForm extends JPanel {
         this.tableModel = new MedicamentoTableModel();
         this.loadingOverlay = new LoadingOverlay(parentFrame);
 
+        // Asignar modelo a la tabla
         Medicamentotable.setModel(tableModel);
+
+        // Configurar layout principal (como en MedicoForm)
+        setLayout(new BorderLayout());
+        add(MainPanel, BorderLayout.CENTER);
     }
 
+    // Mostrar overlay de carga
     public void showLoading(boolean visible) {
         loadingOverlay.show(visible);
     }
 
+    // Limpiar campos
     public void clearFields() {
         CodigotextField.setText("");
         NametextField.setText("");
@@ -49,13 +57,15 @@ public class MedicamentoForm extends JPanel {
         Medicamentotable.clearSelection();
     }
 
+    // Rellenar los campos con datos de un medicamento
     public void populateFields(MedicamentoResponseDto medicamento) {
+        if (medicamento == null) return;
         CodigotextField.setText(String.valueOf(medicamento.getId()));
         NametextField.setText(medicamento.getNombre());
         PresentaciontextField.setText(medicamento.getPresentacion());
     }
 
-    // Getters
+    // Getters públicos (para controladores)
     public MedicamentoTableModel getTableModel() { return tableModel; }
     public JPanel getMainPanel() { return MainPanel; }
     public JTable getMedicamentotable() { return Medicamentotable; }
@@ -70,6 +80,7 @@ public class MedicamentoForm extends JPanel {
     public JButton getBorrarButton() { return borrarButton; }
     public JButton getActualizarButton() { return actualizarButton; }
 
+    // Inicialización de componentes personalizados
     private void createUIComponents() {
         buscarButton = new BlueRoundedButton("Buscar");
         reporteButton = new BlueRoundedButton("Reporte");
