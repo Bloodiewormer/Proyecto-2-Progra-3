@@ -2,10 +2,10 @@ package org.example.API.Controllers;
 
 import com.google.gson.Gson;
 import org.example.DataAcces.services.RecetaService;
-import org.example.Domain.dtos.RequestDto;
-import org.example.Domain.dtos.ResponseDto;
-import org.example.Domain.dtos.Receta.*;
-import org.example.Domain.dtos.DetalleReceta.*;
+import org.example.Domain.Dtos.RequestDto;
+import org.example.Domain.Dtos.ResponseDto;
+import org.example.Domain.Dtos.Receta.*;
+import org.example.Domain.Dtos.DetalleReceta.*;
 import org.example.Domain.models.Receta;
 import org.example.Domain.models.DetalleReceta;
 

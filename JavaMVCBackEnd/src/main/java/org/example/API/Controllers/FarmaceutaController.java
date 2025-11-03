@@ -2,9 +2,9 @@ package org.example.API.Controllers;
 
 import com.google.gson.Gson;
 import org.example.DataAcces.services.UsuarioService;
-import org.example.Domain.dtos.Farmaceuta.*;
-import org.example.Domain.dtos.RequestDto;
-import org.example.Domain.dtos.ResponseDto;
+import org.example.Domain.Dtos.Farmaceuta.*;
+import org.example.Domain.Dtos.RequestDto;
+import org.example.Domain.Dtos.ResponseDto;
 import org.example.Domain.models.Farmaceuta;
 
 import java.util.List;

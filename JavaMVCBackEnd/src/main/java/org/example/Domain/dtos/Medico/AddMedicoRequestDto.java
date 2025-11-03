@@ -1,4 +1,4 @@
-package org.example.Domain.dtos.Medico;
+package org.example.Domain.Dtos.Medico;
 
 public class AddMedicoRequestDto {
     private int id;

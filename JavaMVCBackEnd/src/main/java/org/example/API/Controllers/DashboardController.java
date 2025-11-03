@@ -1,10 +1,9 @@
 package org.example.API.Controllers;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.example.DataAcces.services.DashboardService;
-import org.example.Domain.dtos.RequestDto;
-import org.example.Domain.dtos.ResponseDto;
+import org.example.Domain.Dtos.RequestDto;
+import org.example.Domain.Dtos.ResponseDto;
 
 import java.util.List;
 import java.util.Map;

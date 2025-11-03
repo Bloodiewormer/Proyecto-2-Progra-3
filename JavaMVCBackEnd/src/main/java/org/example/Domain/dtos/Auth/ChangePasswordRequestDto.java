@@ -1,4 +1,4 @@
-package org.example.Domain.dtos.Auth;
+package org.example.Domain.Dtos.Auth;
 
 public class ChangePasswordRequestDto {
     private int userId;

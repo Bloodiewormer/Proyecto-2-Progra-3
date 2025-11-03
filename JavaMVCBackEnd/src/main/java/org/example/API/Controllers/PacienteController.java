@@ -2,9 +2,9 @@ package org.example.API.Controllers;
 
 import com.google.gson.Gson;
 import org.example.DataAcces.services.PacienteService;
-import org.example.Domain.dtos.RequestDto;
-import org.example.Domain.dtos.ResponseDto;
-import org.example.Domain.dtos.Paciente.*;
+import org.example.Domain.Dtos.RequestDto;
+import org.example.Domain.Dtos.ResponseDto;
+import org.example.Domain.Dtos.Paciente.*;
 import org.example.Domain.models.Paciente;
 
 import java.time.LocalDate;
