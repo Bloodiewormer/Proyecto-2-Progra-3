@@ -1,6 +1,7 @@
 package org.example.API.Controllers;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.example.DataAcces.services.MensajeService;
 import org.example.DataAcces.services.UsuarioService;
 import org.example.Domain.Dtos.Mensaje.MensajeResponseDto;
@@ -8,7 +9,9 @@ import org.example.Domain.Dtos.RequestDto;
 import org.example.Domain.Dtos.ResponseDto;
 import org.example.Domain.models.Mensaje;
 import org.example.Domain.models.Usuario;
+import org.example.Utilities.LocalDateTimeAdapter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +22,9 @@ import java.util.List;
 public class MensajeController {
     private final MensajeService mensajeService;
     private final UsuarioService usuarioService;
-    private final Gson gson = new Gson();
+    private final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+            .create();
 
     public MensajeController(MensajeService mensajeService, UsuarioService usuarioService) {
         this.mensajeService = mensajeService;
@@ -82,8 +87,8 @@ public class MensajeController {
                             recipient.getNombre(),
                             mensaje.getMessage(),
                             mensaje.getStatus(),
-                            mensaje.getCreatedAt(),
-                            mensaje.getReadAt()
+                            mensaje.getCreatedAt() != null ? mensaje.getCreatedAt().toString() : null,  // ✅ Convertir a String
+                            mensaje.getReadAt() != null ? mensaje.getReadAt().toString() : null         // ✅ Convertir a String
                     ));
                 }
             }
@@ -128,8 +133,8 @@ public class MensajeController {
                             recipient.getNombre(),
                             mensaje.getMessage(),
                             mensaje.getStatus(),
-                            mensaje.getCreatedAt(),
-                            mensaje.getReadAt()
+                            mensaje.getCreatedAt() != null ? mensaje.getCreatedAt().toString() : null,
+                            mensaje.getReadAt() != null ? mensaje.getReadAt().toString() : null
                     ));
                 }
             }

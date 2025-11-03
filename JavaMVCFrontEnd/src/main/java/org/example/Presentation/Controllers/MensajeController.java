@@ -205,8 +205,12 @@ public class MensajeController {
 
     public void handleIncomingMessage(MensajeResponseDto mensaje) {
         SwingUtilities.invokeLater(() -> {
-            String timestamp = mensaje.getFechaHora()
-                    .format(DateTimeFormatter.ofPattern("HH:mm"));
+            // ✅ fechaHora ahora es String, parsearlo o usarlo directo
+            String timestamp = mensaje.getFechaHora(); // Ya es String
+
+            if (timestamp != null && timestamp.length() > 16) {
+                timestamp = timestamp.substring(11, 16); // Extraer HH:mm
+            }
 
             if (mensaje.getRemitente().equals(selectedUser)) {
                 addReceivedMessage(
@@ -215,6 +219,7 @@ public class MensajeController {
                         timestamp
                 );
             }
+
             java.awt.Toolkit.getDefaultToolkit().beep();
         });
     }
@@ -244,8 +249,10 @@ public class MensajeController {
         usersStatus.put(username, isActive);
 
         SwingUtilities.invokeLater(() -> {
-            // Actualizar en la lista
             DefaultListModel<String> model = mensajesView.getUsersModel();
+
+            // Si el usuario ya está en la lista, actualizarlo
+            boolean found = false;
             for (int i = 0; i < model.getSize(); i++) {
                 String element = model.getElementAt(i);
                 String cleanName = cleanUserName(element);
@@ -253,13 +260,27 @@ public class MensajeController {
                 if (cleanName.equals(username)) {
                     String emoji = isActive ? "🟢" : "🔴";
                     model.set(i, emoji + " " + username);
+                    found = true;
                     break;
                 }
             }
 
-            // Si es el usuario seleccionado, actualizar indicador
-            if (username.equals(selectedUser)) {
-                updateStatusIndicator(isActive);
+            // Si no está en la lista y está activo, agregarlo
+            if (!found && isActive && !username.equals(currentUser)) {
+                String emoji = "🟢";
+                model.addElement(emoji + " " + username);
+            }
+
+            // Si está inactivo y está en la lista, removerlo
+            if (!isActive) {
+                for (int i = 0; i < model.getSize(); i++) {
+                    String element = model.getElementAt(i);
+                    String cleanName = cleanUserName(element);
+                    if (cleanName.equals(username)) {
+                        model.remove(i);
+                        break;
+                    }
+                }
             }
         });
     }
@@ -269,8 +290,10 @@ public class MensajeController {
             clearMessages();
 
             for (MensajeResponseDto mensaje : mensajes) {
-                String timestamp = mensaje.getFechaHora()
-                        .format(DateTimeFormatter.ofPattern("HH:mm"));
+                String timestamp = mensaje.getFechaHora();
+                if (timestamp != null && timestamp.length() > 16) {
+                    timestamp = timestamp.substring(11, 16); // Extraer HH:mm
+                }
 
                 if (mensaje.getRemitente().equals(currentUser)) {
                     addSentMessage(mensaje.getContenido(), timestamp);

@@ -235,9 +235,10 @@ public class MensajeriaServer {
                         recipient.getNombre(),
                         mensaje.getMessage(),
                         mensaje.getStatus(),
-                        mensaje.getCreatedAt(),
-                        mensaje.getReadAt()
+                        mensaje.getCreatedAt() != null ? mensaje.getCreatedAt().toString() : null,  // ✅ Convertir a String
+                        mensaje.getReadAt() != null ? mensaje.getReadAt().toString() : null         // ✅ Convertir a String
                 );
+
 
                 // Enviar al destinatario si está conectado
                 sendToUser(dto.getDestinatario(), responseDto);
@@ -281,8 +282,8 @@ public class MensajeriaServer {
                                 recipient.getNombre(),
                                 mensaje.getMessage(),
                                 mensaje.getStatus(),
-                                mensaje.getCreatedAt(),
-                                mensaje.getReadAt()
+                                mensaje.getCreatedAt() != null ? mensaje.getCreatedAt().toString() : null,  // ✅ Convertir a String
+                                mensaje.getReadAt() != null ? mensaje.getReadAt().toString() : null         // ✅ Convertir a String
                         ));
                     }
                 }

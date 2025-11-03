@@ -35,7 +35,7 @@ public class ClienteMensajeria {
 
         try {
             socket = new Socket(host, puerto);
-            socket.setSoTimeout(30000);
+
 
             out = new ObjectOutputStream(socket.getOutputStream());
             out.flush();

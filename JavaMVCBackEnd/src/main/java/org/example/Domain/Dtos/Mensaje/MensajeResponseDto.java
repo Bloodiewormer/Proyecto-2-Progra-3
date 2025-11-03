@@ -1,7 +1,6 @@
 package org.example.Domain.Dtos.Mensaje;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 public class MensajeResponseDto implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -11,14 +10,14 @@ public class MensajeResponseDto implements Serializable {
     private String destinatario;
     private String contenido;
     private String estado;
-    private LocalDateTime fechaHora;
-    private LocalDateTime leido;
+    private String fechaHora;      // ✅ Cambiar a String
+    private String leido;          // ✅ Cambiar a String
 
     public MensajeResponseDto() {}
 
     public MensajeResponseDto(Long id, String remitente, String destinatario,
                               String contenido, String estado,
-                              LocalDateTime fechaHora, LocalDateTime leido) {
+                              String fechaHora, String leido) {
         this.id = id;
         this.remitente = remitente;
         this.destinatario = destinatario;
@@ -69,19 +68,19 @@ public class MensajeResponseDto implements Serializable {
         this.estado = estado;
     }
 
-    public LocalDateTime getFechaHora() {
+    public String getFechaHora() {
         return fechaHora;
     }
 
-    public void setFechaHora(LocalDateTime fechaHora) {
+    public void setFechaHora(String fechaHora) {
         this.fechaHora = fechaHora;
     }
 
-    public LocalDateTime getLeido() {
+    public String getLeido() {
         return leido;
     }
 
-    public void setLeido(LocalDateTime leido) {
+    public void setLeido(String leido) {
         this.leido = leido;
     }
 }
