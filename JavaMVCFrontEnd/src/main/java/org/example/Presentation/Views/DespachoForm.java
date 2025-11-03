@@ -1,89 +1,195 @@
 package org.example.Presentation.Views;
 
-import org.example.Presentation.Components.BlueRoundedButton;
-import org.example.Presentation.Components.LoadingOverlay;
+import org.example.Domain.Dtos.Paciente.PacienteResponseDto;
+import org.example.Domain.Dtos.Receta.RecetaResponseDto;
+import org.example.Presentation.Controllers.DespachoController;
 import org.example.Presentation.Models.RecetaTableModel;
+import org.example.Services.DespachoService;
 import org.example.Utilities.EstadoReceta;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 
 public class DespachoForm extends JPanel {
-
-    private JPanel MainPanel;
+    private JPanel mainPanel;
     private JPanel searchPanel;
     private JPanel infoPanel;
-    private JPanel estadoPanel;
     private JPanel tablePanel;
-    private JTextField DatoPacienteField;
+    private JPanel actionPanel;
+
+    private JTextField idPacienteField;
+    private JButton buscarButton;
     private JButton limpiarButton;
-    private JTable recetasTable;
-    private JScrollPane scrollPane;
+
     private JLabel pacienteInfoLabel;
     private JLabel telefonoLabel;
     private JLabel fechaNacimientoLabel;
+
+    private JTable recetasTable;
+    private JScrollPane scrollPane;
+
     private JComboBox<EstadoReceta> estadoComboBox;
     private JButton cambiarEstadoButton;
-    private JComboBox<String> searchBycomboBox;
-    private JButton buscarButton;
+    private JButton refrescarButton;
 
-    private final RecetaTableModel recetaTableModel;
-    private final LoadingOverlay loadingOverlay;
-    private final JFrame parentFrame;
+    private final DespachoController controller;
+    private RecetaTableModel recetaTableModel;
+    private Integer pacienteSeleccionadoId;
+    private Integer recetaSeleccionadaId;
 
-    public DespachoForm(JFrame parentFrame) {
-        this.parentFrame = parentFrame;
-        this.recetaTableModel = new RecetaTableModel();
-        this.loadingOverlay = new LoadingOverlay(parentFrame);
+    public DespachoForm(DespachoService despachoService, int idFarmaceuta) {
+        this.controller = new DespachoController(this, despachoService, idFarmaceuta);
 
         setLayout(new BorderLayout());
-        add(MainPanel, BorderLayout.CENTER);
-
         initComponents();
+        initTable();
+        initEstadoCombo();
+        wireEvents();
+
+        add(mainPanel, BorderLayout.CENTER);
+
+        controller.cargarRecetas();
     }
 
     private void initComponents() {
-        searchBycomboBox.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
+        mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        searchPanel.add(new JLabel("ID Paciente:"));
+        idPacienteField = new JTextField(10);
+        searchPanel.add(idPacienteField);
+        buscarButton = new JButton("Buscar");
+        searchPanel.add(buscarButton);
+        limpiarButton = new JButton("Limpiar");
+        searchPanel.add(limpiarButton);
+        refrescarButton = new JButton("Refrescar");
+        searchPanel.add(refrescarButton);
+
+        infoPanel = new JPanel(new GridLayout(3, 1, 5, 5));
+        infoPanel.setBorder(BorderFactory.createTitledBorder("Información del Paciente"));
+        pacienteInfoLabel = new JLabel("Paciente: N/A");
+        telefonoLabel = new JLabel("Teléfono: N/A");
+        fechaNacimientoLabel = new JLabel("Fecha Nac.: N/A");
+        infoPanel.add(pacienteInfoLabel);
+        infoPanel.add(telefonoLabel);
+        infoPanel.add(fechaNacimientoLabel);
+
+        tablePanel = new JPanel(new BorderLayout());
+        tablePanel.setBorder(BorderFactory.createTitledBorder("Recetas"));
+        recetasTable = new JTable();
+        scrollPane = new JScrollPane(recetasTable);
+        tablePanel.add(scrollPane, BorderLayout.CENTER);
+
+        actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        actionPanel.add(new JLabel("Cambiar estado a:"));
+        estadoComboBox = new JComboBox<>();
+        actionPanel.add(estadoComboBox);
+        cambiarEstadoButton = new JButton("Cambiar Estado");
+        cambiarEstadoButton.setEnabled(false);
+        actionPanel.add(cambiarEstadoButton);
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(searchPanel, BorderLayout.NORTH);
+        topPanel.add(infoPanel, BorderLayout.CENTER);
+
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(tablePanel, BorderLayout.CENTER);
+        mainPanel.add(actionPanel, BorderLayout.SOUTH);
+    }
+
+    private void initTable() {
+        recetaTableModel = new RecetaTableModel();
         recetasTable.setModel(recetaTableModel);
+        recetasTable.getSelectionModel().addListSelectionListener(this::onTableSelection);
+        recetasTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
 
+    private void initEstadoCombo() {
         estadoComboBox.removeAllItems();
-        for (EstadoReceta e : EstadoReceta.values()) {
-            estadoComboBox.addItem(e);
+        estadoComboBox.addItem(EstadoReceta.PROCESO);
+        estadoComboBox.addItem(EstadoReceta.LISTA);
+        estadoComboBox.addItem(EstadoReceta.ENTREGADA);
+    }
+
+    private void wireEvents() {
+        buscarButton.addActionListener(e -> controller.buscarPaciente());
+        limpiarButton.addActionListener(e -> controller.limpiar());
+        refrescarButton.addActionListener(e -> controller.cargarRecetas());
+        cambiarEstadoButton.addActionListener(e -> controller.cambiarEstado());
+    }
+
+    private void onTableSelection(ListSelectionEvent e) {
+        if (!e.getValueIsAdjusting()) {
+            int selectedRow = recetasTable.getSelectedRow();
+            if (selectedRow >= 0) {
+                RecetaResponseDto receta = recetaTableModel.getRecetaAt(selectedRow);
+                if (receta != null) {
+                    recetaSeleccionadaId = receta.getId();
+                    cambiarEstadoButton.setEnabled(true);
+                    configurarEstadosValidos(receta.getEstado());
+                }
+            } else {
+                recetaSeleccionadaId = null;
+                cambiarEstadoButton.setEnabled(false);
+            }
         }
     }
 
-    public void showLoading(boolean visible) {
-        loadingOverlay.show(visible);
+    private void configurarEstadosValidos(String estadoActual) {
+        estadoComboBox.removeAllItems();
+
+        try {
+            EstadoReceta estado = EstadoReceta.valueOf(estadoActual);
+            switch (estado) {
+                case CONFECCIONADA -> estadoComboBox.addItem(EstadoReceta.PROCESO);
+                case PROCESO -> {
+                    estadoComboBox.addItem(EstadoReceta.LISTA);
+                    estadoComboBox.addItem(EstadoReceta.CONFECCIONADA);
+                }
+                case LISTA -> {
+                    estadoComboBox.addItem(EstadoReceta.ENTREGADA);
+                    estadoComboBox.addItem(EstadoReceta.PROCESO);
+                }
+                case ENTREGADA -> cambiarEstadoButton.setEnabled(false);
+            }
+        } catch (Exception ex) {
+            System.err.println("Estado desconocido: " + estadoActual);
+        }
     }
 
-    public void clearFields() {
-        DatoPacienteField.setText("");
-        pacienteInfoLabel.setText("Seleccione un paciente");
-        telefonoLabel.setText("");
-        fechaNacimientoLabel.setText("");
-    }
-
-    public void setPacienteInfo(String nombre, String telefono, String fechaNacimiento) {
-        pacienteInfoLabel.setText("Paciente: " + nombre);
-        telefonoLabel.setText("Teléfono: " + telefono);
-        fechaNacimientoLabel.setText("Nacimiento: " + fechaNacimiento);
-    }
-
-    // Getters
-    public JPanel getMainPanel() { return MainPanel; }
-    public RecetaTableModel getTableModel() { return recetaTableModel; }
+    public JPanel getMainPanel() { return mainPanel; }
+    public JTextField getIdPacienteField() { return idPacienteField; }
     public JTable getRecetasTable() { return recetasTable; }
-    public JTextField getDatoPacienteField() { return DatoPacienteField; }
-    public JComboBox<String> getSearchByComboBox() { return searchBycomboBox; }
+    public RecetaTableModel getRecetaTableModel() { return recetaTableModel; }
     public JComboBox<EstadoReceta> getEstadoComboBox() { return estadoComboBox; }
-    public JButton getBuscarButton() { return buscarButton; }
-    public JButton getLimpiarButton() { return limpiarButton; }
-    public JButton getCambiarEstadoButton() { return cambiarEstadoButton; }
+    public Integer getRecetaSeleccionadaId() { return recetaSeleccionadaId; }
+    public Integer getPacienteSeleccionadoId() { return pacienteSeleccionadoId; }
+    public void setPacienteSeleccionadoId(Integer id) { this.pacienteSeleccionadoId = id; }
 
-    private void createUIComponents() {
-        buscarButton = new BlueRoundedButton("Buscar");
-        limpiarButton = new BlueRoundedButton( "Limpiar") ;
-        cambiarEstadoButton = new BlueRoundedButton( "Cambiar Estado") ;
+    public void mostrarPaciente(PacienteResponseDto paciente) {
+        if (paciente != null) {
+            pacienteInfoLabel.setText("Paciente: " + paciente.getNombre());
+            telefonoLabel.setText("Teléfono: " + paciente.getTelefono());
+            fechaNacimientoLabel.setText("Fecha Nac.: " + paciente.getFechaNacimiento());
+            pacienteSeleccionadoId = paciente.getId();
+        }
+    }
+
+    public void limpiarPaciente() {
+        pacienteInfoLabel.setText("Paciente: N/A");
+        telefonoLabel.setText("Teléfono: N/A");
+        fechaNacimientoLabel.setText("Fecha Nac.: N/A");
+        pacienteSeleccionadoId = null;
+        idPacienteField.setText("");
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Información", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 }

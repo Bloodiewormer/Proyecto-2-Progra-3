@@ -71,6 +71,10 @@ public class MenuPrincipalView extends JFrame {
     private PrescribirController prescribirController;
     private PrescribirService prescribirService;
 
+    private DespachoService despachoService;
+    private DespachoForm despachoForm;
+
+
     public MenuPrincipalView(UserType userType,
                              LoginController loginController,
                              UsuarioService usuarioService,
@@ -78,6 +82,7 @@ public class MenuPrincipalView extends JFrame {
                              MedicamentoService medicamentoService,
                              DashboardService dashboardService,
                              PrescribirService prescribirService,
+                             DespachoService despachoService,
                              int userId) {
 
         this.userType = userType;
@@ -88,12 +93,14 @@ public class MenuPrincipalView extends JFrame {
         this.dashboardService = dashboardService;
         this.userId = userId;
         this.prescribirService = prescribirService;
+        this.despachoService = despachoService;
 
         initializeUI();
         configureMenu();
         initializeMedicoView();
         initializePacienteView();
         initializeFarmaceutaView();
+        initializeDespachoView();
         initializeHistoricoRecetasView(); 
         initializeFarmaceutaView();
         initializeMedicamentoView();
@@ -101,6 +108,10 @@ public class MenuPrincipalView extends JFrame {
         initializePrescribirView();
         wireEvents();
         initializeView();
+    }
+
+    private void initializeDespachoView() {
+        despachoForm = new DespachoForm(despachoService, userId);
     }
 
     private void initializePrescribirView() {
@@ -242,9 +253,13 @@ public class MenuPrincipalView extends JFrame {
         dashboardButton.addActionListener(e -> showDashboardView());
         acercadeButton.addActionListener(e -> showAcercaDeView());
         prescribirButton.addActionListener(e -> showPrescribirView());
-        despachoButton.addActionListener(e -> showPlaceholderView("Despacho"));
+        despachoButton.addActionListener(e -> showDespachoView());
         mensajesButton.addActionListener(e -> showPlaceholderView("Mensajes"));
         historicoRecetasButton.addActionListener(e -> showHistoricoRecetasView());
+    }
+
+    private void showDespachoView() {
+        switchContent(despachoForm.getMainPanel(), "Despacho");
     }
 
     private void showPrescribirView() {
