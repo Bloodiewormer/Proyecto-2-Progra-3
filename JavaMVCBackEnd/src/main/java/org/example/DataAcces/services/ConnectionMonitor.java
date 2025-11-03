@@ -1,4 +1,4 @@
-package org.example.Server;
+package org.example.DataAcces.services;
 
 import org.example.DataAcces.services.UsuarioService;
 
@@ -36,7 +36,8 @@ public class ConnectionMonitor {
 
     public void unregisterUser(Long userId) {
         userLastHeartbeat.remove(userId);
-        usuarioService.deactivateUser(userId);
+        // ✅ CAMBIAR deactivateUser() por setUserOnline(false)
+        usuarioService.setUserOnline(userId, false);
         System.out.println("[ConnectionMonitor] 👋 Usuario desregistrado: " + userId);
     }
 
@@ -50,9 +51,10 @@ public class ConnectionMonitor {
 
                 if (currentTime - lastHeartbeat > HEARTBEAT_TIMEOUT_MS) {
                     System.out.println("[ConnectionMonitor] ⚠️ Usuario " + userId +
-                            " sin respuesta. Desactivando...");
+                            " sin respuesta. Marcando offline...");
                     try {
-                        usuarioService.deactivateUser(userId);
+                        // ✅ CAMBIAR deactivateUser() por setUserOnline(false)
+                        usuarioService.setUserOnline(userId, false);
                     } catch (Exception e) {
                         System.err.println("[ConnectionMonitor] ❌ Error: " + e.getMessage());
                     }

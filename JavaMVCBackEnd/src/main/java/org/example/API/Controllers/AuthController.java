@@ -76,6 +76,9 @@ public class AuthController {
                 return new ResponseDto(false, "Credenciales inválidas o usuario inactivo", null);
             }
 
+            // ✅ MARCAR USUARIO COMO ONLINE (en vez de activar)
+            usuarioService.setUserOnline(usuario.getId(), true);
+
             // Obtener tipo de usuario
             String tipoUsuario = usuarioService.getTipoUsuario(usuario);
 
@@ -83,7 +86,7 @@ public class AuthController {
             UserResponseDto userDto = new UserResponseDto(
                     usuario.getId(),
                     usuario.getNombre(),
-                    "", // email no usado en este sistema
+                    "",
                     tipoUsuario,
                     usuario.getCreatedAt() != null ? usuario.getCreatedAt().toString() : "",
                     usuario.getUpdatedAt() != null ? usuario.getUpdatedAt().toString() : ""
@@ -92,6 +95,7 @@ public class AuthController {
             System.out.println("[AuthController] Login exitoso - ID: " + loginDto.getUserId() +
                     ", Nombre: " + usuario.getNombre() +
                     ", Tipo: " + tipoUsuario);
+
             return new ResponseDto(true, "Login exitoso", gson.toJson(userDto));
 
         } catch (Exception e) {
@@ -155,6 +159,19 @@ public class AuthController {
      */
     private ResponseDto handleLogout(RequestDto request) {
         try {
+            if (request.getData() != null && !request.getData().isEmpty()) {
+                try {
+                    Long userId = gson.fromJson(request.getData(), Long.class);
+                    if (userId != null) {
+                        // ✅ MARCAR USUARIO COMO OFFLINE (en vez de desactivar)
+                        usuarioService.setUserOnline(userId, false);
+                        System.out.println("[AuthController] Usuario desconectado: " + userId);
+                    }
+                } catch (Exception e) {
+                    System.err.println("[AuthController] Error parseando userId: " + e.getMessage());
+                }
+            }
+
             System.out.println("[AuthController] Logout procesado");
             return new ResponseDto(true, "Logout exitoso", null);
         } catch (Exception e) {

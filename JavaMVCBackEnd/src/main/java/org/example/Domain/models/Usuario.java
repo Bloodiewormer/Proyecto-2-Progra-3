@@ -23,6 +23,9 @@ public abstract class Usuario {
     @Column(name = "is_active")
     protected Boolean isActive = false;
 
+    @Column(name = "online")
+    protected Boolean online = false;
+
     @Column(name = "created_at", updatable = false)
     protected LocalDateTime createdAt;
 
@@ -33,6 +36,9 @@ public abstract class Usuario {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
+        if (online == null) {
+            online = false;
+        }
     }
 
     @PreUpdate
@@ -55,6 +61,10 @@ public abstract class Usuario {
 
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+
+
+    public Boolean getOnline() { return online; }
+    public void setOnline(Boolean online) { this.online = online; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

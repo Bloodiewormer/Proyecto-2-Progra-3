@@ -4,7 +4,7 @@ import org.example.API.Controllers.*;
 import org.example.DataAcces.HibernateUtil;
 import org.example.DataAcces.services.*;
 import org.example.Domain.models.Usuario;
-import org.example.Server.ConnectionMonitor;
+import org.example.DataAcces.services.ConnectionMonitor;
 import org.example.Server.MessageBroadcaster;
 import org.example.Server.MensajeriaServer;
 import org.example.Server.SocketServer;
@@ -87,24 +87,24 @@ public class Main {
         // ========== SHUTDOWN HOOK ==========
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("\n╔════════════════════════════════════════════════════════╗");
-            System.out.println("║             APAGANDO SISTEMA                         ║");
+            System.out.println("║            🛑 APAGANDO SISTEMA                         ║");
             System.out.println("╚════════════════════════════════════════════════════════╝");
 
-            // Desactivar todos los usuarios activos
+            //  CAMBIAR: Marcar usuarios ONLINE como OFFLINE
             try {
-                List<Usuario> activeUsers = usuarioService.getActiveUsers();
-                System.out.println("📋 Desactivando " + activeUsers.size() + " usuarios activos...");
+                List<Usuario> onlineUsers = usuarioService.getOnlineUsers();
+                System.out.println(" Desconectando " + onlineUsers.size() + " usuarios online...");
 
-                for (Usuario user : activeUsers) {
-                    usuarioService.deactivateUser(user.getId());
-                    System.out.println("   ✓ " + user.getNombre() + " desactivado");
+                for (Usuario user : onlineUsers) {
+                    usuarioService.setUserOnline(user.getId(), false);
+                    System.out.println("   ✓ " + user.getNombre() + " → OFFLINE");
                 }
             } catch (Exception e) {
-                System.err.println(" Error desactivando usuarios: " + e.getMessage());
+                System.err.println(" Error desconectando usuarios: " + e.getMessage());
             }
 
             // Cerrar servidores
-            System.out.println("\n Cerrando servidores...");
+            System.out.println("\n📡 Cerrando servidores...");
             socketServer.stop();
             messageBroadcaster.stop();
             mensajeriaServer.stop();

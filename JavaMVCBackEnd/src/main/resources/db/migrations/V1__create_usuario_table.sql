@@ -4,8 +4,10 @@ CREATE TABLE usuarios (
                           clave VARCHAR(255) NOT NULL,
                           salt VARCHAR(255) NOT NULL,
                           is_active BOOLEAN DEFAULT FALSE,
+                          online BOOLEAN DEFAULT FALSE,
                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                           INDEX idx_nombre (nombre),
-                          INDEX idx_is_active (is_active)
+                          INDEX idx_is_active (is_active),
+                          INDEX idx_online (online)
 );

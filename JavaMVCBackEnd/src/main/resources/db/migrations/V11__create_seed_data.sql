@@ -1,13 +1,13 @@
 -- Insertar Administrador con contraseña "admin123"
-INSERT INTO usuarios (nombre, clave, salt, is_active) VALUES
-    ('admin', 'rgVhILV6MKsP28aSGtKuqZcDZoM7GRi3x1eXAT3FKs8=', 'Fne4U+QrrD23aduClBS53Q==', TRUE);
+INSERT INTO usuarios (nombre, clave, salt, is_active, online) VALUES
+    ('admin', 'rgVhILV6MKsP28aSGtKuqZcDZoM7GRi3x1eXAT3FKs8=', 'Fne4U+QrrD23aduClBS53Q==', TRUE, FALSE);
 INSERT INTO administradores (id) VALUES (1);
 
 -- Médicos con contraseña "temp123" - INACTIVOS hasta que establezcan su clave
-INSERT INTO usuarios (nombre, clave, salt, is_active) VALUES
-                                                          ('dr_garcia', 'ZBWvQ90ublwHsiMYKMIiHREljWNlhLMR1Bj7kdQp4EY=', 'JZbblpx+WzYaB6evilynSQ==', FALSE),
-                                                          ('dra_martinez', 'P+eQ9iwnfpQj4n6PBGSG0M+CL2Tu+hUbVIMTt/L5cg8=', 'R7hNiKTid/FPBk7+Xb6xUQ==', FALSE),
-                                                          ('dr_lopez', 'iDm92vFP/Pb0atQ8CWFUH3vBGpH91JfcA/3m2FvlM8Q=', 't8MxD8IXqsVoP5kqIX6f4g==', FALSE);
+INSERT INTO usuarios (nombre, clave, salt, is_active, online) VALUES
+                                                                  ('dr_garcia', 'ZBWvQ90ublwHsiMYKMIiHREljWNlhLMR1Bj7kdQp4EY=', 'JZbblpx+WzYaB6evilynSQ==', FALSE, FALSE),
+                                                                  ('dra_martinez', 'P+eQ9iwnfpQj4n6PBGSG0M+CL2Tu+hUbVIMTt/L5cg8=', 'R7hNiKTid/FPBk7+Xb6xUQ==', FALSE, FALSE),
+                                                                  ('dr_lopez', 'iDm92vFP/Pb0atQ8CWFUH3vBGpH91JfcA/3m2FvlM8Q=', 't8MxD8IXqsVoP5kqIX6f4g==', FALSE, FALSE);
 
 INSERT INTO medicos (id, especialidad) VALUES
                                            (2, 'Cardiología'),
@@ -15,9 +15,9 @@ INSERT INTO medicos (id, especialidad) VALUES
                                            (4, 'Medicina General');
 
 -- ✅ CORREGIDO - Farmacéuticos con contraseña "temp123" - INACTIVOS
-INSERT INTO usuarios (nombre, clave, salt, is_active) VALUES
-                                                          ('farm_rodriguez', 'gNQHbWcx2uYuK5e9RC2cFPsznfHpVRXMCyCI85ZLCi8=', 'WO3TKd64+K+UXD9VMC4WYg==', FALSE),
-                                                          ('farm_hernandez', 'WxguEGdPZqDH34gXwAnzxgQGCgUTkzpq+s2BiUV/x20=', 'Xeh12nX+mAZgDNLljUaoCg==', FALSE);
+INSERT INTO usuarios (nombre, clave, salt, is_active, online) VALUES
+                                                                  ('farm_rodriguez', 'gNQHbWcx2uYuK5e9RC2cFPsznfHpVRXMCyCI85ZLCi8=', 'WO3TKd64+K+UXD9VMC4WYg==', FALSE, FALSE),
+                                                                  ('farm_hernandez', 'WxguEGdPZqDH34gXwAnzxgQGCgUTkzpq+s2BiUV/x20=', 'Xeh12nX+mAZgDNLljUaoCg==', FALSE, FALSE);
 
 INSERT INTO farmaceutas (id) VALUES (5), (6);
 

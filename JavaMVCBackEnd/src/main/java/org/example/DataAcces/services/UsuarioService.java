@@ -245,7 +245,6 @@ public class UsuarioService {
      */
     public Usuario login(int userId, String clave) {
         try (Session session = sessionFactory.openSession()) {
-            // Convertir int a Long para JPA
             Usuario usuario = session.find(Usuario.class, (long) userId);
 
             if (usuario == null) {
@@ -253,7 +252,7 @@ public class UsuarioService {
                 return null;
             }
 
-            // Verificar que el usuario esté activo
+            // ✅ Verificar que el usuario esté activo (contraseña establecida)
             if (!usuario.getIsActive()) {
                 System.out.println("[UsuarioService] Usuario inactivo con ID: " + userId);
                 return null;
@@ -356,42 +355,39 @@ public class UsuarioService {
         }
     }
 
-    /**
-     * Desactivar usuario (logout o desconexión)
-     */
-    public void deactivateUser(Long userId) {
+    public List<Usuario> getOnlineUsers() {
+        try (Session session = sessionFactory.openSession()) {
+            String hql = "FROM Usuario u WHERE u.online = true ORDER BY u.nombre";
+            Query<Usuario> query = session.createQuery(hql, Usuario.class);
+            List<Usuario> usuarios = query.list();
+            System.out.println("[UsuarioService] 📋 Usuarios online: " + usuarios.size());
+            return usuarios;
+        } catch (Exception e) {
+            System.err.println("[UsuarioService] ❌ Error obteniendo usuarios online: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public void setUserOnline(Long userId, boolean online) {
         Transaction tx = null;
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
 
             Usuario usuario = session.find(Usuario.class, userId);
             if (usuario != null) {
-                usuario.setIsActive(false);
+                usuario.setOnline(online);
                 session.merge(usuario);
             }
 
             tx.commit();
-            System.out.println("[UsuarioService] 👋 Usuario desactivado: " + userId);
+            System.out.println("[UsuarioService] " + (online ? "🟢" : "🔴") +
+                    " Usuario " + userId + " → " + (online ? "ONLINE" : "OFFLINE"));
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            System.err.println("[UsuarioService] ❌ Error desactivando: " + e.getMessage());
+            System.err.println("[UsuarioService] ❌ Error cambiando estado online: " + e.getMessage());
             throw e;
         }
     }
-
-    public List<Usuario> getActiveUsers() {
-        try (Session session = sessionFactory.openSession()) {
-            String hql = "FROM Usuario u WHERE u.isActive = true ORDER BY u.nombre";
-            Query<Usuario> query = session.createQuery(hql, Usuario.class);
-            List<Usuario> usuarios = query.list();
-            System.out.println("[UsuarioService] 📋 Usuarios activos: " + usuarios.size());
-            return usuarios;
-        } catch (Exception e) {
-            System.err.println("[UsuarioService] ❌ Error obteniendo activos: " + e.getMessage());
-            throw e;
-        }
-    }
-
 
 
 }
