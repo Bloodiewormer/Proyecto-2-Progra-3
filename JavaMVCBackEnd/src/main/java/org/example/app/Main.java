@@ -32,7 +32,8 @@ public class Main {
         RecetaController recetaController = new RecetaController(recetaService);
         PrescribirController prescribirController = new PrescribirController(recetaService, pacienteService, medicamentoService);
         HistoricoRecetasController historicoRecetasController = new HistoricoRecetasController(recetaService, pacienteService);
-        DashboardController dashboardController = new DashboardController(dashboardService); // ← NUEVO
+        DashboardController dashboardController = new DashboardController(dashboardService);
+        DespachoController despachoController = new DespachoController(recetaService, pacienteService);
         System.out.println("✓ Controladores API inicializados");
 
         // Configurar puertos
@@ -49,6 +50,7 @@ public class Main {
                 farmaceutaController,
                 recetaController,
                 prescribirController,
+                despachoController,
                 historicoRecetasController,
                 dashboardController  // ← AGREGAR AQUÍ
         );

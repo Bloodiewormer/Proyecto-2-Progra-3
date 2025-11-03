@@ -32,6 +32,7 @@ public class SocketServer {
     private MessageBroadcaster messageBroadcaster;
     private boolean running;
     private ServerSocket serverSocket;
+    private final DespachoController despachoController;
 
     public SocketServer(int port,
                         AuthController authController,
@@ -41,6 +42,7 @@ public class SocketServer {
                         FarmaceutaController farmaceutaController,
                         RecetaController recetaController,
                         PrescribirController prescribirController,
+                        DespachoController despachoController,
                         HistoricoRecetasController historicoRecetasController,
                         DashboardController dashboardController) { // ← NUEVO PARÁMETRO
         this.port = port;
@@ -52,7 +54,8 @@ public class SocketServer {
         this.recetaController = recetaController;
         this.prescribirController = prescribirController;
         this.historicoRecetasController = historicoRecetasController;
-        this.dashboardController = dashboardController; // ← ASIGNAR
+        this.dashboardController = dashboardController;
+        this.despachoController = despachoController;
     }
 
     /**
@@ -80,6 +83,7 @@ public class SocketServer {
                             farmaceutaController,
                             recetaController,
                             prescribirController,
+                            despachoController,
                             historicoRecetasController,
                             dashboardController,
                             this

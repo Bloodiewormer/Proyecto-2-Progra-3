@@ -184,6 +184,12 @@ public class RecetaService {
             if (receta != null) {
                 receta.setEstado(nuevoEstado);
                 session.merge(receta);
+
+                // IMPORTANTE: inicializar relaciones/colecciones necesarias antes de cerrar la sesión
+                Hibernate.initialize(receta.getDetalles());
+                Hibernate.initialize(receta.getPaciente());
+                Hibernate.initialize(receta.getMedico());
+
                 System.out.println("[RecetaService] Estado actualizado - Receta ID=" + id + ", Estado=" + nuevoEstado);
             }
 

@@ -91,24 +91,31 @@ public class DespachoForm extends JPanel {
         }
     }
 
+    private void initEstadoCombo() {
+        // Mostrar todos los estados siempre
+        estadoComboBox.removeAllItems();
+        for (EstadoReceta er : EstadoReceta.values()) {
+            estadoComboBox.addItem(er);
+        }
+    }
+
     private void configurarEstadosValidos(String estadoActual) {
         estadoComboBox.removeAllItems();
+        for (EstadoReceta er : EstadoReceta.values()) {
+            estadoComboBox.addItem(er);
+        }
+
         try {
             EstadoReceta estado = EstadoReceta.valueOf(estadoActual);
-            switch (estado) {
-                case CONFECCIONADA -> estadoComboBox.addItem(EstadoReceta.PROCESO);
-                case PROCESO -> {
-                    estadoComboBox.addItem(EstadoReceta.LISTA);
-                    estadoComboBox.addItem(EstadoReceta.CONFECCIONADA);
-                }
-                case LISTA -> {
-                    estadoComboBox.addItem(EstadoReceta.ENTREGADA);
-                    estadoComboBox.addItem(EstadoReceta.PROCESO);
-                }
-                case ENTREGADA -> cambiarEstadoButton.setEnabled(false);
-            }
+            // Si ya está ENTREGADA, no permitir cambios
+            cambiarEstadoButton.setEnabled(estado != EstadoReceta.ENTREGADA);
+            // Opcional: no seleccionar nada por defecto
+            estadoComboBox.setSelectedItem(null);
         } catch (Exception ex) {
             System.err.println("Estado desconocido: " + estadoActual);
+            // por defecto, permitir cambios si el estado no se pudo parsear
+            cambiarEstadoButton.setEnabled(true);
+            estadoComboBox.setSelectedItem(null);
         }
     }
 

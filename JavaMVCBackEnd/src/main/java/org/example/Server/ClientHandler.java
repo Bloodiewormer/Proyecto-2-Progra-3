@@ -23,7 +23,8 @@ public class ClientHandler implements Runnable {
     private final PrescribirController prescribirController;
     private final FarmaceutaController farmaceutaController;
     private final HistoricoRecetasController historicoRecetasController;
-    private final DashboardController dashboardController; // ← NUEVO
+    private final DashboardController dashboardController;
+    private final DespachoController despachoController;
     private final SocketServer server;
     private final Gson gson = new Gson();
     private PrintWriter out;
@@ -37,8 +38,9 @@ public class ClientHandler implements Runnable {
                          FarmaceutaController farmaceutaController,
                          RecetaController recetaController,
                          PrescribirController prescribirController,
+                         DespachoController despachoController,
                          HistoricoRecetasController historicoRecetasController,
-                         DashboardController dashboardController, // ← NUEVO PARÁMETRO
+                         DashboardController dashboardController,
                          SocketServer server) {
         this.clientSocket = clientSocket;
         this.authController = authController;
@@ -49,7 +51,8 @@ public class ClientHandler implements Runnable {
         this.recetaController = recetaController;
         this.prescribirController = prescribirController;
         this.historicoRecetasController = historicoRecetasController;
-        this.dashboardController = dashboardController; // ← ASIGNAR
+        this.dashboardController = dashboardController;
+        this.despachoController = despachoController;
         this.server = server;
     }
 
@@ -139,9 +142,12 @@ public class ClientHandler implements Runnable {
                     response = historicoRecetasController.route(request);
                     break;
 
-                case "Dashboard": // ← NUEVO CASO
+                case "Dashboard":
                     response = dashboardController.handleRequest(request);
                     break;
+
+                case "Despacho":
+                    return despachoController.route(request);
 
                 default:
                     response = new ResponseDto(false, "Controlador desconocido: " + request.getController(), null);
