@@ -319,6 +319,7 @@ public class MenuPrincipalView extends JFrame {
     }
 
     private void showHistoricoRecetasView() {
+        historicoRecetasController.recargarRecetas(); // <-- AGREGAR ESTA LÍNEA
         switchContent(historicoRecetasView, "Histórico de Recetas");
     }
 
@@ -369,8 +370,10 @@ public class MenuPrincipalView extends JFrame {
         );
 
         if (confirm == JOptionPane.YES_OPTION) {
-            dispose();
-            loginController.logout();
+            setVisible(false);  // Ocultar primero
+            contentPanel.removeAll();  // Limpiar contenido
+            loginController.logout();  // Mostrar login
+            dispose();  // Destruir después
         }
     }
 

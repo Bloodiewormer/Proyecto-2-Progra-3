@@ -56,6 +56,10 @@ public class HistoricoRecetasController {
         combo.addItem("Nombre Paciente");
     }
 
+    public void recargarRecetas() {
+        cargarRecetas();
+    }
+
     private void cargarRecetas() {
         view.showLoading(true);
         SwingWorker<List<RecetaResponseDto>, Void> worker = new SwingWorker<>() {

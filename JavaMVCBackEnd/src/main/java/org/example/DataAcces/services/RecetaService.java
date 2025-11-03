@@ -41,7 +41,7 @@ public class RecetaService {
             receta.setPaciente(paciente);
             receta.setMedico(medico);
             receta.setFechaRetiro(fechaRetiro);
-            receta.setEstado(EstadoReceta.CONFECCIONADA);
+            receta.setEstado(EstadoReceta.PROCESO);
 
             session.persist(receta);
             tx.commit();
