@@ -111,7 +111,7 @@ public class MenuPrincipalView extends JFrame {
     }
 
     private void initializeDespachoView() {
-        despachoForm = new DespachoForm(despachoService, userId);
+        despachoForm = new DespachoForm(despachoService, userId, this);
     }
 
     private void initializePrescribirView() {

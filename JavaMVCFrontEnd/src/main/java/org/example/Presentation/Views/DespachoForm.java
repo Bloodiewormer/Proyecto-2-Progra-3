@@ -2,6 +2,8 @@ package org.example.Presentation.Views;
 
 import org.example.Domain.Dtos.Paciente.PacienteResponseDto;
 import org.example.Domain.Dtos.Receta.RecetaResponseDto;
+import org.example.Presentation.Components.BlueRoundedButton;
+import org.example.Presentation.Components.LoadingOverlay;
 import org.example.Presentation.Controllers.DespachoController;
 import org.example.Presentation.Models.RecetaTableModel;
 import org.example.Services.DespachoService;
@@ -16,9 +18,9 @@ public class DespachoForm extends JPanel {
     private JPanel searchPanel;
     private JPanel infoPanel;
     private JPanel tablePanel;
-    private JPanel actionPanel;
+    private JPanel estadoPanel;
 
-    private JTextField idPacienteField;
+    private JTextField DatoPacienteField;
     private JButton buscarButton;
     private JButton limpiarButton;
 
@@ -31,92 +33,44 @@ public class DespachoForm extends JPanel {
 
     private JComboBox<EstadoReceta> estadoComboBox;
     private JButton cambiarEstadoButton;
-    private JButton refrescarButton;
+    private JComboBox<String> searchBycomboBox;
 
     private final DespachoController controller;
-    private RecetaTableModel recetaTableModel;
+    private final RecetaTableModel recetaTableModel;
+    private final LoadingOverlay loadingOverlay;
     private Integer pacienteSeleccionadoId;
     private Integer recetaSeleccionadaId;
 
-    public DespachoForm(DespachoService despachoService, int idFarmaceuta) {
+    public DespachoForm(DespachoService despachoService, int idFarmaceuta, JFrame parentFrame) {
         this.controller = new DespachoController(this, despachoService, idFarmaceuta);
+        this.recetaTableModel = new RecetaTableModel();
+        this.loadingOverlay = new LoadingOverlay(parentFrame);
 
         setLayout(new BorderLayout());
-        initComponents();
-        initTable();
-        initEstadoCombo();
-        wireEvents();
-
         add(mainPanel, BorderLayout.CENTER);
+
+        initComponents();
+        wireEvents();
 
         controller.cargarRecetas();
     }
 
     private void initComponents() {
-        mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        searchBycomboBox.setModel(new DefaultComboBoxModel<>(new String[]{"ID", "Nombre"}));
 
-        searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        searchPanel.add(new JLabel("ID Paciente:"));
-        idPacienteField = new JTextField(10);
-        searchPanel.add(idPacienteField);
-        buscarButton = new JButton("Buscar");
-        searchPanel.add(buscarButton);
-        limpiarButton = new JButton("Limpiar");
-        searchPanel.add(limpiarButton);
-        refrescarButton = new JButton("Refrescar");
-        searchPanel.add(refrescarButton);
-
-        infoPanel = new JPanel(new GridLayout(3, 1, 5, 5));
-        infoPanel.setBorder(BorderFactory.createTitledBorder("Información del Paciente"));
-        pacienteInfoLabel = new JLabel("Paciente: N/A");
-        telefonoLabel = new JLabel("Teléfono: N/A");
-        fechaNacimientoLabel = new JLabel("Fecha Nac.: N/A");
-        infoPanel.add(pacienteInfoLabel);
-        infoPanel.add(telefonoLabel);
-        infoPanel.add(fechaNacimientoLabel);
-
-        tablePanel = new JPanel(new BorderLayout());
-        tablePanel.setBorder(BorderFactory.createTitledBorder("Recetas"));
-        recetasTable = new JTable();
-        scrollPane = new JScrollPane(recetasTable);
-        tablePanel.add(scrollPane, BorderLayout.CENTER);
-
-        actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        actionPanel.add(new JLabel("Cambiar estado a:"));
-        estadoComboBox = new JComboBox<>();
-        actionPanel.add(estadoComboBox);
-        cambiarEstadoButton = new JButton("Cambiar Estado");
-        cambiarEstadoButton.setEnabled(false);
-        actionPanel.add(cambiarEstadoButton);
-
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.add(searchPanel, BorderLayout.NORTH);
-        topPanel.add(infoPanel, BorderLayout.CENTER);
-
-        mainPanel.add(topPanel, BorderLayout.NORTH);
-        mainPanel.add(tablePanel, BorderLayout.CENTER);
-        mainPanel.add(actionPanel, BorderLayout.SOUTH);
-    }
-
-    private void initTable() {
-        recetaTableModel = new RecetaTableModel();
         recetasTable.setModel(recetaTableModel);
         recetasTable.getSelectionModel().addListSelectionListener(this::onTableSelection);
         recetasTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    }
 
-    private void initEstadoCombo() {
         estadoComboBox.removeAllItems();
-        estadoComboBox.addItem(EstadoReceta.PROCESO);
-        estadoComboBox.addItem(EstadoReceta.LISTA);
-        estadoComboBox.addItem(EstadoReceta.ENTREGADA);
+        for (EstadoReceta e : EstadoReceta.values()) {
+            estadoComboBox.addItem(e);
+        }
     }
 
     private void wireEvents() {
         buscarButton.addActionListener(e -> controller.buscarPaciente());
         limpiarButton.addActionListener(e -> controller.limpiar());
-        refrescarButton.addActionListener(e -> controller.cargarRecetas());
         cambiarEstadoButton.addActionListener(e -> controller.cambiarEstado());
     }
 
@@ -139,7 +93,6 @@ public class DespachoForm extends JPanel {
 
     private void configurarEstadosValidos(String estadoActual) {
         estadoComboBox.removeAllItems();
-
         try {
             EstadoReceta estado = EstadoReceta.valueOf(estadoActual);
             switch (estado) {
@@ -159,30 +112,25 @@ public class DespachoForm extends JPanel {
         }
     }
 
-    public JPanel getMainPanel() { return mainPanel; }
-    public JTextField getIdPacienteField() { return idPacienteField; }
-    public JTable getRecetasTable() { return recetasTable; }
-    public RecetaTableModel getRecetaTableModel() { return recetaTableModel; }
-    public JComboBox<EstadoReceta> getEstadoComboBox() { return estadoComboBox; }
-    public Integer getRecetaSeleccionadaId() { return recetaSeleccionadaId; }
-    public Integer getPacienteSeleccionadoId() { return pacienteSeleccionadoId; }
-    public void setPacienteSeleccionadoId(Integer id) { this.pacienteSeleccionadoId = id; }
+    public void showLoading(boolean visible) {
+        loadingOverlay.show(visible);
+    }
 
     public void mostrarPaciente(PacienteResponseDto paciente) {
         if (paciente != null) {
             pacienteInfoLabel.setText("Paciente: " + paciente.getNombre());
             telefonoLabel.setText("Teléfono: " + paciente.getTelefono());
-            fechaNacimientoLabel.setText("Fecha Nac.: " + paciente.getFechaNacimiento());
+            fechaNacimientoLabel.setText("Nacimiento: " + paciente.getFechaNacimiento());
             pacienteSeleccionadoId = paciente.getId();
         }
     }
 
     public void limpiarPaciente() {
-        pacienteInfoLabel.setText("Paciente: N/A");
-        telefonoLabel.setText("Teléfono: N/A");
-        fechaNacimientoLabel.setText("Fecha Nac.: N/A");
+        pacienteInfoLabel.setText("Seleccione un paciente");
+        telefonoLabel.setText("");
+        fechaNacimientoLabel.setText("");
         pacienteSeleccionadoId = null;
-        idPacienteField.setText("");
+        DatoPacienteField.setText("");
     }
 
     public void mostrarMensaje(String mensaje) {
@@ -192,4 +140,22 @@ public class DespachoForm extends JPanel {
     public void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
+
+    // Getters
+    public JPanel getMainPanel() { return mainPanel; }
+    public RecetaTableModel getRecetaTableModel() { return recetaTableModel; }
+    public JTable getRecetasTable() { return recetasTable; }
+    public JTextField getDatoPacienteField() { return DatoPacienteField; }
+    public JComboBox<String> getSearchByComboBox() { return searchBycomboBox; }
+    public JComboBox<EstadoReceta> getEstadoComboBox() { return estadoComboBox; }
+    public Integer getRecetaSeleccionadaId() { return recetaSeleccionadaId; }
+    public Integer getPacienteSeleccionadoId() { return pacienteSeleccionadoId; }
+
+    private void createUIComponents() {
+        buscarButton = new BlueRoundedButton("Buscar");
+        limpiarButton = new BlueRoundedButton("Limpiar");
+        cambiarEstadoButton = new BlueRoundedButton("Cambiar Estado");
+    }
+
+
 }

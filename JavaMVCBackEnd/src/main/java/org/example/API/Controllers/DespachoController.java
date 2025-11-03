@@ -5,6 +5,7 @@ import org.example.DataAcces.services.RecetaService;
 import org.example.DataAcces.services.PacienteService;
 import org.example.Domain.dtos.Paciente.PacienteResponseDto;
 import org.example.Domain.dtos.Receta.RecetaResponseDto;
+import org.example.Domain.dtos.Receta.UpdateEstadoRecetaRequestDto;
 import org.example.Domain.dtos.Receta.UpdateRecetaRequestDto;
 import org.example.Domain.dtos.RequestDto;
 import org.example.Domain.dtos.ResponseDto;
@@ -96,21 +97,35 @@ public class DespachoController {
         }
     }
 
+    // En JavaMVCBackEnd/src/main/java/org/example/API/Controllers/DespachoController.java
     private ResponseDto handleActualizarEstado(RequestDto request) {
         try {
-            UpdateRecetaRequestDto dto = gson.fromJson(request.getData(), UpdateRecetaRequestDto.class);
-            EstadoReceta nuevoEstado = EstadoReceta.valueOf(dto.getEstado());
+            UpdateEstadoRecetaRequestDto dto = gson.fromJson(request.getData(), UpdateEstadoRecetaRequestDto.class);
+            var nuevoEstado = EstadoReceta.valueOf(dto.getEstado());
+            var receta = recetaService.updateEstado((long) dto.getId(), nuevoEstado);
+            if (receta == null) return new ResponseDto(false, "Receta no encontrada", null);
 
-            Receta receta = recetaService.updateEstado((long) dto.getId(), nuevoEstado);
+            // Mapear a RecetaResponseDto (usa el mismo patrón que tus otros controllers)
+            List<DetalleRecetaResponseDto> detalles = receta.getDetalles().stream()
+                    .map(d -> new DetalleRecetaResponseDto(
+                            d.getId().intValue(),
+                            d.getMedicamento().getId().intValue(),
+                            d.getCantidad(),
+                            d.getIndicaciones(),
+                            d.getDias()))
+                    .toList();
 
-            if (receta != null) {
-                RecetaResponseDto responseDto = toRecetaResponseDto(receta);
-                return new ResponseDto(true, "Estado actualizado exitosamente", gson.toJson(responseDto));
-            } else {
-                return new ResponseDto(false, "Receta no encontrada", null);
-            }
+            var dtoResp = new RecetaResponseDto(
+                    receta.getId().intValue(),
+                    receta.getPaciente().getId().intValue(),
+                    receta.getMedico().getId().intValue(),
+                    receta.getFechaConfeccion().format(FORMATTER),
+                    detalles,
+                    receta.getEstado().name()
+            );
+
+            return new ResponseDto(true, "Estado actualizado exitosamente", gson.toJson(dtoResp));
         } catch (Exception e) {
-            System.err.println("[DespachoController] Error en handleActualizarEstado: " + e.getMessage());
             return new ResponseDto(false, "Error actualizando estado: " + e.getMessage(), null);
         }
     }

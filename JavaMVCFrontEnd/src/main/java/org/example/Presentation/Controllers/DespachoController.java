@@ -40,7 +40,7 @@ public class DespachoController {
     }
 
     public void buscarPaciente() {
-        String idTexto = view.getIdPacienteField().getText().trim();
+        String idTexto = view.getDatoPacienteField().getText().trim();
 
         if (idTexto.isEmpty()) {
             view.mostrarError("Debe ingresar un ID de paciente");
@@ -155,7 +155,7 @@ public class DespachoController {
 
     public void limpiar() {
         view.limpiarPaciente();
-        view.getIdPacienteField().setText("");
+        view.getDatoPacienteField().setText("");
         cargarRecetas();
     }
 }
