@@ -95,7 +95,7 @@ public class RecetaController extends Observable {
         SwingWorker<List<RecetaResponseDto>, Void> worker = new SwingWorker<>() {
             @Override
             protected List<RecetaResponseDto> doInBackground() throws Exception {
-                return recetaService.listRecetasAsync().get();
+                return recetaService.listRecetasAsync().get().getRecetas();
             }
 
             @Override

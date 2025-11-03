@@ -4,11 +4,13 @@ import org.example.Domain.Dtos.Farmaceuta.*;
 import org.example.Domain.Dtos.Medico.*;
 import org.example.Domain.Dtos.RequestDto;
 import org.example.Domain.Dtos.ResponseDto;
+import org.example.Domain.Dtos.Usuario.UsuarioResponseDto;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 
 public class UsuarioService extends BaseService {
     private final ExecutorService executor = Executors.newCachedThreadPool();
@@ -132,4 +134,31 @@ public class UsuarioService extends BaseService {
             return listResponse.getMedicos();
         });
     }
+
+    // ==================== USUARIO ====================
+
+    public Future<UsuarioResponseDto> getUsuarioByIdAsync(int id) {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Usuario",
+                    "getById",
+                    gson.toJson(id),
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), UsuarioResponseDto.class);
+        });
+    }
+
+    public UsuarioResponseDto getUsuarioById(int id) {
+        try {
+            return getUsuarioByIdAsync(id).get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
+
+

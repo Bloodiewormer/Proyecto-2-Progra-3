@@ -1,5 +1,6 @@
 package org.example.Presentation.Views;
 
+import org.example.Presentation.Components.CustomButton;
 import org.example.Presentation.Components.LoadingOverlay;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -90,5 +91,11 @@ public class MensajesView extends JPanel {
 
     public JButton getStatusButton() {
         return StatusButton;
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        SendButton = new CustomButton("Enviar", Color.decode("#4CAF50"), Color.WHITE);
+        StatusButton = new CustomButton("", Color.decode("#2196F3"), Color.WHITE);
     }
 }

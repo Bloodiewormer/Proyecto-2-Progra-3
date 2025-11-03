@@ -1,10 +1,13 @@
 package org.example.Services;
 
-import org.example.Domain.Dtos.Receta.*;
+import org.example.Domain.Dtos.Receta.AddRecetaRequestDto;
+import org.example.Domain.Dtos.Receta.DeleteRecetaRequestDto;
+import org.example.Domain.Dtos.Receta.ListRecetaResponseDto;
+import org.example.Domain.Dtos.Receta.RecetaResponseDto;
+import org.example.Domain.Dtos.Receta.UpdateRecetaRequestDto;
 import org.example.Domain.Dtos.RequestDto;
 import org.example.Domain.Dtos.ResponseDto;
 
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -27,6 +30,20 @@ public class RecetaService extends BaseService {
             ResponseDto response = sendRequest(request);
             if (!response.isSuccess()) return null;
             return gson.fromJson(response.getData(), RecetaResponseDto.class);
+        });
+    }
+
+    public Future<ListRecetaResponseDto> listRecetasAsync() {
+        return executor.submit(() -> {
+            RequestDto request = new RequestDto(
+                    "Receta",
+                    "list",
+                    null,
+                    null
+            );
+            ResponseDto response = sendRequest(request);
+            if (!response.isSuccess()) return null;
+            return gson.fromJson(response.getData(), ListRecetaResponseDto.class);
         });
     }
 
@@ -57,32 +74,31 @@ public class RecetaService extends BaseService {
         });
     }
 
-    public Future<List<RecetaResponseDto>> listRecetasAsync() {
+    public Future<ListRecetaResponseDto> listRecetasByPacienteAsync(int pacienteId) {
         return executor.submit(() -> {
             RequestDto request = new RequestDto(
                     "Receta",
-                    "list",
-                    "",
+                    "listByPaciente",
+                    String.valueOf(pacienteId),
                     null
             );
             ResponseDto response = sendRequest(request);
             if (!response.isSuccess()) return null;
-            ListRecetaResponseDto listResponse = gson.fromJson(response.getData(), ListRecetaResponseDto.class);
-            return listResponse.getRecetas();
+            return gson.fromJson(response.getData(), ListRecetaResponseDto.class);
         });
     }
 
-    public Future<RecetaResponseDto> getRecetaByIdAsync(int id) {
+    public Future<ListRecetaResponseDto> listRecetasByMedicoAsync(int medicoId) {
         return executor.submit(() -> {
             RequestDto request = new RequestDto(
                     "Receta",
-                    "getById",
-                    String.valueOf(id),
+                    "listByMedico",
+                    String.valueOf(medicoId),
                     null
             );
             ResponseDto response = sendRequest(request);
             if (!response.isSuccess()) return null;
-            return gson.fromJson(response.getData(), RecetaResponseDto.class);
+            return gson.fromJson(response.getData(), ListRecetaResponseDto.class);
         });
     }
 }

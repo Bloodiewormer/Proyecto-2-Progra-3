@@ -3,6 +3,7 @@ package org.example.Presentation.Controllers;
 import org.example.Domain.Dtos.Mensaje.*;
 import org.example.Logic.ClienteMensajeria;
 import org.example.Presentation.Views.MensajesView;
+import org.example.Services.MensajeService;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -12,14 +13,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
-/**
- * Controlador de mensajería siguiendo el patrón del FarmaceutaController
- * Maneja toda la lógica de eventos, validaciones y comunicación con servidor
- */
 public class MensajeController {
     private final MensajesView mensajesView;
     private final ClienteMensajeria clienteMensajeria;
+    private final MensajeService mensajeService;
 
     private String selectedUser;
     private final String currentUser;
@@ -29,17 +29,11 @@ public class MensajeController {
         this.mensajesView = mensajesView;
         this.currentUser = currentUser;
         this.usersStatus = new HashMap<>();
-
-        // Inicializar cliente de mensajería
         this.clienteMensajeria = new ClienteMensajeria(currentUser, this);
+        this.mensajeService = new MensajeService(serverHost, serverPort);
 
-        // Conectar al servidor de forma asíncrona
         connectToServerAsync(serverHost, serverPort);
-
-        // Configurar listeners
         addListeners();
-
-        // Configurar estado inicial
         setupInitialState();
     }
 
@@ -52,7 +46,7 @@ public class MensajeController {
 
         SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
             @Override
-            protected Boolean doInBackground() throws Exception {
+            protected Boolean doInBackground() {
                 return clienteMensajeria.conectar(host, port);
             }
 
@@ -82,7 +76,6 @@ public class MensajeController {
         mensajesView.getWriteMessageField().addActionListener(e -> handleSendMessage());
         mensajesView.getUsersList().getSelectionModel().addListSelectionListener(this::handleUserSelection);
 
-        // Placeholder management
         mensajesView.getWriteMessageField().addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent e) {
@@ -112,21 +105,29 @@ public class MensajeController {
                     message
             );
 
-            // Agregar mensaje a la vista inmediatamente (optimistic UI)
             String timestamp = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("HH:mm"));
             addSentMessage(message, timestamp);
 
-            // Limpiar campo
             clearMessageField();
 
-            // Enviar al servidor de forma asíncrona
+            // Enviar mensaje usando MensajeService (asíncrono)
             executeAsync(
                     () -> {
-                        clienteMensajeria.enviarMensaje(dto);
-                        return true;
+                        Future<MensajeResponseDto> future = mensajeService.addMensajeAsync(dto);
+                        try {
+                            return future.get() != null;
+                        } catch (InterruptedException | ExecutionException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     },
-                    success -> System.out.println("✅ Mensaje enviado exitosamente"),
+                    success -> {
+                        if (success) {
+                            System.out.println("✅ Mensaje enviado exitosamente");
+                        } else {
+                            showError("No se pudo enviar el mensaje");
+                        }
+                    },
                     "Error al enviar mensaje"
             );
 
@@ -151,17 +152,13 @@ public class MensajeController {
         String cleanUser = cleanUserName(userWithEmoji);
         this.selectedUser = cleanUser;
 
-        // Actualizar UI
         updateUserLabel(cleanUser);
 
-        // Actualizar indicador de estado
         boolean isActive = usersStatus.getOrDefault(cleanUser, false);
         updateStatusIndicator(isActive);
 
-        // Limpiar mensajes anteriores
         clearMessages();
 
-        // Cargar historial de forma asíncrona
         if (clienteMensajeria.isConectado()) {
             loadHistoryAsync(cleanUser);
         } else {
@@ -172,14 +169,20 @@ public class MensajeController {
     private void loadHistoryAsync(String contactUser) {
         showLoading(true);
 
-        ListMensajeResponsetDto dto = new ListMensajesRequestDto(currentUser, contactUser);
-
         executeAsync(
                 () -> {
-                    clienteMensajeria.solicitarHistorial(dto);
-                    return true;
+                    Future<ListMensajeResponseDto> future = mensajeService.listMensajesAsync(currentUser, contactUser);
+                    try {
+                        ListMensajeResponseDto response = future.get();
+                        if (response != null) {
+                            handleHistory(response.getMensajes());
+                        }
+                        return true;
+                    } catch (InterruptedException | ExecutionException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 },
-                success -> System.out.println("✅ Solicitud de historial enviada"),
+                success -> System.out.println("✅ Historial cargado"),
                 "Error al cargar historial"
         );
     }
@@ -200,15 +203,11 @@ public class MensajeController {
     // Callbacks from ClienteMensajeria
     // ---------------------------
 
-    /**
-     * Manejar mensaje entrante del servidor
-     */
     public void handleIncomingMessage(MensajeResponseDto mensaje) {
         SwingUtilities.invokeLater(() -> {
             String timestamp = mensaje.getFechaHora()
                     .format(DateTimeFormatter.ofPattern("HH:mm"));
 
-            // Solo mostrar si es del usuario actualmente seleccionado
             if (mensaje.getRemitente().equals(selectedUser)) {
                 addReceivedMessage(
                         mensaje.getContenido(),
@@ -216,15 +215,10 @@ public class MensajeController {
                         timestamp
                 );
             }
-
-            // Notificación sonora
             java.awt.Toolkit.getDefaultToolkit().beep();
         });
     }
 
-    /**
-     * Manejar lista de usuarios recibida del servidor
-     */
     public void handleUsersList(List<String> users) {
         SwingUtilities.invokeLater(() -> {
             DefaultListModel<String> model = mensajesView.getUsersModel();
@@ -240,14 +234,10 @@ public class MensajeController {
         });
     }
 
-    /**
-     * Manejar cambio de estado de un usuario
-     */
     public void handleUserStatusChange(String username, boolean isActive) {
         usersStatus.put(username, isActive);
 
         SwingUtilities.invokeLater(() -> {
-            // Actualizar en la lista
             DefaultListModel<String> model = mensajesView.getUsersModel();
             for (int i = 0; i < model.getSize(); i++) {
                 String element = model.getElementAt(i);
@@ -260,16 +250,12 @@ public class MensajeController {
                 }
             }
 
-            // Si es el usuario seleccionado, actualizar indicador
             if (username.equals(selectedUser)) {
                 updateStatusIndicator(isActive);
             }
         });
     }
 
-    /**
-     * Manejar historial de mensajes recibido
-     */
     public void handleHistory(List<MensajeResponseDto> mensajes) {
         SwingUtilities.invokeLater(() -> {
             clearMessages();
@@ -521,9 +507,6 @@ public class MensajeController {
     // Public Methods
     // ---------------------------
 
-    /**
-     * Desconectar del servidor al cerrar
-     */
     public void disconnect() {
         if (clienteMensajeria != null) {
             clienteMensajeria.desconectar();

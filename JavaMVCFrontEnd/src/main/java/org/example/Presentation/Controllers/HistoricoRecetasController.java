@@ -65,7 +65,7 @@ public class HistoricoRecetasController {
         SwingWorker<List<RecetaResponseDto>, Void> worker = new SwingWorker<>() {
             @Override
             protected List<RecetaResponseDto> doInBackground() throws Exception {
-                return recetaService.listRecetasAsync().get();
+                return recetaService.listRecetasAsync().get().getRecetas();
             }
             @Override
             protected void done() {
@@ -122,13 +122,19 @@ public class HistoricoRecetasController {
                 ? pacientes.stream().filter(p -> p.getId() == receta.getIdPaciente()).findFirst().orElse(null)
                 : null;
 
+        // Aquí deberías obtener el nombre del médico según tu modelo/datos.
+        // Por defecto, se muestra el ID.
+        String nombreMedico = String.valueOf(receta.getIdMedico());
+        // Si tienes una lista de médicos, puedes buscar el nombre aquí.
+
         StringBuilder sb = new StringBuilder();
         sb.append("ID Receta: ").append(receta.getId()).append("\n");
         sb.append("Paciente: ").append(paciente != null ? paciente.getNombre() : receta.getIdPaciente()).append("\n");
-        sb.append("Médico: ").append(receta.getIdMedico()).append("\n");
+        sb.append("Médico: ").append(nombreMedico).append("\n");
         sb.append("Fecha Confección: ").append(receta.getFechaConfeccion()).append("\n");
         sb.append("Fecha Retiro: ").append(receta.getFechaRetiro()).append("\n");
         sb.append("Estado: ").append(receta.getEstado()).append("\n");
         JOptionPane.showMessageDialog(view, sb.toString(), "Detalles de Receta", JOptionPane.INFORMATION_MESSAGE);
     }
 }
+
