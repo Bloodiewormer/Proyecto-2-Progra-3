@@ -29,11 +29,20 @@ public class MensajeController {
         this.mensajesView = mensajesView;
         this.currentUser = currentUser;
         this.usersStatus = new HashMap<>();
+        this.mensajeService = new MensajeService("localhost", 7002);
+
+        System.out.println("========================================");
+        System.out.println("[MensajeController] Inicializando:");
+        System.out.println("  Usuario actual: " + currentUser);
+        System.out.println("  Servidor: " + serverHost + ":" + serverPort);
+        System.out.println("========================================");
+
         this.clienteMensajeria = new ClienteMensajeria(currentUser, this);
-        this.mensajeService = new MensajeService(serverHost, serverPort);
 
         connectToServerAsync(serverHost, serverPort);
+
         addListeners();
+
         setupInitialState();
     }
 
@@ -111,25 +120,10 @@ public class MensajeController {
 
             clearMessageField();
 
-            // Enviar mensaje usando MensajeService (asíncrono)
-            executeAsync(
-                    () -> {
-                        Future<MensajeResponseDto> future = mensajeService.addMensajeAsync(dto);
-                        try {
-                            return future.get() != null;
-                        } catch (InterruptedException | ExecutionException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    },
-                    success -> {
-                        if (success) {
-                            System.out.println("✅ Mensaje enviado exitosamente");
-                        } else {
-                            showError("No se pudo enviar el mensaje");
-                        }
-                    },
-                    "Error al enviar mensaje"
-            );
+            // ✅ SOLO usar ClienteMensajeria (ObjectOutputStream al puerto 7002)
+            clienteMensajeria.enviarMensaje(dto);
+
+            System.out.println("✅ Mensaje enviado correctamente");
 
         } catch (Exception ex) {
             handleError("Error al enviar mensaje", ex);
@@ -233,8 +227,10 @@ public class MensajeController {
 
             for (String user : users) {
                 if (!user.equals(currentUser)) {
-                    boolean active = usersStatus.getOrDefault(user, true);
-                    String emoji = active ? "🟢" : "🔴";
+                    // ✅ TODOS los usuarios de la lista están online
+                    usersStatus.put(user, true);  // ← AGREGAR ESTA LÍNEA
+
+                    String emoji = "🟢";
                     model.addElement(emoji + " " + user);
                     System.out.println("   → " + emoji + " " + user);
                 }
@@ -246,67 +242,65 @@ public class MensajeController {
         System.out.println("[MensajeController] " +
                 (isActive ? "🟢" : "🔴") + " Estado actualizado: " + username);
 
+        // ✅ ACTUALIZAR EL MAPA PRIMERO
         usersStatus.put(username, isActive);
+
+        System.out.println("[DEBUG] usersStatus después de cambio: " + usersStatus);
 
         SwingUtilities.invokeLater(() -> {
             DefaultListModel<String> model = mensajesView.getUsersModel();
 
-            // Si el usuario ya está en la lista, actualizarlo
             boolean found = false;
             for (int i = 0; i < model.getSize(); i++) {
                 String element = model.getElementAt(i);
                 String cleanName = cleanUserName(element);
 
                 if (cleanName.equals(username)) {
-                    String emoji = isActive ? "🟢" : "🔴";
-                    model.set(i, emoji + " " + username);
                     found = true;
+                    if (isActive) {
+                        // Actualizar a online
+                        model.set(i, "🟢 " + username);
+                    } else {
+                        // Remover si está offline
+                        model.remove(i);
+                    }
                     break;
                 }
             }
 
             // Si no está en la lista y está activo, agregarlo
             if (!found && isActive && !username.equals(currentUser)) {
-                String emoji = "🟢";
-                model.addElement(emoji + " " + username);
+                model.addElement("🟢 " + username);
             }
 
-            // Si está inactivo y está en la lista, removerlo
-            if (!isActive) {
-                for (int i = 0; i < model.getSize(); i++) {
-                    String element = model.getElementAt(i);
-                    String cleanName = cleanUserName(element);
-                    if (cleanName.equals(username)) {
-                        model.remove(i);
-                        break;
-                    }
-                }
+            // ✅ Si es el usuario seleccionado, actualizar indicador
+            if (username.equals(selectedUser)) {
+                updateStatusIndicator(isActive);
             }
         });
     }
 
     public void handleHistory(List<MensajeResponseDto> mensajes) {
         SwingUtilities.invokeLater(() -> {
+            System.out.println("[MensajeController] 📜 Cargando historial: " + mensajes.size() + " mensajes");
+
+            // Limpiar mensajes anteriores
             clearMessages();
 
             for (MensajeResponseDto mensaje : mensajes) {
                 String timestamp = mensaje.getFechaHora();
                 if (timestamp != null && timestamp.length() > 16) {
-                    timestamp = timestamp.substring(11, 16); // Extraer HH:mm
+                    timestamp = timestamp.substring(11, 16);
                 }
 
                 if (mensaje.getRemitente().equals(currentUser)) {
                     addSentMessage(mensaje.getContenido(), timestamp);
                 } else {
-                    addReceivedMessage(
-                            mensaje.getContenido(),
-                            mensaje.getRemitente(),
-                            timestamp
-                    );
+                    addReceivedMessage(mensaje.getContenido(), mensaje.getRemitente(), timestamp);
                 }
             }
 
-            showLoading(false);
+            scrollToBottom();
         });
     }
 
@@ -339,15 +333,23 @@ public class MensajeController {
         }
     }
 
-    private void updateStatusIndicator(boolean isActive) {
-        try {
-            java.lang.reflect.Field field = mensajesView.getClass().getDeclaredField("StatusButton");
-            field.setAccessible(true);
-            JButton statusButton = (JButton) field.get(mensajesView);
-            statusButton.setBackground(isActive ? new Color(0, 200, 0) : Color.RED);
-        } catch (Exception e) {
-            System.err.println("❌ Error al actualizar StatusButton: " + e.getMessage());
-        }
+    private void updateStatusIndicator(boolean isOnline) {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                JButton statusButton = mensajesView.getStatusButton();
+                if (statusButton != null) {
+                    if (isOnline) {
+                        statusButton.setBackground(new Color(76, 175, 80)); // Verde
+                        statusButton.setToolTipText("Usuario en línea");
+                    } else {
+                        statusButton.setBackground(new Color(244, 67, 54)); // Rojo
+                        statusButton.setToolTipText("Usuario desconectado");
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Error actualizando indicador: " + e.getMessage());
+            }
+        });
     }
 
     private void clearMessages() {
@@ -441,23 +443,22 @@ public class MensajeController {
         String message = mensajesView.getWriteMessageField().getText().trim();
 
         if (message.isEmpty() || message.equals("Escribir mensaje...")) {
-            showWarning("Por favor escribe un mensaje");
+            showError("Por favor escribe un mensaje");
             return false;
         }
 
-        if (selectedUser == null) {
-            showWarning("Por favor selecciona un usuario primero");
+        if (selectedUser == null || selectedUser.isEmpty()) {
+            showError("Por favor selecciona un usuario");
             return false;
         }
 
-        boolean isActive = usersStatus.getOrDefault(selectedUser, false);
-        if (!isActive) {
-            showWarning("El usuario " + selectedUser + " no está activo");
-            return false;
-        }
+        // ✅ DEBUG: Ver estado del usuario
+        boolean isOnline = usersStatus.getOrDefault(selectedUser, false);
+        System.out.println("[VALIDACIÓN] Usuario: " + selectedUser + ", Online: " + isOnline);
+        System.out.println("[VALIDACIÓN] usersStatus completo: " + usersStatus);
 
-        if (!clienteMensajeria.isConectado()) {
-            showError("No hay conexión con el servidor");
+        if (!isOnline) {
+            showError("El usuario " + selectedUser + " no está en línea");
             return false;
         }
 
@@ -465,9 +466,14 @@ public class MensajeController {
     }
 
     private String cleanUserName(String userWithEmoji) {
-        if (userWithEmoji == null) return "";
-        // Remover emoji y espacios
-        return userWithEmoji.replaceAll("^[🟢🔴]\\s*", "").trim();
+        if (userWithEmoji == null || userWithEmoji.isEmpty()) return "";
+
+        // Remover cualquier emoji y espacios al inicio
+        String cleaned = userWithEmoji.replaceAll("^[🟢🔴\\s]+", "").trim();
+
+        System.out.println("[DEBUG] cleanUserName: '" + userWithEmoji + "' → '" + cleaned + "'");
+
+        return cleaned;
     }
 
     private <T> void executeAsync(AsyncTask<T> task, ResultHandler<T> onSuccess, String errorMessage) {

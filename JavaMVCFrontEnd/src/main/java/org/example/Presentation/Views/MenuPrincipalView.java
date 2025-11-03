@@ -1,5 +1,6 @@
 package org.example.Presentation.Views;
 
+import org.example.Domain.Dtos.Auth.UserResponseDto;
 import org.example.Presentation.Components.CustomButton;
 import org.example.Presentation.Controllers.*;
 import org.example.Presentation.Models.UserType;
@@ -76,6 +77,8 @@ public class MenuPrincipalView extends JFrame {
     private MensajesView mensajesView;
     private MensajeController mensajeController;
 
+    private final UserResponseDto currentUser;
+
     public MenuPrincipalView(UserType userType,
                              LoginController loginController,
                              UsuarioService usuarioService,
@@ -84,7 +87,8 @@ public class MenuPrincipalView extends JFrame {
                              DashboardService dashboardService,
                              PrescribirService prescribirService,
                              DespachoService despachoService,
-                             int userId) {
+                             int userId,
+                             UserResponseDto currentUser) {  // ← AGREGAR ESTE PARÁMETRO
 
         this.userType = userType;
         this.loginController = loginController;
@@ -95,6 +99,7 @@ public class MenuPrincipalView extends JFrame {
         this.userId = userId;
         this.prescribirService = prescribirService;
         this.despachoService = despachoService;
+        this.currentUser = currentUser;
 
         initializeUI();
         configureMenu();
@@ -149,17 +154,14 @@ public class MenuPrincipalView extends JFrame {
     /**
      * Obtener el username del usuario actual
      */
+// Reemplazar el método obtenerUsername (línea 156):
     private String obtenerUsername(int userId) {
-        try {
-            // Usar el servicio de usuarios para obtener el nombre
-            var usuario = usuarioService.getUsuarioById(userId);
-            if (usuario != null) {
-                return usuario.getNombre(); // Ajustar según tu modelo
-            }
-        } catch (Exception e) {
-            System.err.println("Error obteniendo username: " + e.getMessage());
+        // Usar el usuario que ya tenemos del login
+        if (currentUser != null && currentUser.getUsername() != null) {
+            return currentUser.getUsername();
         }
-        return "Usuario_" + userId; // Fallback
+        // Fallback
+        return "Usuario_" + userId;
     }
 
     private void initializeUI() {

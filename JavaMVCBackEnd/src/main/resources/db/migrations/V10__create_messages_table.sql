@@ -1,4 +1,4 @@
-CREATE TABLE messages (
+CREATE TABLE mensajes (
                           id BIGINT PRIMARY KEY AUTO_INCREMENT,
                           sender_id BIGINT NOT NULL,
                           recipient_id BIGINT NOT NULL,

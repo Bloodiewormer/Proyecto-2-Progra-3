@@ -140,7 +140,8 @@ public class LoginController extends Observable {
                 dashboardService,
                 prescribirService,
                 despachoService ,
-                user.getId().intValue() // int userId
+                user.getId().intValue(),
+                user
         );
 
         mainView.setVisible(true);

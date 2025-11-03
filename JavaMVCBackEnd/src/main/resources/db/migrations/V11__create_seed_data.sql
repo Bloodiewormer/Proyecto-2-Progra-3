@@ -66,7 +66,7 @@ INSERT INTO despachos (id_receta, id_farmaceuta, fecha_despacho, observaciones) 
     (3, 5, '2025-01-20 10:30:00', 'Medicamentos entregados completos. Paciente recibió indicaciones.');
 
 -- Insertar Mensajes de ejemplo
-INSERT INTO messages (sender_id, recipient_id, message, status) VALUES
+INSERT INTO mensajes (sender_id, recipient_id, message, status) VALUES
                                                                     (2, 5, 'Favor verificar disponibilidad de Amoxicilina para receta RX-2025-001', 'SENT'),
                                                                     (5, 2, 'Amoxicilina disponible. Stock: 80 unidades', 'SENT'),
                                                                     (1, 2, 'Recordatorio: Actualizar estadísticas mensuales', 'SENT');
