@@ -135,13 +135,13 @@ public class MenuPrincipalView extends JFrame {
                     mensajesView,
                     username,
                     "localhost",  // Host del servidor de mensajería
-                    8080          // Puerto del servidor de mensajería
+                    7002          // Puerto del servidor de mensajería
             );
 
             System.out.println("✅ Sistema de mensajería inicializado para: " + username);
 
         } catch (Exception e) {
-            System.err.println("❌ Error al inicializar mensajería: " + e.getMessage());
+            System.err.println(" Error al inicializar mensajería: " + e.getMessage());
             e.printStackTrace();
         }
     }

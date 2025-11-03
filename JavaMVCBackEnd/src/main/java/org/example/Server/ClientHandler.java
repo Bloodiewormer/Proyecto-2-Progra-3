@@ -26,9 +26,11 @@ public class ClientHandler implements Runnable {
     private final DashboardController dashboardController;
     private final DespachoController despachoController;
     private final SocketServer server;
+    private final MensajeController mensajeController;
     private final Gson gson = new Gson();
     private PrintWriter out;
     private BufferedReader in;
+
 
     public ClientHandler(Socket clientSocket,
                          AuthController authController,
@@ -41,6 +43,7 @@ public class ClientHandler implements Runnable {
                          DespachoController despachoController,
                          HistoricoRecetasController historicoRecetasController,
                          DashboardController dashboardController,
+                         MensajeController mensajeController,
                          SocketServer server) {
         this.clientSocket = clientSocket;
         this.authController = authController;
@@ -53,6 +56,7 @@ public class ClientHandler implements Runnable {
         this.historicoRecetasController = historicoRecetasController;
         this.dashboardController = dashboardController;
         this.despachoController = despachoController;
+        this.mensajeController = mensajeController;
         this.server = server;
     }
 
@@ -142,12 +146,18 @@ public class ClientHandler implements Runnable {
                     response = historicoRecetasController.route(request);
                     break;
 
+                case "Mensaje":
+                case "Mensajes":
+                    response = mensajeController.route(request);
+                    break;
+
                 case "Dashboard":
                     response = dashboardController.handleRequest(request);
                     break;
 
                 case "Despacho":
                     return despachoController.route(request);
+
 
                 default:
                     response = new ResponseDto(false, "Controlador desconocido: " + request.getController(), null);

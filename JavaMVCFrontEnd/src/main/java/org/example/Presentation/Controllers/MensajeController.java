@@ -224,20 +224,27 @@ public class MensajeController {
             DefaultListModel<String> model = mensajesView.getUsersModel();
             model.clear();
 
+            System.out.println("[MensajeController] 👥 Actualizando lista con " + users.size() + " usuarios");
+
             for (String user : users) {
                 if (!user.equals(currentUser)) {
                     boolean active = usersStatus.getOrDefault(user, true);
                     String emoji = active ? "🟢" : "🔴";
                     model.addElement(emoji + " " + user);
+                    System.out.println("   → " + emoji + " " + user);
                 }
             }
         });
     }
 
     public void handleUserStatusChange(String username, boolean isActive) {
+        System.out.println("[MensajeController] " +
+                (isActive ? "🟢" : "🔴") + " Estado actualizado: " + username);
+
         usersStatus.put(username, isActive);
 
         SwingUtilities.invokeLater(() -> {
+            // Actualizar en la lista
             DefaultListModel<String> model = mensajesView.getUsersModel();
             for (int i = 0; i < model.getSize(); i++) {
                 String element = model.getElementAt(i);
@@ -250,6 +257,7 @@ public class MensajeController {
                 }
             }
 
+            // Si es el usuario seleccionado, actualizar indicador
             if (username.equals(selectedUser)) {
                 updateStatusIndicator(isActive);
             }
@@ -433,8 +441,10 @@ public class MensajeController {
         return true;
     }
 
-    private String cleanUserName(String nameWithEmoji) {
-        return nameWithEmoji.replaceAll("^[🟢🔴]\\s+", "").trim();
+    private String cleanUserName(String userWithEmoji) {
+        if (userWithEmoji == null) return "";
+        // Remover emoji y espacios
+        return userWithEmoji.replaceAll("^[🟢🔴]\\s*", "").trim();
     }
 
     private <T> void executeAsync(AsyncTask<T> task, ResultHandler<T> onSuccess, String errorMessage) {
@@ -538,6 +548,8 @@ public class MensajeController {
     private interface ResultHandler<T> {
         void handle(T result);
     }
+
+
 }
 
 

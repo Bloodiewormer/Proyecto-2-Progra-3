@@ -161,64 +161,117 @@ public class ClienteMensajeria {
     // Inner Class: Listener
     // ---------------------------
 
-    class EscuchadorMensajes implements Runnable {
+    private class EscuchadorMensajes implements Runnable {
         @Override
         public void run() {
-            System.out.println("👂 Escuchador de mensajes iniciado para: " + username);
+            System.out.println("[EscuchadorMensajes] 🎧 Iniciado para: " + username);
 
-            try {
-                Object objeto;
-                while (conectado && !Thread.currentThread().isInterrupted()) {
-                    try {
-                        objeto = in.readObject();
-                        procesarObjeto(objeto);
-                    } catch (EOFException e) {
-                        System.err.println("⚠️ Fin de stream alcanzado");
-                        break;
+            while (conectado) {
+                try {
+                    Object obj = in.readObject();
+                    System.out.println("[EscuchadorMensajes] 📩 Objeto recibido: " + obj.getClass().getName());
+
+                    // Manejar diferentes tipos de mensajes
+                    if (obj instanceof NotificationMessage) {
+                        handleNotification((NotificationMessage) obj);
+                    } else if (obj instanceof MensajeResponseDto) {
+                        handleIncomingMessage((MensajeResponseDto) obj);
+                    } else if (obj instanceof List) {
+                        handleHistoryResponse((List<?>) obj);
+                    } else {
+                        System.out.println("[EscuchadorMensajes] ⚠️ Tipo desconocido: " +
+                                obj.getClass().getName());
                     }
-                }
 
-            } catch (IOException e) {
-                if (conectado) {
-                    System.err.println("❌ Conexión perdida: " + e.getMessage());
+                } catch (EOFException e) {
+                    System.out.println("[EscuchadorMensajes] 📴 Conexión cerrada por el servidor");
+                    break;
+                } catch (Exception e) {
+                    if (conectado) {
+                        System.err.println("[EscuchadorMensajes] ❌ Error: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
                 }
-            } catch (ClassNotFoundException e) {
-                System.err.println("❌ Clase desconocida: " + e.getMessage());
-            } finally {
-                if (conectado) {
-                    desconectar();
-                }
+            }
+
+            System.out.println("[EscuchadorMensajes] 🛑 Detenido");
+        }
+
+        private void handleNotification(NotificationMessage notification) {
+            System.out.println("[EscuchadorMensajes] 🔔 Notificación: " + notification.getType());
+
+            switch (notification.getType()) {
+                case "USERS_LIST":
+                    handleUsersList(notification.getData());
+                    break;
+
+                case "USER_STATUS_CHANGE":
+                    handleUserStatusChange(notification.getData());
+                    break;
+
+                default:
+                    System.out.println("[EscuchadorMensajes] ⚠️ Tipo de notificación desconocido: " +
+                            notification.getType());
             }
         }
 
-        @SuppressWarnings("unchecked")
-        private void procesarObjeto(Object objeto) {
-            if (objeto instanceof MensajeResponseDto) {
-                MensajeResponseDto mensaje = (MensajeResponseDto) objeto;
-                System.out.println("📨 Mensaje recibido de: " + mensaje.getRemitente());
-                controller.handleIncomingMessage(mensaje);
-            }
-            else if (objeto instanceof ListMensajeResponseDto) {
-                ListMensajeResponseDto listDto = (ListMensajeResponseDto) objeto;
-                System.out.println("📜 Historial recibido: " + listDto.getMensajes().size() + " mensajes");
-                controller.handleHistory(listDto.getMensajes());
-            }
-            else if (objeto instanceof List<?>) {
-                List<?> lista = (List<?>) objeto;
-                if (!lista.isEmpty() && lista.get(0) instanceof String) {
-                    System.out.println("👥 Lista de usuarios recibida: " + lista.size());
-                    controller.handleUsersList((List<String>) lista);
+        /**
+         * Manejar lista de usuarios activos
+         */
+        private void handleUsersList(Object data) {
+            try {
+                if (data instanceof List<?>) {
+                    @SuppressWarnings("unchecked")
+                    List<String> users = (List<String>) data;
+                    System.out.println("[EscuchadorMensajes] 👥 Lista de usuarios: " + users);
+                    controller.handleUsersList(users);
                 }
-            }
-            else if (objeto instanceof EstadoUsuarioDto) {
-                EstadoUsuarioDto estado = (EstadoUsuarioDto) objeto;
-                System.out.println("🔄 Cambio de estado: " + estado.getUsername() +
-                        " -> " + (estado.isActivo() ? "ACTIVO" : "INACTIVO"));
-                controller.handleUserStatusChange(estado.getUsername(), estado.isActivo());
-            }
-            else {
-                System.err.println("⚠️ Objeto desconocido: " + objeto.getClass().getName());
+            } catch (Exception e) {
+                System.err.println("[EscuchadorMensajes] ❌ Error procesando lista: " + e.getMessage());
             }
         }
+
+        /**
+         * Manejar cambio de estado de usuario
+         */
+        private void handleUserStatusChange(Object data) {
+            try {
+                if (data instanceof UserStatusChange) {
+                    UserStatusChange change = (UserStatusChange) data;
+                    System.out.println("[EscuchadorMensajes] " +
+                            (change.isActive() ? "🟢" : "🔴") + " " +
+                            change.getUsername() + " → " +
+                            (change.isActive() ? "CONECTADO" : "DESCONECTADO"));
+
+                    controller.handleUserStatusChange(change.getUsername(), change.isActive());
+                }
+            } catch (Exception e) {
+                System.err.println("[EscuchadorMensajes] ❌ Error procesando cambio: " + e.getMessage());
+            }
+        }
+
+        /**
+         * Manejar mensaje entrante
+         */
+        private void handleIncomingMessage(MensajeResponseDto mensaje) {
+            System.out.println("[EscuchadorMensajes] 💬 Mensaje de: " + mensaje.getRemitente());
+            controller.handleIncomingMessage(mensaje);
+        }
+
+        /**
+         * Manejar respuesta de historial
+         */
+        private void handleHistoryResponse(List<?> mensajes) {
+            try {
+                @SuppressWarnings("unchecked")
+                List<MensajeResponseDto> history = (List<MensajeResponseDto>) mensajes;
+                System.out.println("[EscuchadorMensajes] 📜 Historial recibido: " + history.size() + " mensajes");
+                controller.handleHistory(history);
+            } catch (Exception e) {
+                System.err.println("[EscuchadorMensajes] ❌ Error procesando historial: " + e.getMessage());
+            }
+        }
+
     }
 }

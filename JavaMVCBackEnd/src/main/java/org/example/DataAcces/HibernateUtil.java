@@ -37,6 +37,7 @@ public class HibernateUtil {
                     .addAnnotatedClass(Medicamento.class)
                     .addAnnotatedClass(Receta.class)
                     .addAnnotatedClass(DetalleReceta.class)
+                    .addAnnotatedClass(Mensaje.class)
                     .buildSessionFactory();
 
             System.out.println("[HibernateUtil] SessionFactory creado exitosamente");

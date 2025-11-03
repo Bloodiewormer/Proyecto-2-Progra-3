@@ -291,7 +291,7 @@ public class UsuarioService {
     /**
      * Obtiene un usuario por nombre (método auxiliar)
      */
-    private Usuario getUserByNombre(String nombre) {
+    public Usuario getUserByNombre(String nombre) {
         try (Session session = sessionFactory.openSession()) {
             Query<Usuario> query = session.createQuery(
                     "FROM Usuario WHERE nombre = :nombre",
@@ -300,7 +300,7 @@ public class UsuarioService {
             query.setParameter("nombre", nombre);
             return query.uniqueResult();
         } catch (Exception e) {
-            System.err.println("[UsuarioService] Error obteniendo usuario por nombre: " + e.getMessage());
+            System.err.println("[UsuarioService] ❌ Error obteniendo por nombre: " + e.getMessage());
             return null;
         }
     }
@@ -355,5 +355,43 @@ public class UsuarioService {
             throw e;
         }
     }
+
+    /**
+     * Desactivar usuario (logout o desconexión)
+     */
+    public void deactivateUser(Long userId) {
+        Transaction tx = null;
+        try (Session session = sessionFactory.openSession()) {
+            tx = session.beginTransaction();
+
+            Usuario usuario = session.find(Usuario.class, userId);
+            if (usuario != null) {
+                usuario.setIsActive(false);
+                session.merge(usuario);
+            }
+
+            tx.commit();
+            System.out.println("[UsuarioService] 👋 Usuario desactivado: " + userId);
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            System.err.println("[UsuarioService] ❌ Error desactivando: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public List<Usuario> getActiveUsers() {
+        try (Session session = sessionFactory.openSession()) {
+            String hql = "FROM Usuario u WHERE u.isActive = true ORDER BY u.nombre";
+            Query<Usuario> query = session.createQuery(hql, Usuario.class);
+            List<Usuario> usuarios = query.list();
+            System.out.println("[UsuarioService] 📋 Usuarios activos: " + usuarios.size());
+            return usuarios;
+        } catch (Exception e) {
+            System.err.println("[UsuarioService] ❌ Error obteniendo activos: " + e.getMessage());
+            throw e;
+        }
+    }
+
+
 
 }
