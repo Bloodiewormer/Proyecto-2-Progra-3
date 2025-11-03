@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class UsuarioService extends BaseService {
-    private final ExecutorService executor = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public UsuarioService(String host, int port) {
         super(host, port);
@@ -64,7 +64,7 @@ public class UsuarioService extends BaseService {
         return executor.submit(() -> {
             RequestDto request = new RequestDto(
                     "Farmaceuta",
-                    "listar",   // <-- antes decía "list"
+                    "listar",
                     "",
                     null
             );

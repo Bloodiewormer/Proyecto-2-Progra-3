@@ -46,7 +46,6 @@ public class MenuPrincipalView extends JFrame {
     private final UserType userType;
     private final LoginController loginController;
 
-
     private MedicoForm medicoForm;
     private MedicoController medicoController;
 
@@ -55,7 +54,6 @@ public class MenuPrincipalView extends JFrame {
 
     private PacienteController pacienteController;
     private PacienteForm pacienteForm;
-
 
     private FarmaceutaForm farmaceutaForm;
     private FarmaceutaController farmaceutaController;
@@ -74,6 +72,9 @@ public class MenuPrincipalView extends JFrame {
     private DespachoService despachoService;
     private DespachoForm despachoForm;
 
+    // Sistema de mensajería
+    private MensajesView mensajesView;
+    private MensajeController mensajeController;
 
     public MenuPrincipalView(UserType userType,
                              LoginController loginController,
@@ -101,11 +102,11 @@ public class MenuPrincipalView extends JFrame {
         initializePacienteView();
         initializeFarmaceutaView();
         initializeDespachoView();
-        initializeHistoricoRecetasView(); 
-        initializeFarmaceutaView();
+        initializeHistoricoRecetasView();
         initializeMedicamentoView();
         initializeDashboardView();
         initializePrescribirView();
+        initializeMensajesView();  // Nueva inicialización
         wireEvents();
         initializeView();
     }
@@ -117,6 +118,48 @@ public class MenuPrincipalView extends JFrame {
     private void initializePrescribirView() {
         prescribirForm = new PrescribirForm(this);
         prescribirController = new PrescribirController(prescribirForm, prescribirService, userId);
+    }
+
+    /**
+     * Inicializar el sistema de mensajería
+     */
+    private void initializeMensajesView() {
+        try {
+            mensajesView = new MensajesView();
+
+            // Obtener el username del usuario actual desde el servicio
+            String username = obtenerUsername(userId);
+
+            // Crear el controlador con la configuración del servidor
+            mensajeController = new MensajeController(
+                    mensajesView,
+                    username,
+                    "localhost",  // Host del servidor de mensajería
+                    8080          // Puerto del servidor de mensajería
+            );
+
+            System.out.println("✅ Sistema de mensajería inicializado para: " + username);
+
+        } catch (Exception e) {
+            System.err.println("❌ Error al inicializar mensajería: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Obtener el username del usuario actual
+     */
+    private String obtenerUsername(int userId) {
+        try {
+            // Usar el servicio de usuarios para obtener el nombre
+            var usuario = usuarioService.getUsuarioById(userId);
+            if (usuario != null) {
+                return usuario.getNombre(); // Ajustar según tu modelo
+            }
+        } catch (Exception e) {
+            System.err.println("Error obteniendo username: " + e.getMessage());
+        }
+        return "Usuario_" + userId; // Fallback
     }
 
     private void initializeUI() {
@@ -152,7 +195,7 @@ public class MenuPrincipalView extends JFrame {
     private void configureButtonsForUserType() {
         JButton[] allButtons = {medicosButton, farmaceutasButton, pacientesButton,
                 medicamentosButton, dashboardButton, acercadeButton,
-                prescribirButton, despachoButton,mensajesButton, historicoRecetasButton};
+                prescribirButton, despachoButton, mensajesButton, historicoRecetasButton};
 
         switch (userType) {
             case ADMINISTRADOR -> {
@@ -199,7 +242,6 @@ public class MenuPrincipalView extends JFrame {
         }
     }
 
-
     private void initializeMedicoView() {
         medicoForm = new MedicoForm(this);
         medicoController = new MedicoController(medicoForm, usuarioService);
@@ -230,8 +272,8 @@ public class MenuPrincipalView extends JFrame {
     }
 
     private void initializeDashboardView() {
-        dashboardController = new DashboardController( dashboardService );
-        dashboardView = new DashboardView(dashboardController,medicamentoService );
+        dashboardController = new DashboardController(dashboardService);
+        dashboardView = new DashboardView(dashboardController, medicamentoService);
     }
 
     private void showMedicamentoView() {
@@ -254,7 +296,7 @@ public class MenuPrincipalView extends JFrame {
         acercadeButton.addActionListener(e -> showAcercaDeView());
         prescribirButton.addActionListener(e -> showPrescribirView());
         despachoButton.addActionListener(e -> showDespachoView());
-        mensajesButton.addActionListener(e -> showPlaceholderView("Mensajes"));
+        mensajesButton.addActionListener(e -> showMensajesView());  // Cambio aquí
         historicoRecetasButton.addActionListener(e -> showHistoricoRecetasView());
     }
 
@@ -266,12 +308,21 @@ public class MenuPrincipalView extends JFrame {
         switchContent(prescribirForm.getMainPanel(), "Prescribir");
     }
 
+    /**
+     * Mostrar la vista de mensajes
+     */
+    private void showMensajesView() {
+        if (mensajesView != null && mensajeController != null) {
+            switchContent(mensajesView.getPrincipalPanel(), "Mensajes");
+        } else {
+            showError("El sistema de mensajería no está disponible");
+        }
+    }
+
     private void initializeView() {
         // Mostrar vista inicial según tipo de usuario
         switch (userType) {
-            case ADMINISTRADOR -> showWelcomeView();
-            case FARMACEUTA -> showWelcomeView();
-            case MEDICO -> showWelcomeView();
+            case ADMINISTRADOR, FARMACEUTA, MEDICO -> showWelcomeView();
         }
 
         setVisible(true);
@@ -306,19 +357,6 @@ public class MenuPrincipalView extends JFrame {
         return panel;
     }
 
-    private void showPlaceholderView(String viewName) {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(245, 245, 248));
-
-        JLabel label = new JLabel("Vista de " + viewName + " - En desarrollo");
-        label.setFont(new Font("Arial", Font.BOLD, 20));
-        label.setForeground(new Color(0, 102, 204));
-
-        panel.add(label);
-        switchContent(panel, viewName);
-    }
-
-
     private void showMedicoView() {
         switchContent(medicoForm, "Médicos");
     }
@@ -327,14 +365,12 @@ public class MenuPrincipalView extends JFrame {
         switchContent(pacienteForm, "Pacientes");
     }
 
-
-
     private void showFarmaceutaView() {
         switchContent(farmaceutaForm, "Farmaceutas");
     }
 
     private void showHistoricoRecetasView() {
-        historicoRecetasController.recargarRecetas(); // <-- AGREGAR ESTA LÍNEA
+        historicoRecetasController.recargarRecetas();
         switchContent(historicoRecetasView, "Histórico de Recetas");
     }
 
@@ -385,10 +421,15 @@ public class MenuPrincipalView extends JFrame {
         );
 
         if (confirm == JOptionPane.YES_OPTION) {
-            setVisible(false);  // Ocultar primero
-            contentPanel.removeAll();  // Limpiar contenido
-            loginController.logout();  // Mostrar login
-            dispose();  // Destruir después
+            // Desconectar del servidor de mensajería
+            if (mensajeController != null) {
+                mensajeController.disconnect();
+            }
+
+            setVisible(false);
+            contentPanel.removeAll();
+            loginController.logout();
+            dispose();
         }
     }
 
@@ -417,7 +458,7 @@ public class MenuPrincipalView extends JFrame {
             // Update button visibility
             JButton[] buttons = {medicosButton, farmaceutasButton, pacientesButton,
                     medicamentosButton, dashboardButton, acercadeButton,
-                    prescribirButton, despachoButton, historicoRecetasButton, salirButton};
+                    prescribirButton, despachoButton, mensajesButton, historicoRecetasButton, salirButton};
             for (JButton btn : buttons) {
                 if (btn.isEnabled()) {
                     btn.setVisible(menuVisible || currentWidth > MENU_COLLAPSED_WIDTH);
@@ -425,7 +466,7 @@ public class MenuPrincipalView extends JFrame {
             }
 
             if (currentWidth == targetWidth) {
-                ((Timer)e.getSource()).stop();
+                ((Timer) e.getSource()).stop();
             }
         });
         timer.start();
@@ -440,13 +481,21 @@ public class MenuPrincipalView extends JFrame {
         };
     }
 
+    private void showError(String message) {
+        JOptionPane.showMessageDialog(
+                this,
+                message,
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+        );
+    }
+
     public JPanel getMainPanel() {
         return mainPanel;
     }
 
     private void createUIComponents() {
-        // Helper para cargar iconos de forma segura
-       Function<String, Image> loadIcon = (path) -> {
+        Function<String, Image> loadIcon = (path) -> {
             try {
                 var resource = getClass().getResource(path);
                 if (resource != null) {
@@ -458,7 +507,6 @@ public class MenuPrincipalView extends JFrame {
             return null;
         };
 
-        // Cargar iconos
         Image doctorIcon = loadIcon.apply("/Doctor.png");
         Image farmaceuticoIcon = loadIcon.apply("/Farmaceuta.png");
         Image pacienteIcon = loadIcon.apply("/Paciente.png");
@@ -467,12 +515,11 @@ public class MenuPrincipalView extends JFrame {
         Image dashboardIcon = loadIcon.apply("/DashBoard.png");
         Image prescribirIcon = loadIcon.apply("/Prescripcion.png");
         Image infoIcon = loadIcon.apply("/Info.png");
-        Image mesajesIcon = loadIcon.apply("/Message.png");
+        Image mensajesIcon = loadIcon.apply("/Message.png");
 
         Color buttonColor = new Color(244, 243, 248);
         Color textColor = Color.BLACK;
 
-        // Crear botones
         salirButton = new CustomButton("Salir", buttonColor, textColor, logoutIcon);
         medicosButton = new CustomButton("Médicos", buttonColor, textColor, doctorIcon);
         farmaceutasButton = new CustomButton("Farmaceutas", buttonColor, textColor, farmaceuticoIcon);
@@ -481,10 +528,10 @@ public class MenuPrincipalView extends JFrame {
         dashboardButton = new CustomButton("Dashboard", buttonColor, textColor, dashboardIcon);
         prescribirButton = new CustomButton("Prescribir", buttonColor, textColor, prescribirIcon);
         despachoButton = new CustomButton("Despacho", buttonColor, textColor, medicamentoIcon);
-        mensajesButton = new CustomButton("Mensajes", buttonColor, textColor, mesajesIcon);
+        mensajesButton = new CustomButton("Mensajes", buttonColor, textColor, mensajesIcon);
         historicoRecetasButton = new CustomButton("Histórico", buttonColor, textColor, infoIcon);
-
         acercadeButton = new CustomButton("Acerca de", buttonColor, textColor, infoIcon);
     }
 }
+
 
