@@ -2,11 +2,11 @@ package org.example.Server;
 
 import org.example.DataAcces.services.MensajeService;
 import org.example.DataAcces.services.UsuarioService;
-import org.example.Domain.dtos.Mensaje.AddMensajeRequestDto;
-import org.example.Domain.dtos.Mensaje.ListMensajesRequestDto;
-import org.example.Domain.dtos.Mensaje.MensajeResponseDto;
-import org.example.Domain.dtos.Mensaje.NotificationMessage;
-import org.example.Domain.dtos.Mensaje.UserStatusChange;
+import org.example.Domain.Dtos.Mensaje.AddMensajeRequestDto;
+import org.example.Domain.Dtos.Mensaje.ListMensajesRequestDto;
+import org.example.Domain.Dtos.Mensaje.MensajeResponseDto;
+import org.example.Domain.Dtos.Mensaje.NotificationMessage;
+import org.example.Domain.Dtos.Mensaje.UserStatusChange;
 import org.example.Domain.models.Mensaje;
 import org.example.Domain.models.Usuario;
 

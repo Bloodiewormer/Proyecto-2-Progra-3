@@ -1,14 +1,14 @@
 package org.example.Domain.Dtos.Paciente;
 
-public class PacienteResponseDto {
+public class UpdatePacienteRequestDto {
     private int id;
     private String nombre;
     private String telefono;
     private String fechaNacimiento;
 
-    public PacienteResponseDto() {}
+    public UpdatePacienteRequestDto() {}
 
-    public PacienteResponseDto(int id, String nombre, String telefono, String fechaNacimiento) {
+    public UpdatePacienteRequestDto(int id, String nombre, String telefono, String fechaNacimiento) {
         this.id = id;
         this.nombre = nombre;
         this.telefono = telefono;

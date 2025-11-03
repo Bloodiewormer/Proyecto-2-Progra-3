@@ -1,4 +1,4 @@
-package org.example.Domain.dtos.Receta;
+package org.example.Domain.Dtos.Receta;
 
 public class DeleteRecetaRequestDto {
     private int id;
