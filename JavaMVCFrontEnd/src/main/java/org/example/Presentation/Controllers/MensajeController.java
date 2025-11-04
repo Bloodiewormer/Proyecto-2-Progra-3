@@ -10,6 +10,7 @@ import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class MensajeController {
     private String selectedUser;
     private final String currentUser;
     private final Map<String, Boolean> usersStatus;
+    private final Map<String, List<MensajeResponseDto>> chatHistory = new HashMap<>();
 
     public MensajeController(MensajesView mensajesView, String currentUser, String serverHost, int serverPort) {
         this.mensajesView = mensajesView;
@@ -102,6 +104,8 @@ public class MensajeController {
     // Action Handlers
     // ---------------------------
 
+// REEMPLAZAR handleSendMessage():
+
     private void handleSendMessage() {
         if (!validateMessageFields()) return;
 
@@ -116,11 +120,23 @@ public class MensajeController {
 
             String timestamp = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("HH:mm"));
+
             addSentMessage(message, timestamp);
+
+            // ✅ Agregar al historial en caché
+            MensajeResponseDto cachedMessage = new MensajeResponseDto(
+                    null, // ID será asignado por el servidor
+                    currentUser,
+                    selectedUser,
+                    message,
+                    "SENT",
+                    LocalDateTime.now().toString(),
+                    null
+            );
+            chatHistory.computeIfAbsent(selectedUser, k -> new ArrayList<>()).add(cachedMessage);
 
             clearMessageField();
 
-            // ✅ SOLO usar ClienteMensajeria (ObjectOutputStream al puerto 7002)
             clienteMensajeria.enviarMensaje(dto);
 
             System.out.println("✅ Mensaje enviado correctamente");
@@ -146,15 +162,17 @@ public class MensajeController {
         String cleanUser = cleanUserName(userWithEmoji);
         this.selectedUser = cleanUser;
 
+        System.out.println("[MensajeController] 💬 Cargando chat con: " + cleanUser);
+
         updateUserLabel(cleanUser);
 
         boolean isActive = usersStatus.getOrDefault(cleanUser, false);
         updateStatusIndicator(isActive);
 
-        clearMessages();
+        clearMessages(); // Limpiar mensajes anteriores
 
         if (clienteMensajeria.isConectado()) {
-            loadHistoryAsync(cleanUser);
+            loadHistoryAsync(cleanUser); // ✅ Cargar historial SIEMPRE
         } else {
             showWarning("No hay conexión con el servidor");
         }
@@ -163,22 +181,26 @@ public class MensajeController {
     private void loadHistoryAsync(String contactUser) {
         showLoading(true);
 
-        executeAsync(
-                () -> {
-                    Future<ListMensajeResponseDto> future = mensajeService.listMensajesAsync(currentUser, contactUser);
-                    try {
-                        ListMensajeResponseDto response = future.get();
-                        if (response != null) {
-                            handleHistory(response.getMensajes());
-                        }
-                        return true;
-                    } catch (InterruptedException | ExecutionException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                },
-                success -> System.out.println("✅ Historial cargado"),
-                "Error al cargar historial"
-        );
+        System.out.println("[MensajeController] 📜 Solicitando historial con: " + contactUser);
+
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() {
+                try {
+                    ListMensajesRequestDto dto = new ListMensajesRequestDto(currentUser, contactUser);
+                    clienteMensajeria.solicitarHistorial(dto);
+                } catch (Exception e) {
+                    System.err.println("[MensajeController] ❌ Error solicitando historial: " + e.getMessage());
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                showLoading(false);
+            }
+        };
+        worker.execute();
     }
 
     private void handleFieldFocusGained() {
@@ -197,21 +219,30 @@ public class MensajeController {
     // Callbacks from ClienteMensajeria
     // ---------------------------
 
+// ACTUALIZAR handleIncomingMessage():
+
     public void handleIncomingMessage(MensajeResponseDto mensaje) {
         SwingUtilities.invokeLater(() -> {
-            // ✅ fechaHora ahora es String, parsearlo o usarlo directo
-            String timestamp = mensaje.getFechaHora(); // Ya es String
-
+            String timestamp = mensaje.getFechaHora();
             if (timestamp != null && timestamp.length() > 16) {
-                timestamp = timestamp.substring(11, 16); // Extraer HH:mm
+                timestamp = timestamp.substring(11, 16);
             }
 
+            // ✅ Agregar al historial en caché
+            String otherUser = mensaje.getRemitente().equals(currentUser)
+                    ? mensaje.getDestinatario()
+                    : mensaje.getRemitente();
+
+            chatHistory.computeIfAbsent(otherUser, k -> new ArrayList<>()).add(mensaje);
+
+            // Solo mostrar si es del usuario seleccionado
             if (mensaje.getRemitente().equals(selectedUser)) {
                 addReceivedMessage(
                         mensaje.getContenido(),
                         mensaje.getRemitente(),
                         timestamp
                 );
+                scrollToBottom();
             }
 
             java.awt.Toolkit.getDefaultToolkit().beep();
@@ -282,9 +313,13 @@ public class MensajeController {
 
     public void handleHistory(List<MensajeResponseDto> mensajes) {
         SwingUtilities.invokeLater(() -> {
-            System.out.println("[MensajeController] 📜 Cargando historial: " + mensajes.size() + " mensajes");
+            System.out.println("[MensajeController] 📜 Historial recibido: " + mensajes.size() + " mensajes para " + selectedUser);
 
-            // Limpiar mensajes anteriores
+            // ✅ Guardar historial en caché
+            if (selectedUser != null) {
+                chatHistory.put(selectedUser, new ArrayList<>(mensajes));
+            }
+
             clearMessages();
 
             for (MensajeResponseDto mensaje : mensajes) {
@@ -300,6 +335,7 @@ public class MensajeController {
                 }
             }
 
+            showLoading(false);
             scrollToBottom();
         });
     }
