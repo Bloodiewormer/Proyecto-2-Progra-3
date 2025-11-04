@@ -111,9 +111,40 @@ public class MenuPrincipalView extends JFrame {
         initializeMedicamentoView();
         initializeDashboardView();
         initializePrescribirView();
-        initializeMensajesView();  // Nueva inicialización
+        initializeMensajesView();
         wireEvents();
         initializeView();
+
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                System.out.println("[MenuPrincipalView] 🚪 Ventana cerrándose...");
+                handleWindowClosing();
+            }
+        });
+
+    }
+
+    private void handleWindowClosing() {
+        // Desconectar mensajería
+        if (mensajeController != null) {
+            mensajeController.disconnect();
+        }
+
+        // Marcar como offline en el backend (puerto 7000)
+        if (currentUser != null) {
+            try {
+                System.out.println("[MenuPrincipalView] 📤 Marcando como offline: " + currentUser.getId());
+                AuthService authService = new AuthService("localhost", 7000);
+                authService.logout(currentUser.getId().longValue());
+            } catch (Exception e) {
+                System.err.println("[MenuPrincipalView] Error marcando offline: " + e.getMessage());
+            }
+        }
+
+        // Cerrar ventana
+        dispose();
+        System.exit(0);
     }
 
     private void initializeDespachoView() {
@@ -423,14 +454,26 @@ public class MenuPrincipalView extends JFrame {
         );
 
         if (confirm == JOptionPane.YES_OPTION) {
+            System.out.println("[MenuPrincipalView] 👋 Cerrando sesión...");
+
             // Desconectar del servidor de mensajería
             if (mensajeController != null) {
                 mensajeController.disconnect();
             }
 
+            // ✅ Marcar como offline en backend
+            if (currentUser != null) {
+                try {
+                    AuthService authService = new AuthService("localhost", 7000);
+                    authService.logout(currentUser.getId().longValue());
+                } catch (Exception e) {
+                    System.err.println("[MenuPrincipalView] Error en logout: " + e.getMessage());
+                }
+            }
+
             setVisible(false);
             contentPanel.removeAll();
-            loginController.logout();
+            loginController.logout();  // Esto ahora también llamará al backend
             dispose();
         }
     }

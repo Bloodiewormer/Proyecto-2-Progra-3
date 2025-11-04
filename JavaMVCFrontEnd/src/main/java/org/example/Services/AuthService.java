@@ -93,4 +93,21 @@ public class AuthService extends BaseService {
             return newPassword;
         }
     }
+
+
+    public void logout(Long userId) {
+        try {
+            RequestDto request = new RequestDto(
+                    "Auth",
+                    "logout",
+                    gson.toJson(userId),
+                    null
+            );
+
+            ResponseDto response = sendRequest(request);
+            System.out.println("[AuthService] Logout response: " + response.isSuccess());
+        } catch (Exception e) {
+            System.err.println("[AuthService] Error en logout: " + e.getMessage());
+        }
+    }
 }

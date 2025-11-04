@@ -168,7 +168,7 @@ public class MensajeriaServer {
         @Override
         public void run() {
             try {
-                // Inicializar streams (¡orden importa!)
+                // Inicializar streams
                 out = new ObjectOutputStream(socket.getOutputStream());
                 out.flush();
                 in = new ObjectInputStream(socket.getInputStream());
@@ -191,6 +191,8 @@ public class MensajeriaServer {
                 while (connected) {
                     try {
                         Object obj = in.readObject();
+                        System.out.println("[EscuchadorMensajes] 📩 Objeto recibido: " +
+                                obj.getClass().getSimpleName());
 
                         if (obj instanceof AddMensajeRequestDto) {
                             handleSendMessage((AddMensajeRequestDto) obj);
@@ -214,6 +216,24 @@ public class MensajeriaServer {
                 System.err.println("[MensajeriaHandler] ❌ Error en handler: " + e.getMessage());
                 e.printStackTrace();
             } finally {
+                // ✅ MARCAR USUARIO COMO OFFLINE AL DESCONECTARSE
+                if (username != null) {  // ← USAR username, NO authenticatedUser
+                    try {
+                        Usuario user = usuarioService.getUserByNombre(username);
+                        if (user != null) {
+                            usuarioService.setUserOnline(user.getId(), false);
+                            System.out.println("[MensajeriaHandler] 🔴 Usuario marcado offline: " + username);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("[MensajeriaHandler] Error marcando offline: " + e.getMessage());
+                    }
+
+                    // Broadcast status change
+                    broadcastNotification("USER_STATUS_CHANGE", new UserStatusChange(username, false));
+                    System.out.println("[MensajeriaHandler] 👋 Desconectado: " + username);
+                }
+
+                // Limpiar recursos
                 disconnect();
             }
         }
@@ -341,28 +361,21 @@ public class MensajeriaServer {
          * 🔌 Desconectar cliente
          */
         private void disconnect() {
-            if (!connected) return;
-
             connected = false;
-            connectedClients.remove(username);
-            allClients.remove(this);
 
-            // Notificar a TODOS que este usuario se desconectó
-            if (username != null) {
-                broadcastNotification("USER_STATUS_CHANGE",
-                        new UserStatusChange(username, false));
-                System.out.println("[MensajeriaHandler] 👋 Desconectado: " + username);
+            if (username != null) {  // ← USAR username
+                connectedClients.remove(username);
             }
+
+            allClients.remove(this);
 
             try {
                 if (out != null) out.close();
                 if (in != null) in.close();
                 if (socket != null) socket.close();
             } catch (IOException e) {
-                System.err.println("[MensajeriaHandler] ❌ Error cerrando: " + e.getMessage());
+                System.err.println("[MensajeriaHandler] Error cerrando recursos: " + e.getMessage());
             }
         }
     }
-
-
 }

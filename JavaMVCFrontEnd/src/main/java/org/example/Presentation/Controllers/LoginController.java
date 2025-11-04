@@ -177,6 +177,16 @@ public class LoginController extends Observable {
     }
 
     public void logout() {
+        if (currentUser != null) {
+            // ✅ MARCAR USUARIO COMO OFFLINE EN EL BACKEND
+            try {
+                System.out.println("[LoginController] 📤 Marcando usuario como offline: " + currentUser.getId());
+                authService.logout(currentUser.getId());
+            } catch (Exception e) {
+                System.err.println("[LoginController] ❌ Error en logout: " + e.getMessage());
+            }
+        }
+
         currentUser = null;
         loginView.clearFields();
         loginView.setVisible(true);
