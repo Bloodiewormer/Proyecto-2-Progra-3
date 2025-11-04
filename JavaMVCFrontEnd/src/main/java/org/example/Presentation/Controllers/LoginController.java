@@ -16,6 +16,7 @@ public class LoginController extends Observable {
     private final LoginView loginView;
     private final AuthService authService;
     private UserResponseDto currentUser;
+    private boolean isLoggingIn = false;
 
     // Server configuration
     private static final String SERVER_HOST = "localhost";
@@ -35,6 +36,10 @@ public class LoginController extends Observable {
     }
 
     private void handleLogin() {
+        if (isLoggingIn) {
+            System.out.println("[LoginController] ⚠️ Login ya en proceso, ignorando...");
+            return;
+        }
         String userIdText = loginView.getUsername(); // ✅ Campo que contiene el ID
         String password = loginView.getPassword();
 
@@ -65,6 +70,7 @@ public class LoginController extends Observable {
             return;
         }
 
+        isLoggingIn = true;
         loginView.showLoading(true);
 
         SwingWorker<UserResponseDto, Void> worker = new SwingWorker<>() {
@@ -76,6 +82,7 @@ public class LoginController extends Observable {
             @Override
             protected void done() {
                 loginView.showLoading(false);
+                isLoggingIn = false;
                 try {
                     UserResponseDto user = get();
                     if (user != null) {
