@@ -124,14 +124,16 @@ public class MensajeriaServer {
      */
     private void sendActiveUsersToClient(ClienteMensajeriaHandler client) {
         try {
-            List<Usuario> onlineUsers = usuarioService.getOnlineUsers();
-            List<String> usernames = onlineUsers.stream()
+            // ✅ Obtener TODOS los usuarios (con is_active = true)
+            List<Usuario> allUsers = usuarioService.getAllActiveUsers();
+
+            List<String> usernames = allUsers.stream()
                     .map(Usuario::getNombre)
                     .toList();
 
             NotificationMessage notification = new NotificationMessage("USERS_LIST", usernames);
             client.send(notification);
-            System.out.println("[MensajeriaServer] 📋 Lista enviada: " + usernames.size() + " online");
+            System.out.println("[MensajeriaServer] 📋 Lista enviada: " + usernames.size() + " usuarios totales");
         } catch (Exception e) {
             System.err.println("[MensajeriaServer] ❌ Error enviando lista: " + e.getMessage());
         }

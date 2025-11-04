@@ -91,6 +91,11 @@ public class MensajesView extends JPanel {
         return StatusButton;
     }
 
+    public JCheckBox getVerSoloUsuariosActivosCheckBox() {
+        return verSoloUsuariosActivosCheckBox;
+    }
+
+
     private void createUIComponents() {
         // TODO: place custom component creation code here
         SendButton = new CustomButton("Enviar", Color.decode("#4CAF50"), Color.WHITE);

@@ -25,6 +25,7 @@ public class MensajeController {
     private String selectedUser;
     private final String currentUser;
     private final Map<String, Boolean> usersStatus;
+    private final List<String> allUsers = new ArrayList<>();
     private final Map<String, List<MensajeResponseDto>> chatHistory = new HashMap<>();
 
     public MensajeController(MensajesView mensajesView, String currentUser, String serverHost, int serverPort) {
@@ -87,6 +88,8 @@ public class MensajeController {
         mensajesView.getWriteMessageField().addActionListener(e -> handleSendMessage());
         mensajesView.getUsersList().getSelectionModel().addListSelectionListener(this::handleUserSelection);
 
+        mensajesView.getVerSoloUsuariosActivosCheckBox().addActionListener(e -> updateUserListFilter());
+ 
         mensajesView.getWriteMessageField().addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent e) {
@@ -97,6 +100,38 @@ public class MensajeController {
             public void focusLost(java.awt.event.FocusEvent e) {
                 handleFieldFocusLost();
             }
+        });
+    }
+
+    private void updateUserListFilter() {
+        SwingUtilities.invokeLater(() -> {
+            DefaultListModel<String> model = mensajesView.getUsersModel();
+            model.clear();
+
+            boolean onlyOnline = mensajesView.getVerSoloUsuariosActivosCheckBox().isSelected();
+
+            System.out.println("[MensajeController] 🔄 Actualizando lista - Solo online: " + onlyOnline);
+
+            int count = 0;
+            for (String user : allUsers) {
+                if (user.equals(currentUser)) continue;  // No mostrar el usuario actual
+
+                boolean isOnline = usersStatus.getOrDefault(user, false);
+
+                // ✅ Si el filtro está activo, solo mostrar usuarios online
+                if (onlyOnline && !isOnline) {
+                    continue;
+                }
+
+                // Agregar con emoji según estado
+                String emoji = isOnline ? "🟢" : "🔴";
+                model.addElement(emoji + " " + user);
+                count++;
+
+                System.out.println("   → " + emoji + " " + user);
+            }
+
+            System.out.println("[MensajeController] ✅ Lista actualizada: " + count + " usuarios mostrados");
         });
     }
 
@@ -251,21 +286,21 @@ public class MensajeController {
 
     public void handleUsersList(List<String> users) {
         SwingUtilities.invokeLater(() -> {
-            DefaultListModel<String> model = mensajesView.getUsersModel();
-            model.clear();
+            System.out.println("[MensajeController] 👥 Lista recibida: " + users.size() + " usuarios");
 
-            System.out.println("[MensajeController] 👥 Actualizando lista con " + users.size() + " usuarios");
+            // ✅ Guardar TODOS los usuarios
+            allUsers.clear();
+            allUsers.addAll(users);
 
+            // ✅ Marcar todos como online inicialmente
             for (String user : users) {
                 if (!user.equals(currentUser)) {
-                    // ✅ TODOS los usuarios de la lista están online
-                    usersStatus.put(user, true);  // ← AGREGAR ESTA LÍNEA
-
-                    String emoji = "🟢";
-                    model.addElement(emoji + " " + user);
-                    System.out.println("   → " + emoji + " " + user);
+                    usersStatus.put(user, true);
                 }
             }
+
+            // Actualizar la vista con filtro
+            updateUserListFilter();
         });
     }
 
@@ -273,42 +308,21 @@ public class MensajeController {
         System.out.println("[MensajeController] " +
                 (isActive ? "🟢" : "🔴") + " Estado actualizado: " + username);
 
-        // ✅ ACTUALIZAR EL MAPA PRIMERO
+        // ✅ Actualizar estado
         usersStatus.put(username, isActive);
 
-        System.out.println("[DEBUG] usersStatus después de cambio: " + usersStatus);
+        // ✅ Agregar a la lista de todos los usuarios si no existe
+        if (!allUsers.contains(username) && !username.equals(currentUser)) {
+            allUsers.add(username);
+        }
 
-        SwingUtilities.invokeLater(() -> {
-            DefaultListModel<String> model = mensajesView.getUsersModel();
+        // ✅ Actualizar la vista con el filtro
+        updateUserListFilter();
 
-            boolean found = false;
-            for (int i = 0; i < model.getSize(); i++) {
-                String element = model.getElementAt(i);
-                String cleanName = cleanUserName(element);
-
-                if (cleanName.equals(username)) {
-                    found = true;
-                    if (isActive) {
-                        // Actualizar a online
-                        model.set(i, "🟢 " + username);
-                    } else {
-                        // Remover si está offline
-                        model.remove(i);
-                    }
-                    break;
-                }
-            }
-
-            // Si no está en la lista y está activo, agregarlo
-            if (!found && isActive && !username.equals(currentUser)) {
-                model.addElement("🟢 " + username);
-            }
-
-            // ✅ Si es el usuario seleccionado, actualizar indicador
-            if (username.equals(selectedUser)) {
-                updateStatusIndicator(isActive);
-            }
-        });
+        // ✅ Si es el usuario seleccionado, actualizar indicador
+        if (username.equals(selectedUser)) {
+            updateStatusIndicator(isActive);
+        }
     }
 
     public void handleHistory(List<MensajeResponseDto> mensajes) {
@@ -489,11 +503,9 @@ public class MensajeController {
         }
 
         // ✅ DEBUG: Ver estado del usuario
-        boolean isOnline = usersStatus.getOrDefault(selectedUser, false);
-        System.out.println("[VALIDACIÓN] Usuario: " + selectedUser + ", Online: " + isOnline);
-        System.out.println("[VALIDACIÓN] usersStatus completo: " + usersStatus);
 
-        if (!isOnline) {
+
+        if (!clienteMensajeria.isConectado()) {
             showError("El usuario " + selectedUser + " no está en línea");
             return false;
         }

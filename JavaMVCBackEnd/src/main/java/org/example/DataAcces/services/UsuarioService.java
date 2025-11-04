@@ -76,6 +76,19 @@ public class UsuarioService {
         }
     }
 
+    public List<Usuario> getAllActiveUsers() {
+        try (Session session = sessionFactory.openSession()) {
+            String hql = "FROM Usuario u WHERE u.isActive = true ORDER BY u.nombre";
+            Query<Usuario> query = session.createQuery(hql, Usuario.class);
+            List<Usuario> usuarios = query.list();
+            System.out.println("[UsuarioService] 📋 Usuarios activos: " + usuarios.size());
+            return usuarios;
+        } catch (Exception e) {
+            System.err.println("[UsuarioService] ❌ Error obteniendo usuarios activos: " + e.getMessage());
+            throw e;
+        }
+    }
+
     /**
      * Actualiza un médico
      */
