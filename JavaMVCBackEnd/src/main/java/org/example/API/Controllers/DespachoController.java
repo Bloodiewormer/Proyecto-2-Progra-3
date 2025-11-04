@@ -113,13 +113,20 @@ public class DespachoController {
                             d.getDias()))
                     .toList();
 
+            String fechaRetiroStr = receta.getFechaRetiro() != null
+                    ? receta.getFechaRetiro().format(FORMATTER)
+                    : null;
+
             var dtoResp = new RecetaResponseDto(
                     receta.getId().intValue(),
                     receta.getPaciente().getId().intValue(),
                     receta.getMedico().getId().intValue(),
+                    receta.getPaciente().getNombre(),
+                    receta.getMedico().getNombre(),
                     receta.getFechaConfeccion().format(FORMATTER),
-                    detalles,
-                    receta.getEstado().name()
+                    fechaRetiroStr,
+                    receta.getEstado().toString(),
+                    detalles
             );
 
             return new ResponseDto(true, "Estado actualizado exitosamente", gson.toJson(dtoResp));
@@ -150,13 +157,21 @@ public class DespachoController {
                 .map(this::toDetalleResponseDto)
                 .collect(Collectors.toList());
 
+        String fechaRetiroStr = receta.getFechaRetiro() != null
+                ? receta.getFechaRetiro().format(FORMATTER)
+                : null;
+
+
         return new RecetaResponseDto(
                 receta.getId().intValue(),
                 receta.getPaciente().getId().intValue(),
                 receta.getMedico().getId().intValue(),
+                receta.getPaciente().getNombre(),
+                receta.getMedico().getNombre(),
                 receta.getFechaConfeccion().format(FORMATTER),
-                detalles,
-                receta.getEstado().name()
+                fechaRetiroStr,
+                receta.getEstado().toString(),
+                detalles
         );
     }
 

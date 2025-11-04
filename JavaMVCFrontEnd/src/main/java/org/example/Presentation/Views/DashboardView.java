@@ -107,6 +107,7 @@ public class DashboardView extends JPanel {
         addMonthYearSync(startMonthChooser);
         addMonthYearSync(endMonthChooser);
 
+
         selectGraphicTypeComboBox.addActionListener(e -> refreshCharts());
     }
 
@@ -155,6 +156,18 @@ public class DashboardView extends JPanel {
         startYearPicker.add(startYear, BorderLayout.CENTER);
         endMonthPicker.add(endMonth, BorderLayout.CENTER);
         endYearPicker.add(endYear, BorderLayout.CENTER);
+
+        startYear.addPropertyChangeListener(evt -> {
+            if ("year".equals(evt.getPropertyName())) {
+                refreshCharts();
+            }
+        });
+
+        endYear.addPropertyChangeListener(evt -> {
+            if ("year".equals(evt.getPropertyName())) {
+                refreshCharts();
+            }
+        });
 
         startMonthPicker.revalidate();
         startMonthPicker.repaint();

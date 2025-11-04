@@ -124,7 +124,7 @@ public class HistoricoRecetasController {
 
         // Aquí deberías obtener el nombre del médico según tu modelo/datos.
         // Por defecto, se muestra el ID.
-        String nombreMedico = String.valueOf(receta.getIdMedico());
+        String nombreMedico = String.valueOf(receta.getNombreMedico());
         // Si tienes una lista de médicos, puedes buscar el nombre aquí.
 
         StringBuilder sb = new StringBuilder();

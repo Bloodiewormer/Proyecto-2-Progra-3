@@ -33,8 +33,8 @@ public class RecetaTableModel extends AbstractTableModel implements IObserver {
         RecetaResponseDto receta = recetas.get(rowIndex);
         return switch (columnIndex) {
             case 0 -> receta.getId();
-            case 1 -> receta.getIdPaciente();
-            case 2 -> receta.getIdMedico();
+            case 1 -> receta.getNombrePaciente();  // ✅ Cambiar a nombre
+            case 2 -> receta.getNombreMedico();    // ✅ Cambiar a nombre
             case 3 -> receta.getFechaConfeccion();
             case 4 -> receta.getFechaRetiro();
             case 5 -> receta.getEstado();
