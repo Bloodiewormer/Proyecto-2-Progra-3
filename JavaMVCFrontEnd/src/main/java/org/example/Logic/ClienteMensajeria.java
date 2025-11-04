@@ -88,7 +88,7 @@ public class ClienteMensajeria {
     /**
      * Solicitar historial usando ListMensajesRequestDto
      */
-    public void solicitarHistorial(ListMensajeResponseDto dto) {
+    public void solicitarHistorial(ListMensajesRequestDto dto) {
         if (!conectado) {
             System.err.println("⚠️ No hay conexión con el servidor");
             return;
@@ -103,6 +103,7 @@ public class ClienteMensajeria {
 
         } catch (IOException e) {
             System.err.println("❌ Error al solicitar historial: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
