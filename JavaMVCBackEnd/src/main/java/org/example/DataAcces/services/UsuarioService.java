@@ -76,12 +76,15 @@ public class UsuarioService {
         }
     }
 
+    /**
+     * Obtener TODOS los usuarios activos (is_active = true)
+     */
     public List<Usuario> getAllActiveUsers() {
         try (Session session = sessionFactory.openSession()) {
             String hql = "FROM Usuario u WHERE u.isActive = true ORDER BY u.nombre";
             Query<Usuario> query = session.createQuery(hql, Usuario.class);
             List<Usuario> usuarios = query.list();
-            System.out.println("[UsuarioService] 📋 Usuarios activos: " + usuarios.size());
+            System.out.println("[UsuarioService] 📋 Usuarios activos totales: " + usuarios.size());
             return usuarios;
         } catch (Exception e) {
             System.err.println("[UsuarioService] ❌ Error obteniendo usuarios activos: " + e.getMessage());
@@ -299,6 +302,8 @@ public class UsuarioService {
         }
         return "DESCONOCIDO";
     }
+
+
 
     /**
      * Obtiene un usuario por nombre (método auxiliar)

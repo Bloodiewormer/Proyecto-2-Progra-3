@@ -292,13 +292,6 @@ public class MensajeController {
             allUsers.clear();
             allUsers.addAll(users);
 
-            // ✅ Marcar todos como online inicialmente
-            for (String user : users) {
-                if (!user.equals(currentUser)) {
-                    usersStatus.put(user, true);
-                }
-            }
-
             // Actualizar la vista con filtro
             updateUserListFilter();
         });
@@ -502,11 +495,8 @@ public class MensajeController {
             return false;
         }
 
-        // ✅ DEBUG: Ver estado del usuario
-
-
         if (!clienteMensajeria.isConectado()) {
-            showError("El usuario " + selectedUser + " no está en línea");
+            showError("No hay conexión con el servidor");
             return false;
         }
 
