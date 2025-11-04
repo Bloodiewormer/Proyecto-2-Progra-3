@@ -101,12 +101,13 @@ public class LoginController extends Observable {
         // Notify observers
         notifyObservers(ChangeType.UPDATED, user);
 
-        // Hide login view
-        loginView.setVisible(false);
-
         // Determine user type and open main view
         UserType userType = determineUserType(user.getRole());
         openMainView(userType, user);
+
+        // Close and dispose login view ✅ Cerrar después de abrir el menú
+        loginView.setVisible(false);
+        loginView.dispose();
     }
 
 
