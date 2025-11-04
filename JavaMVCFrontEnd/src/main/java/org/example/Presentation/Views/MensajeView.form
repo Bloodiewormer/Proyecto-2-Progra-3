@@ -152,6 +152,14 @@
               </component>
             </children>
           </scrollpane>
+          <component id="6d219" class="javax.swing.JCheckBox" binding="verSoloUsuariosActivosCheckBox" default-binding="true">
+            <constraints border-constraint="North"/>
+            <properties>
+              <background color="-1"/>
+              <foreground color="-16777216"/>
+              <text value="Ver Solo Usuarios Activos"/>
+            </properties>
+          </component>
         </children>
       </grid>
     </children>

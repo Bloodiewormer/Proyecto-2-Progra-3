@@ -1,11 +1,8 @@
 package org.example.Presentation.Views;
 
 import org.example.Presentation.Components.CustomButton;
-import org.example.Presentation.Components.LoadingOverlay;
+
 import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 
 public class MensajesView extends JPanel {
@@ -33,6 +30,7 @@ public class MensajesView extends JPanel {
     private JScrollPane MessagesScroll;
     private JScrollPane UsersScroll;
     private JList<String> UsersList;
+    private JCheckBox verSoloUsuariosActivosCheckBox;
 
     // Models
     private DefaultListModel<String> usersModel;
