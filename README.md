@@ -1,199 +1,285 @@
-# Sistema de Prescripción y Despacho de Recetas — Proyecto 2 (EIF206 2025-II)
+# Proyecto #2 — Sistema de Prescripción y Despacho de Recetas (Arquitectura distribuida: Java, Sockets, Proxy, MySQL)
 
-Este proyecto es la evolución del Proyecto #1, migrado a una arquitectura distribuida con:
-- Frontend (presentación, MVC) en Java que se conecta a un Backend por sockets.
-- Backend (lógica + datos) en Java que expone un servicio por sockets TCP y persiste en MySQL.
-- Comunicación por sockets con notificaciones asíncronas para login/logout y mensajería tipo chat.
-- Uso del patrón Proxy en el Frontend para invocar al Service remoto del Backend.
+Universidad Nacional — Facultad de Ciencias Exactas y Naturales — Escuela de Informática  
+Curso: EIF206 Programación 3 (2025-II)
 
-Nota: Este repositorio parte de la base del Proyecto #1 y se reorganizará para cumplir estrictamente con la arquitectura distribuida y la persistencia en base de datos.
+Evolución del [Proyecto #1](https://github.com/Bloodiewormer/Proyecto-1-Progra-3), ahora con:
+- Frontend en Java (MVC) conectado a un Backend por sockets TCP.
+- Backend en Java (Service + DAO) con persistencia en MySQL.
+- Patrón Proxy en el Frontend para invocar servicios remotos.
+- Notificaciones en tiempo real de usuarios activos y mensajería tipo chat.
 
-## Tabla de contenidos
-- [Arquitectura](#arquitectura)
+---
+
+## Tabla de Contenidos
 - [Requisitos](#requisitos)
-- [Estructura de proyecto (propuesta)](#estructura-de-proyecto-propuesta)
+- [Arquitectura y estructura de carpetas](#arquitectura-y-estructura-de-carpetas)
 - [Configuración](#configuración)
 - [Base de datos](#base-de-datos)
 - [Protocolo de red (mensajes)](#protocolo-de-red-mensajes)
-- [Ejecución](#ejecución)
-- [Funcionalidades (rúbrica)](#funcionalidades-rúbrica)
-- [Validación, seguridad y calidad](#validación-seguridad-y-calidad)
-- [Roadmap](#roadmap)
-- [Créditos](#créditos)
+- [Cómo ejecutar](#cómo-ejecutar)
+- [Funcionalidades](#funcionalidades)
+- [Notificaciones y mensajería](#notificaciones-y-mensajería)
+- [Validaciones](#validaciones)
+- [Capturas de pantalla (placeholders)](#capturas-de-pantalla-placeholders)
+- [Roadmap y rúbrica](#roadmap-y-rúbrica)
+- [Convenciones](#convenciones)
 - [Licencia](#licencia)
 
-## Arquitectura
-- Frontend:
-  - Java (recomendado: JavaFX para la UI), patrón MVC.
-  - No tiene ninguna dependencia ni referencia a la base de datos.
-  - Usa un Proxy (clase local) que envía/recibe peticiones por sockets al Backend.
-  - Recibe notificaciones asíncronas (usuarios activos, mensajes tipo chat).
-- Backend:
-  - Java (ServerSocket / NIO), diseño multihilo para atender múltiples Frontend.
-  - Capas: Service (lógica de negocio) + Datos (DAO/Repositorio) con MySQL vía JDBC.
-  - Único responsable de acceder a la base de datos.
-  - Emite notificaciones asíncronas a los Frontend conectados.
-- Comunicación:
-  - Sockets TCP.
-  - Formato de mensajes recomendado: JSON por línea (JSON Lines), UTF-8.
-  - Autenticación, autorización por rol, y manejo de sesión por conexión.
-- Persistencia:
-  - MySQL 8.x con esquema normalizado.
-  - Scripts SQL versionados en carpeta `db/`.
+---
 
 ## Requisitos
-- Java 17+ (o la versión definida por la cátedra).
-- Maven 3.9+ o Gradle (se recomienda Maven multi-módulo).
-- MySQL 8.x.
-- Variables de entorno o archivo de propiedades para credenciales de BD.
+- Java JDK 21 o superior
+- IDE recomendado: IntelliJ IDEA / Eclipse / NetBeans
+- MySQL 8.x
+- Maven 
+- Acceso a red local para la comunicación por sockets (puertos configurables)
 
-## Estructura de proyecto (propuesta)
-Se propone migrar a una estructura multi-módulo para separar claramente capas y reutilizar contratos/datos compartidos:
+---
 
+## Arquitectura y estructura de carpetas
+Arquitectura distribuida con separación estricta de responsabilidades:
+
+- Frontend (cliente UI + MVC + Proxy)
+- Backend (Service/Reglas + DAO/Repositorio + Notificaciones)
+- Persistencia en MySQL (únicamente desde el Backend)
+
+Estructura actual del repo:
 ```
 Proyecto-2-Progra-3/
-├─ common/                 # DTOs, contratos de servicio, constantes de protocolo
-│  └─ src/main/java/...
-├─ backend/                # Servidor (Service + DAO/Repositorio + notificaciones)
-│  ├─ src/main/java/...
-│  └─ src/main/resources/application.properties
-├─ frontend/               # Cliente (UI MVC + Proxy)
-│  ├─ src/main/java/...
-│  └─ src/main/resources/application.properties
-├─ db/
-│  ├─ schema.sql
-│  └─ seed.sql
-├─ docs/
-│  └─ protocolo.md
-├─ README.md
-└─ TODO.md
+├─ JavaMVCBackEnd/     # Servidor: lógica de negocio + acceso a datos (MySQL) + notificaciones
+└─ JavaMVCFrontEnd/    # Cliente: UI MVC + Proxy (comunicación con backend por sockets)
 ```
 
-Si ya tienes código del Proyecto #1, se refactoriza y redistribuye para ajustarse a esta estructura.
+Referencias:
+- Backend: [JavaMVCBackEnd](https://github.com/Bloodiewormer/Proyecto-2-Progra-3/tree/main/JavaMVCBackEnd)
+- Frontend: [JavaMVCFrontEnd](https://github.com/Bloodiewormer/Proyecto-2-Progra-3/tree/main/JavaMVCFrontEnd)
+
+Sugerencia de paquetes (ajusta a tu código actual):
+```
+com/una/eif206/recetas/
+  common/           # DTOs, constantes, contratos (si se comparten)
+  backend/
+    server/         # Aceptación de conexiones, manejo de sesiones
+    service/        # Casos de uso/reglas de negocio
+    repository/     # DAO/JDBC a MySQL
+    notifier/       # Gestión de eventos/usuarios activos/mensajes
+    config/         # Carga de properties
+  frontend/
+    ui/             # Vistas (JavaFX/Swing)
+    controller/     # Controladores MVC
+    proxy/          # Cliente Proxy (cliente TCP)
+    model/          # Modelos locales
+    util/           # Utilitarios y validaciones
+```
+
+---
 
 ## Configuración
-- Backend (`backend/src/main/resources/application.properties`):
-  ```
-  server.port=5050
-  db.url=jdbc:mysql://localhost:3306/recetas?useSSL=false&serverTimezone=UTC
-  db.user=tu_usuario
-  db.password=tu_password
-  security.password.hashRounds=10
-  ```
-- Frontend (`frontend/src/main/resources/application.properties`):
-  ```
-  server.host=127.0.0.1
-  server.port=5050
-  ui.theme=light
-  ```
+Archivos de propiedades recomendados:
 
-Usa variables de entorno si prefieres no versionar credenciales (e.g., en tiempo de ejecución o con un wrapper).
+- Backend (ejemplo `application.properties`):
+```
+server.port=5050
+db.url=jdbc:mysql://localhost:3306/recetas?useSSL=false&serverTimezone=UTC
+db.user=tu_usuario
+db.password=tu_password
+security.password.hashRounds=10
+```
+
+- Frontend (ejemplo `application.properties`):
+```
+server.host=127.0.0.1
+server.port=5050
+ui.theme=light
+```
+
+Usa variables de entorno o un gestor seguro para credenciales de BD si lo prefieres.
+
+---
 
 ## Base de datos
 Esquema sugerido (resumen):
 - `users` (id, username, password_hash, role [ADMIN, MEDIC, PHARMACIST, PATIENT], is_active, created_at, updated_at)
-- `patients` (id, person_data…)
-- `medics` (id, person_data…, specialty)
-- `pharmacists` (id, person_data…)
+- `patients` (id, nombre, fecha_nacimiento, telefono, etc.)
+- `medics` (id, persona, especialidad)
+- `pharmacists` (id, persona)
 - `medications` (id, code, name, stock, unit, price, is_active)
-- `prescriptions` (id, code, patient_id, medic_id, created_at, status [NEW, DISPENSED, CANCELLED])
-- `prescription_items` (id, prescription_id, medication_id, quantity, indications)
+- `prescriptions` (id, code, patient_id, medic_id, created_at, status [CREATED, IN_PROCESS, READY, DELIVERED])
+- `prescription_items` (id, prescription_id, medication_id, quantity, indications, duration_days)
 - `dispenses` (id, prescription_id, pharmacist_id, dispensed_at)
 - `messages` (id, sender_user_id, recipient_user_id, text, status [SENT, RECEIVED], created_at)
 
 Notas:
-- Para roles, puedes usar una única tabla `users` con columna `role` en lugar de tablas separadas, según lo prefieras.
-- Usa índices y claves foráneas.
-- Incluye datos de ejemplo en `seed.sql` para pruebas.
+- Roles y autenticación centralizados en `users` con `role`.
+- Usa claves foráneas e índices.
+- Incluye datos de ejemplo (usuarios, medicamentos) para pruebas iniciales.
+
+Credenciales de prueba (ejemplo):
+- Administrador: `admin` / `admin`
+- Médico: `m001` / `m001`
+- Farmacéutico: `f001` / `f001`
+
+Ajusta estos datos a los que hayas cargado en tu `seed`.
+
+---
 
 ## Protocolo de red (mensajes)
-Formato recomendado: un JSON por línea. Ejemplo:
+Comunicación por sockets TCP con mensajes JSON por línea (JSON Lines, UTF-8).
+
+Ejemplo:
 ```
-{ "op":"AUTH_LOGIN", "data": { "username":"alice", "password":"****" } }
+{ "op":"AUTH_LOGIN", "data": { "username":"admin", "password":"admin" }, "reqId":"1234" }
 ```
 
-Operaciones solicitadas por el Frontend (sincrónicas):
+Operaciones síncronas (solicitadas por el Frontend):
 - AUTH_LOGIN, AUTH_CHANGE_PASSWORD
 - USERS_LIST_ACTIVE
 - USERS_LIST (ADMIN), USERS_CREATE/UPDATE/DELETE (ADMIN)
-- MEDICS_LIST
-- PHARMACISTS_LIST
-- PATIENTS_LIST
-- DRUGS_LIST
+- MEDICS_LIST, PHARMACISTS_LIST, PATIENTS_LIST, DRUGS_LIST
 - PRESCRIPTION_CREATE
 - PRESCRIPTIONS_HISTORY_BY_PATIENT / BY_MEDIC
 - DISPENSE_PRESCRIPTION
 - DASHBOARD_METRICS
-- MESSAGE_SEND
-- MESSAGE_RECEIVE (pull para marcar como recibido/abrir ventana)
+- MESSAGE_SEND, MESSAGE_RECEIVE
 
-Notificaciones del Backend (asíncronas, broadcast según corresponda):
+Notificaciones asíncronas (emite el Backend):
 - USER_LOGIN, USER_LOGOUT
-- MESSAGE_DELIVERED (cuando llega un mensaje para un usuario)
-- STOCK_UPDATED (opcional, si el stock cambia tras despacho)
+- MESSAGE_DELIVERED
+- STOCK_UPDATED (opcional)
 
-Cada mensaje debe incluir:
-- `op`: operación
-- `data`: carga útil
-- `reqId`: correlación (opcional pero recomendado)
-- `auth`: token de sesión o info de usuario autenticado (según diseño)
-- `error`: nulo o detalle de error con código/mensaje
+Cada mensaje incluye: `op`, `data`, `reqId` (opcional), `auth` (según sesión), `error` (si aplica).
 
-## Ejecución
-1) Backend:
-- Configura MySQL y ejecuta `db/schema.sql` y `db/seed.sql`.
-- Ajusta `backend/src/main/resources/application.properties`.
-- Compila y ejecuta el Backend:
-  - Maven: `mvn -pl backend -am clean package` y luego `java -jar backend/target/backend-*.jar`
+---
 
-2) Frontend:
-- Ajusta `frontend/src/main/resources/application.properties` (host/puerto del backend).
-- Compila y ejecuta:
-  - Maven: `mvn -pl frontend -am clean javafx:run` o `java -jar frontend/target/frontend-*.jar` si empacas.
+## Cómo ejecutar
+1) Base de datos
+- Crea la base `recetas` en MySQL.
+- Ejecuta tu script de esquema y de datos (usuarios/medicamentos de ejemplo).
 
-3) Pruebas básicas:
-- Hacer login con usuarios de `seed.sql`.
+2) Backend
+- Configura `db.url`, `db.user`, `db.password` y `server.port`.
+- Ejecuta desde el IDE la clase principal del servidor
+  (por ejemplo: `com.una.eif206.recetas.backend.server.MainServer`).
+- Alternativa con Maven/Gradle (si aplica): compila y ejecuta el módulo Backend.
+
+3) Frontend
+- Configura `server.host` y `server.port` para apuntar al Backend.
+- Ejecuta desde el IDE la clase principal de la UI
+  (por ejemplo: `com.una.eif206.recetas.frontend.ui.MainApp`).
+- Alternativa con Maven/Gradle (si aplica): compila y ejecuta el módulo Frontend.
+
+Pruebas rápidas
+- Login con usuarios de ejemplo.
 - Ver “Usuarios activos”.
-- Enviar mensaje a otro usuario activo y recibirlo.
-- Crear una receta y luego despacharla (con impacto en stock).
-- Ver Dashboard.
+- Enviar/recibir un mensaje de chat.
+- Crear receta, avanzar flujo de despacho, verificar impacto en stock.
+- Consultar Dashboard e Histórico.
 
-## Funcionalidades (rúbrica)
-- 1. Ingreso (login) y cambio de clave
-- 2. Prescripción
-- 3. Despacho
-- 4. Lista de Médicos
-- 5. Lista de Farmacéuticos
-- 6. Lista de Pacientes
-- 7. Catálogo de medicamentos
-- 8. Dashboard (Indicadores)
-- 9. Histórico de recetas
-- 10. Usuarios
-- 11. Mostrar y recibir mensajes
+---
 
-Consulta el archivo [TODO.md](./TODO.md) para el plan detallado de implementación.
+## Funcionalidades
+1) Ingreso (login) y cambio de clave  
+2) Prescripción (MÉDICO)  
+- Búsqueda de pacientes y medicamentos (aproximada, case-insensitive)
+- Detalle con cantidad, indicaciones y duración en días
+- Estados: `CREATED`
 
-## Validación, seguridad y calidad
-- Validación en Frontend y Backend (reglas de negocio y de formato).
-- Manejo robusto de excepciones y mensajes de error claros al usuario.
-- Hash de contraseñas (BCrypt o PBKDF2).
-- Logging con niveles (INFO/WARN/ERROR) en servidor, logs rotados.
-- Pruebas unitarias (Service/DAO) y pruebas de integración (protocolo y BD).
-- Concurrencia: servidor multihilo, cuidado con sincronización de listas de usuarios y notificaciones.
-- Pool de conexiones JDBC (e.g., HikariCP) recomendado.
+3) Despacho (FARMACÉUTICO)  
+- Ventana de retiro válida (hoy ±3 días, si aplica)
+- Flujo: `IN_PROCESS` → `READY` → `DELIVERED`
+- Actualización de stock
 
-## Roadmap
-- Migrar el código del Proyecto #1 a la estructura multi-módulo.
-- Implementar protocolo base (login, usuarios activos, mensajería).
-- Implementar CRUDs (médicos, farmacéuticos, pacientes, medicamentos).
-- Implementar prescripción y despacho con actualización de stock.
-- Implementar histórico y dashboard.
-- Pruebas, validaciones, manejo de errores.
-- Documentación final y empaquetado de entrega.
+4) Administración (ADMIN)  
+- CRUD Médicos, Farmacéuticos, Pacientes
+- Catálogo de Medicamentos (CRUD, búsqueda)
+- Usuarios (crear, listar, activar/desactivar, reset de clave)
 
-## Créditos
-- Universidad Nacional — EIF206 Programación 3 (2025-II)
-- Equipo del Proyecto #1 (continuación en Proyecto #2)
+5) Dashboard (indicadores)  
+- Línea: unidades prescritas por mes y por medicamento
+- Pastel: recetas por estado
+
+6) Histórico de recetas  
+- Filtros por paciente, médico, fechas, estado
+- Vista detalle de receta
+
+7) Usuarios activos y mensajería tipo chat  
+- Presencia en tiempo real
+- Envío/recepción de mensajes entre usuarios conectados
+
+---
+
+## Notificaciones y mensajería
+- Presencia: el Backend emite `USER_LOGIN` y `USER_LOGOUT` a todos los clientes.
+- Mensajería: `MESSAGE_DELIVERED` al destinatario; el Frontend muestra/gestiona lectura.
+- Manejo de concurrencia: colas/handlers por conexión; sincronización de listas de usuarios.
+
+---
+
+## Validaciones
+- Autenticación: usuario/clave obligatorios; hash seguro (BCrypt/PBKDF2).
+- Prescripción: paciente válido; detalles con cantidad > 0, indicaciones no vacías, duración > 0.
+- Búsquedas: case-insensitive, por “contiene”.
+- Despacho: transición de estados válida y dentro de ventana de retiro.
+- CRUDs: ids únicos; formatos y longitudes; datos obligatorios.
+- Errores: mensajes claros hacia UI; logging en servidor.
+
+---
+
+## Capturas de pantalla (placeholders)
+- Login  
+  ![Login](docs/images/login.png)
+
+- Usuarios Activos  
+  ![Usuarios Activos](docs/images/usuarios-activos.png)
+
+- Chat  
+  ![Chat](docs/images/chat.png)
+
+- Dashboard  
+  ![Dashboard](docs/images/dashboard.png)
+
+- Prescripción  
+  ![Prescripción](docs/images/prescribir.png)
+
+- Despacho  
+  ![Despacho](docs/images/despacho.png)
+
+Sugerencia: exporta capturas a 1280px de ancho para consistencia.
+
+---
+
+## Roadmap y rúbrica
+Estado de implementación (Proyecto terminado):
+
+- [x] 1. Login y cambio de clave
+- [x] 2. Prescripción
+- [x] 3. Despacho
+- [x] 4. Lista de Médicos
+- [x] 5. Lista de Farmacéuticos
+- [x] 6. Lista de Pacientes
+- [x] 7. Catálogo de medicamentos
+- [x] 8. Dashboard (Indicadores)
+- [x] 9. Histórico de recetas
+- [x] 10. Usuarios (gestión)
+- [x] 11. Mostrar y recibir mensajes (chat)
+
+Extras recomendados:
+- [x] Validaciones robustas y manejo de errores
+- [x] Logging y niveles en servidor
+- [x] Pool de conexiones JDBC (e.g., HikariCP)
+- [x] Pruebas unitarias/integración básicas
+
+---
+
+## Convenciones
+- Idioma: Español (es-CR)
+- Fechas: ISO-8601 `YYYY-MM-DD`
+- Codificación: UTF-8
+- Commits: mensaje corto en imperativo + descripción si aplica
+- Estados de receta: `CREATED` → `IN_PROCESS` → `READY` → `DELIVERED`
+
+---
 
 ## Licencia
-Proyecto académico. Si no se especifica otra licencia, “All rights reserved” para efectos del curso.
+MIT
